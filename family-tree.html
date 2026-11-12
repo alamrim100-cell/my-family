@@ -15,6 +15,10 @@ button:disabled{opacity:.6;cursor:wait}
 button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
 main{padding:20px;max-width:1200px;margin:auto}
 .gen{margin-bottom:28px}
+#tree{position:relative}
+.card{position:relative;z-index:1}
+#lines{position:absolute;top:0;left:0;pointer-events:none;z-index:0}
+#lines path{fill:none;stroke:#8a5a2b;stroke-width:2}
 .gen h3{color:var(--accent);border-bottom:2px solid var(--line);padding-bottom:6px}
 .row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;width:210px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05)}
@@ -109,6 +113,7 @@ function levels(){
 
 // ===== العرض =====
 function render(){
+  requestAnimationFrame(drawLines);
   const tree = $('tree'); tree.innerHTML = '';
   if (!people.length){ tree.innerHTML = '<p>لا توجد بيانات بعد.</p>'; return; }
   const lv = levels(), groups = {};
@@ -123,9 +128,9 @@ function render(){
 }
 
 function card(p){
-  const c = document.createElement('div'); c.className = 'card';
+  const c = document.createElement('div'); c.className = 'card'; c.dataset.id = p.id;
   let ph;
-  if (p.photo){ ph = document.createElement('img'); ph.src = p.photo; ph.alt = ''; }
+  if (p.photo){ ph = document.createElement('img'); ph.src = p.photo; ph.alt = ''; ph.onload = () => drawLines(); }
   else { ph = document.createElement('div'); ph.className = 'ph'; }
   const n = document.createElement('div'); n.className = 'n'; n.textContent = p.name;
   const m = document.createElement('div'); m.className = 'meta';
@@ -141,6 +146,46 @@ function card(p){
   c.append(ph, n, m, b);
   return c;
 }
+
+// ===== خطوط الربط: من الأب والأم إلى الابن، وخط بين الزوجين =====
+const svgNS = 'http://www.w3.org/2000/svg';
+function drawLines(){
+  const tree = $('tree'); if (!tree) return;
+  let svg = $('lines');
+  if (!svg){ svg = document.createElementNS(svgNS, 'svg'); svg.id = 'lines'; tree.prepend(svg); }
+  svg.setAttribute('width', tree.offsetWidth);
+  svg.setAttribute('height', tree.offsetHeight);
+  svg.innerHTML = '';
+  const tr = tree.getBoundingClientRect();
+  const box = id => {
+    const el = id ? tree.querySelector('[data-id="' + id + '"]') : null;
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return {
+      cx: r.left - tr.left + r.width / 2, left: r.left - tr.left, right: r.right - tr.left,
+      top: r.top - tr.top, bottom: r.bottom - tr.top, mid: r.top - tr.top + r.height / 2
+    };
+  };
+  const path = d => { const el = document.createElementNS(svgNS, 'path'); el.setAttribute('d', d); svg.appendChild(el); };
+
+  people.forEach(p => {
+    const me = box(p.id);
+    if (!me) return;
+    // خط الزواج بين الشخص وزوجه (يُرسم مرة واحدة)
+    const s = box(p.spouseId);
+    if (s && p.id < p.spouseId){
+      const [L, R] = me.cx < s.cx ? [me, s] : [s, me];
+      path('M' + L.right + ' ' + L.mid + ' H' + R.left);
+    }
+    // خطوط من الأب والأم إلى الابن
+    const parents = [box(p.fatherId), box(p.motherId)].filter(Boolean);
+    if (!parents.length) return;
+    const bottom = Math.max(...parents.map(x => x.bottom));
+    const midY = bottom + (me.top - bottom) / 2;
+    parents.forEach(pt => path('M' + pt.cx + ' ' + pt.bottom + ' V' + midY + ' H' + me.cx + ' V' + me.top));
+  });
+}
+window.addEventListener('resize', () => drawLines());
 
 // ===== نموذج الإضافة/التعديل =====
 function fillSelect(sel, selected, exclude){
