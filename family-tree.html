@@ -244,13 +244,16 @@ $('saveBtn').onclick = async () => {
     fatherId: $('fFather').value || null, motherId: $('fMother').value || null, spouseId: $('fSpouse').value || null,
     bio: $('fBio').value.trim(), photo_url
   };
-  const { error } = await sb.from('submissions').insert({
-    type: editingId ? 'edit' : 'add', person_id: editingId, data
-  });
+  const { data: status, error } = await sb.rpc('submit_person', { payload: data, target: editingId });
   btn.disabled = false;
   $('formDlg').close();
-  if (error){ flash('تعذر إرسال البيانات، حاول لاحقاً'); return; }
-  flash('تم إرسال البيانات، وستظهر بعد اعتمادها.');
+  if (error){ flash('تعذر إرسال البيانات: ' + error.message); return; }
+  if (status === 'approved'){
+    flash('تمت الإضافة وظهرت في الشجرة.');
+    await loadPeople();
+  } else {
+    flash('تم إرسال البيانات، وستظهر بعد اعتمادها.');
+  }
 };
 
 $('addBtn').onclick = () => openForm();

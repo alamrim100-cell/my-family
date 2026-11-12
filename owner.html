@@ -63,6 +63,15 @@ img.thumb{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-top:6
     </div>
 
     <div class="box">
+      <h2>الإعدادات</h2>
+      <label style="display:flex;gap:10px;align-items:center;font-size:15px;cursor:pointer">
+        <input type="checkbox" id="autoToggle" style="width:auto;margin:0">
+        اعتماد تلقائي للطلبات الجديدة والتعديلات
+      </label>
+      <div class="sm" style="margin-top:6px">عند التفعيل تظهر البيانات في الشجرة مباشرة، وعند التعطيل تنتظر مراجعتك.</div>
+    </div>
+
+    <div class="box">
       <h2>طلبات الإضافة والتعديل</h2>
       <div class="bar" style="margin-bottom:10px"><button class="sec" id="reloadBtn">تحديث</button></div>
       <div id="pendList"></div>
@@ -120,7 +129,20 @@ $('logoutBtn').onclick = async () => { await sb.auth.signOut(); showLogin(); };
 $('reloadBtn').onclick = () => refresh();
 
 // ===== تحميل البيانات =====
+async function loadSetting(){
+  const { data } = await sb.from('settings').select('value').eq('key', 'auto_approve').single();
+  $('autoToggle').checked = !!(data && data.value);
+}
+
+$('autoToggle').onchange = async e => {
+  const v = e.target.checked;
+  const { error } = await sb.from('settings').update({ value: v }).eq('key', 'auto_approve');
+  if (error){ alert('تعذر حفظ الإعداد: ' + error.message); e.target.checked = !v; return; }
+  alert(v ? 'الاعتماد التلقائي مفعّل: الطلبات الجديدة تظهر مباشرة' : 'الاعتماد التلقائي معطّل: الطلبات تنتظر مراجعتك');
+};
+
 async function refresh(){
+  loadSetting();
   const [p, s] = await Promise.all([
     sb.from('people').select('*').order('created_at'),
     sb.from('submissions').select('*').eq('status', 'pending').order('created_at')
