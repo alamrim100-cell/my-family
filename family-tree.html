@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>شجرة العائلة</title>
+<style>
+:root{--bg:#f7f3ea;--card:#fff;--ink:#2b2b2b;--accent:#8a5a2b;--line:#d9cbb4}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--accent);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header h1{margin:0;font-size:22px}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff}
+button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+main{padding:20px;max-width:1200px;margin:auto}
+.gen{margin-bottom:28px}
+.gen h3{color:var(--accent);border-bottom:2px solid var(--line);padding-bottom:6px}
+.row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;width:210px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.card img,.ph{width:96px;height:96px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 8px}
+.card .n{font-weight:bold}
+.card .meta{font-size:13px;color:#666;margin-top:4px}
+.card button{margin-top:8px;padding:4px 10px;font-size:13px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+dialog{border:none;border-radius:14px;padding:20px;width:min(520px,94vw)}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+label{display:block;margin:10px 0 4px;font-size:14px}
+input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.pend{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}
+.note{background:#fff8e1;border:1px solid #e8d48a;padding:10px;border-radius:8px;margin:10px 0}
+.sm{font-size:13px;color:#666}
+.hide{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>شجرة العائلة</h1>
+  <div class="bar">
+    <button id="addBtn">+ إضافة شخص</button>
+  </div>
+</header>
+
+<main>
+  <div id="msg" class="note hide"></div>
+  <div id="tree"></div>
+</main>
+
+<dialog id="formDlg">
+  <h3 id="formTitle">إضافة شخص جديد</h3>
+  <label>الاسم الكامل *</label><input id="fName">
+  <label>تاريخ الميلاد</label><input id="fBirth" type="date">
+  <label>الجنس</label>
+  <select id="fGender"><option value="">--</option><option value="male">ذكر</option><option value="female">أنثى</option></select>
+  <label>الأب</label><select id="fFather"></select>
+  <label>الأم</label><select id="fMother"></select>
+  <label>الزوج / الزوجة</label><select id="fSpouse"></select>
+  <label>الصورة</label><input id="fPhoto" type="file" accept="image/*">
+  <label>ملاحظات</label><input id="fBio">
+  <div class="bar" style="margin-top:16px">
+    <button id="saveBtn">إرسال للاعتماد</button>
+    <button class="sec" id="cancelBtn">إلغاء</button>
+  </div>
+</dialog>
+
+<dialog id="adminDlg">
+  <h3>طلبات الإضافة والتعديل</h3>
+  <div class="bar">
+    <button class="sec" id="importBtn">استيراد طلبات (JSON)</button>
+    <button class="sec" id="exportBtn">نسخة احتياطية</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" class="hide">
+  <div id="pendList"></div>
+  <div class="bar"><button class="sec" id="closeAdmin">إغلاق</button></div>
+</dialog>
+
+<script>
+// ===== الإعدادات =====
+const CONFIG = {
+  ADMIN_PASS: 'change-me',  // غيّر كلمة مرور المشرف
+  SUBMIT_URL: ''            // رابط استقبال الطلبات (اختياري): Formspree أو Google Apps Script أو Supabase
+};
+
+// ===== الحالة والتخزين =====
+const KP = 'family_published', KQ = 'family_pending';
+let people  = JSON.parse(localStorage.getItem(KP) || '[]');
+let pending = JSON.parse(localStorage.getItem(KQ) || '[]');
+let editingId = null, photoData = null;
+
+const $ = id => document.getElementById(id);
+const persist = () => { localStorage.setItem(KP, JSON.stringify(people)); localStorage.setItem(KQ, JSON.stringify(pending)); };
+const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const byId = id => people.find(p => p.id === id);
+const nameOf = id => (byId(id) || {}).name || '';
+function flash(t){ const m=$('msg'); m.textContent=t; m.classList.remove('hide'); setTimeout(()=>m.classList.add('hide'),5000); }
+
+// ===== حساب الأجيال =====
+function levels(){
+  const lv = {}; people.forEach(p => lv[p.id] = 0);
+  for (let i = 0; i < people.length + 1; i++){          // حد أقصى للدورات
+    people.forEach(p => {
+      [p.fatherId, p.motherId].forEach(pid => {
+        if (byId(pid)) lv[p.id] = Math.max(lv[p.id], lv[pid] + 1);
+      });
+    });
+  }
+  people.forEach(p => {                                  // مواءمة الزوجين في الجيل نفسه
+    if (p.spouseId && byId(p.spouseId)){
+      const m = Math.max(lv[p.id], lv[p.spouseId]); lv[p.id] = lv[p.spouseId] = m;
+    }
+  });
+  return lv;
+}
+
+// ===== العرض =====
+function render(){
+  const tree = $('tree'); tree.innerHTML = '';
+  if (!people.length){ tree.innerHTML = '<p>لا توجد بيانات بعد. ابدأ بإضافة أول شخص.</p>'; return; }
+  const lv = levels(), groups = {};
+  people.forEach(p => { (groups[lv[p.id]] ??= []).push(p); });
+  Object.keys(groups).map(Number).sort((a,b)=>a-b).forEach(k => {
+    const sec = document.createElement('section'); sec.className = 'gen';
+    sec.innerHTML = '<h3>الجيل ' + (k + 1) + '</h3>';
+    const row = document.createElement('div'); row.className = 'row';
+    groups[k].forEach(p => row.appendChild(card(p)));
+    sec.appendChild(row); tree.appendChild(sec);
+  });
+}
+
+function card(p){
+  const c = document.createElement('div'); c.className = 'card';
+  let ph;
+  if (p.photo){ ph = document.createElement('img'); ph.src = p.photo; ph.alt = ''; }
+  else { ph = document.createElement('div'); ph.className = 'ph'; }
+  const n = document.createElement('div'); n.className = 'n'; n.textContent = p.name;
+  const m = document.createElement('div'); m.className = 'meta';
+  const lines = [];
+  if (p.birth) lines.push('تاريخ الميلاد: ' + p.birth);
+  if (p.fatherId) lines.push('الأب: ' + nameOf(p.fatherId));
+  if (p.motherId) lines.push('الأم: ' + nameOf(p.motherId));
+  if (p.spouseId) lines.push('الزوج / الزوجة: ' + nameOf(p.spouseId));
+  if (p.bio) lines.push(p.bio);
+  lines.forEach(t => { const d = document.createElement('div'); d.textContent = t; m.appendChild(d); });
+  const b = document.createElement('button'); b.className = 'sec'; b.textContent = 'تعديل';
+  b.onclick = () => openForm(p.id);
+  c.append(ph, n, m, b);
+  if (pending.some(x => x.personId === p.id)){
+    const s = document.createElement('div'); s.className = 'sm'; s.textContent = '⏳ تعديل بانتظار الاعتماد';
+    c.appendChild(s);
+  }
+  return c;
+}
+
+// ===== نموذج الإضافة/التعديل =====
+function fillSelect(sel, selected, exclude){
+  sel.innerHTML = '<option value="">— لا يوجد —</option>';
+  people.filter(p => p.id !== exclude).forEach(p => {
+    const o = document.createElement('option'); o.value = p.id; o.textContent = p.name;
+    if (p.id === selected) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function openForm(id = null){
+  editingId = id; photoData = null;
+  const p = id ? byId(id) : {};
+  $('formTitle').textContent = id ? 'تعديل: ' + p.name : 'إضافة شخص جديد';
+  $('fName').value = p.name || ''; $('fBirth').value = p.birth || ''; $('fGender').value = p.gender || '';
+  fillSelect($('fFather'), p.fatherId, id); fillSelect($('fMother'), p.motherId, id); fillSelect($('fSpouse'), p.spouseId, id);
+  $('fBio').value = p.bio || ''; $('fPhoto').value = '';
+  $('formDlg').showModal();
+}
+
+$('fPhoto').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 300 / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      photoData = cv.toDataURL('image/jpeg', 0.82);
+    };
+    img.src = r.result;
+  };
+  r.readAsDataURL(f);
+};
+
+$('saveBtn').onclick = async () => {
+  if (!$('fName').value.trim()){ alert('الاسم مطلوب'); return; }
+  const base = editingId ? byId(editingId) : {};
+  const data = {
+    name: $('fName').value.trim(), birth: $('fBirth').value, gender: $('fGender').value,
+    fatherId: $('fFather').value, motherId: $('fMother').value, spouseId: $('fSpouse').value,
+    bio: $('fBio').value.trim(), photo: photoData || (base && base.photo) || ''
+  };
+  const item = { id: uid(), type: editingId ? 'edit' : 'add', personId: editingId, data, date: new Date().toISOString() };
+  $('formDlg').close();
+
+  let sent = false;
+  if (CONFIG.SUBMIT_URL){
+    try { await fetch(CONFIG.SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) }); sent = true; }
+    catch (err) { sent = false; }
+  }
+  if (!sent){ pending.push(item); persist(); }
+  flash(sent ? 'تم إرسال البيانات، وستظهر بعد اعتمادها.' : 'تم حفظ الطلب، بانتظار اعتماده.');
+  render();
+};
+
+$('addBtn').onclick = () => openForm();
+$('cancelBtn').onclick = () => $('formDlg').close();
+
+// ===== لوحة الاعتماد (للمشرف) =====
+function openAdmin(){
+  const pw = prompt('كلمة مرور المشرف:');
+  if (pw === null) return;
+  if (pw !== CONFIG.ADMIN_PASS){ alert('كلمة المرور غير صحيحة'); return; }
+  renderAdmin(); $('adminDlg').showModal();
+}
+// اللوحة مخفية: تُفتح فقط برابط ينتهي بـ #owner أو بالاختصار Ctrl+Alt+O
+if (location.hash === '#owner') openAdmin();
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.altKey && (e.key === 'o' || e.key === 'O')){ e.preventDefault(); openAdmin(); }
+});
+$('closeAdmin').onclick = () => $('adminDlg').close();
+
+function renderAdmin(){
+  const box = $('pendList'); box.innerHTML = '';
+  if (!pending.length){ box.innerHTML = '<p>لا توجد طلبات بانتظار الاعتماد.</p>'; return; }
+  pending.forEach((it, i) => {
+    const d = it.data, wrap = document.createElement('div'); wrap.className = 'pend';
+    const t = document.createElement('b');
+    t.textContent = (it.type === 'add' ? 'إضافة: ' : 'تعديل: ') + d.name +
+      (it.type === 'edit' ? '  (الاسم الحالي: ' + nameOf(it.personId) + ')' : '');
+    const det = document.createElement('div'); det.className = 'sm';
+    det.textContent = [
+      d.birth && 'ميلاد: ' + d.birth,
+      d.fatherId && 'الأب: ' + nameOf(d.fatherId),
+      d.motherId && 'الأم: ' + nameOf(d.motherId),
+      d.spouseId && 'الزوج: ' + nameOf(d.spouseId),
+      d.bio
+    ].filter(Boolean).join(' | ');
+    const ok = document.createElement('button'); ok.textContent = 'اعتماد';
+    ok.onclick = () => approve(i);
+    const no = document.createElement('button'); no.className = 'sec'; no.textContent = 'رفض';
+    no.onclick = () => reject(i);
+    const bar = document.createElement('div'); bar.className = 'bar'; bar.append(ok, no);
+    wrap.append(t, det, bar); box.appendChild(wrap);
+  });
+}
+
+function approve(i){
+  const it = pending[i];
+  if (it.type === 'add'){
+    people.push({ id: uid(), ...it.data });
+  } else {
+    const p = byId(it.personId);
+    if (p) Object.assign(p, it.data);
+    else people.push({ id: it.personId || uid(), ...it.data });
+  }
+  pending.splice(i, 1); persist(); renderAdmin(); render();
+}
+
+function reject(i){ pending.splice(i, 1); persist(); renderAdmin(); }
+
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const parsed = JSON.parse(await f.text());
+    const list = (Array.isArray(parsed) ? parsed : [parsed]).filter(x => x && x.data && x.data.name);
+    let added = 0;
+    list.forEach(x => { if (!pending.some(p => p.id === x.id)){ pending.push(x); added++; } });
+    persist(); renderAdmin(); flash('تم استيراد ' + added + ' طلب');
+  } catch (err) { alert('الملف غير صالح'); }
+  e.target.value = '';
+};
+
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify({ people, pending }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'family-backup.json'; a.click();
+};
+
+render();
+</script>
+</body>
+</html>

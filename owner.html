@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة المالك - شجرة العائلة</title>
+<style>
+:root{--bg:#f7f3ea;--card:#fff;--ink:#2b2b2b;--accent:#8a5a2b;--line:#d9cbb4;--ok:#2e7d32;--no:#a33}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--accent);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header h1{margin:0;font-size:20px}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff}
+button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+button.ok{background:var(--ok)}
+button.no{background:var(--no)}
+button.small{padding:4px 10px;font-size:13px}
+main{max-width:900px;margin:auto;padding:20px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px}
+.box h2{margin:0 0 12px;font-size:18px;color:var(--accent)}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{flex:1;min-width:140px;background:var(--bg);border-radius:10px;padding:12px;text-align:center}
+.stat b{display:block;font-size:26px;color:var(--accent)}
+.bar{display:flex;gap:8px;flex-wrap:wrap}
+.item{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.item .t{font-weight:bold}
+.sm{font-size:13px;color:#666;margin-top:4px}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;background:var(--bg);margin-inline-start:6px}
+#login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;text-align:center}
+#login input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;margin:12px 0}
+.err{color:var(--no);font-size:14px;min-height:20px}
+.hide{display:none}
+.empty{color:#888}
+</style>
+</head>
+<body>
+
+<div id="login" class="hide">
+  <h2 style="color:var(--accent);margin-top:0">لوحة المالك</h2>
+  <input id="pw" type="password" placeholder="كلمة المرور">
+  <button id="loginBtn">دخول</button>
+  <div id="loginErr" class="err"></div>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <h1>لوحة المالك - شجرة العائلة</h1>
+    <div class="bar">
+      <a href="family-tree.html" style="color:#fff">عرض الشجرة</a>
+      <button class="sec" id="logoutBtn">خروج</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="box">
+      <div class="stats">
+        <div class="stat"><b id="cntPeople">0</b>أشخاص معتمدون</div>
+        <div class="stat"><b id="cntPending">0</b>طلبات بانتظار الاعتماد</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>طلبات الإضافة والتعديل</h2>
+      <div class="bar" style="margin-bottom:10px">
+        <button class="sec" id="importSubBtn">استيراد طلبات (JSON)</button>
+        <button class="sec" id="approveAllBtn">اعتماد الكل</button>
+      </div>
+      <div id="pendList"></div>
+    </div>
+
+    <div class="box">
+      <h2>الأشخاص المعتمدون</h2>
+      <div id="peopleList"></div>
+    </div>
+
+    <div class="box">
+      <h2>النسخ الاحتياطية</h2>
+      <div class="bar">
+        <button class="sec" id="exportBtn">تصدير نسخة احتياطية</button>
+        <button class="sec" id="importBackupBtn">استعادة نسخة احتياطية</button>
+      </div>
+      <div class="sm">الاستعادة تستبدل كل الأشخاص المعتمدين بمحتوى الملف.</div>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="fileSub" accept=".json" hidden>
+<input type="file" id="fileBackup" accept=".json" hidden>
+
+<script>
+// ===== الإعدادات =====
+const CONFIG = { ADMIN_PASS: 'change-me' };   // غيّر كلمة المرور
+
+// ===== التخزين (نفس مفاتيح صفحة الشجرة) =====
+const KP = 'family_published', KQ = 'family_pending';
+let people  = JSON.parse(localStorage.getItem(KP) || '[]');
+let pending = JSON.parse(localStorage.getItem(KQ) || '[]');
+
+const $ = id => document.getElementById(id);
+const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const byId = id => people.find(p => p.id === id);
+const nameOf = id => (byId(id) || {}).name || '';
+const persist = () => { localStorage.setItem(KP, JSON.stringify(people)); localStorage.setItem(KQ, JSON.stringify(pending)); };
+const reload = () => {
+  people  = JSON.parse(localStorage.getItem(KP) || '[]');
+  pending = JSON.parse(localStorage.getItem(KQ) || '[]');
+};
+
+// ===== الدخول =====
+function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); renderAll(); }
+function showLogin(){ $('app').classList.add('hide'); $('login').classList.remove('hide'); }
+
+$('loginBtn').onclick = () => {
+  if ($('pw').value === CONFIG.ADMIN_PASS){
+    sessionStorage.setItem('owner_ok', '1'); $('pw').value = ''; $('loginErr').textContent = ''; showApp();
+  } else {
+    $('loginErr').textContent = 'كلمة المرور غير صحيحة';
+  }
+};
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+$('logoutBtn').onclick = () => { sessionStorage.removeItem('owner_ok'); showLogin(); };
+
+// ===== العرض =====
+function renderAll(){ reload(); renderStats(); renderPending(); renderPeople(); }
+
+function renderStats(){
+  $('cntPeople').textContent = people.length;
+  $('cntPending').textContent = pending.length;
+}
+
+function renderPending(){
+  const box = $('pendList'); box.innerHTML = '';
+  if (!pending.length){ box.innerHTML = '<div class="empty">لا توجد طلبات بانتظار الاعتماد.</div>'; return; }
+  pending.forEach((it, i) => {
+    const d = it.data || {};
+    const wrap = document.createElement('div'); wrap.className = 'item';
+    const t = document.createElement('div'); t.className = 't';
+    t.textContent = d.name || '(بدون اسم)';
+    const tag = document.createElement('span'); tag.className = 'tag';
+    tag.textContent = it.type === 'add' ? 'إضافة' : 'تعديل';
+    t.appendChild(tag);
+    const det = document.createElement('div'); det.className = 'sm';
+    det.textContent = [
+      it.type === 'edit' && 'الاسم الحالي: ' + nameOf(it.personId),
+      d.birth && 'ميلاد: ' + d.birth,
+      d.gender && 'الجنس: ' + (d.gender === 'male' ? 'ذكر' : 'أنثى'),
+      d.fatherId && 'الأب: ' + nameOf(d.fatherId),
+      d.motherId && 'الأم: ' + nameOf(d.motherId),
+      d.spouseId && 'الزوج: ' + nameOf(d.spouseId),
+      d.bio && 'ملاحظات: ' + d.bio,
+      it.date && 'أُرسل: ' + new Date(it.date).toLocaleString('ar')
+    ].filter(Boolean).join(' | ');
+    const bar = document.createElement('div'); bar.className = 'bar'; bar.style.marginTop = '8px';
+    const ok = document.createElement('button'); ok.className = 'ok small'; ok.textContent = 'اعتماد';
+    ok.onclick = () => approve(i);
+    const no = document.createElement('button'); no.className = 'no small'; no.textContent = 'رفض';
+    no.onclick = () => reject(i);
+    bar.append(ok, no);
+    wrap.append(t, det);
+    if (it.data && it.data.photo){
+      const img = document.createElement('img'); img.src = it.data.photo;
+      img.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover;margin-top:6px';
+      wrap.appendChild(img);
+    }
+    wrap.appendChild(bar);
+    box.appendChild(wrap);
+  });
+}
+
+function renderPeople(){
+  const box = $('peopleList'); box.innerHTML = '';
+  if (!people.length){ box.innerHTML = '<div class="empty">لا يوجد أشخاص معتمدون بعد.</div>'; return; }
+  people.forEach(p => {
+    const row = document.createElement('div'); row.className = 'item';
+    row.style.display = 'flex'; row.style.justifyContent = 'space-between'; row.style.alignItems = 'center'; row.style.gap = '10px';
+    const info = document.createElement('div');
+    info.innerHTML = '';
+    const t = document.createElement('div'); t.className = 't'; t.textContent = p.name;
+    const s = document.createElement('div'); s.className = 'sm';
+    s.textContent = [p.birth && 'ميلاد: ' + p.birth, p.fatherId && 'الأب: ' + nameOf(p.fatherId), p.motherId && 'الأم: ' + nameOf(p.motherId)].filter(Boolean).join(' | ');
+    info.append(t, s);
+    const del = document.createElement('button'); del.className = 'no small'; del.textContent = 'حذف';
+    del.onclick = () => removePerson(p.id);
+    row.append(info, del);
+    box.appendChild(row);
+  });
+}
+
+// ===== الإجراءات =====
+function approve(i){
+  const it = pending[i];
+  if (it.type === 'add'){
+    people.push({ id: uid(), ...it.data });
+  } else {
+    const p = byId(it.personId);
+    if (p) Object.assign(p, it.data);
+    else people.push({ id: it.personId || uid(), ...it.data });
+  }
+  pending.splice(i, 1); persist(); renderAll();
+}
+
+function reject(i){
+  if (!confirm('رفض هذا الطلب نهائياً؟')) return;
+  pending.splice(i, 1); persist(); renderAll();
+}
+
+$('approveAllBtn').onclick = () => {
+  if (!pending.length) return;
+  if (!confirm('اعتماد جميع الطلبات (' + pending.length + ')؟')) return;
+  while (pending.length) approve(0);
+};
+
+function removePerson(id){
+  const p = byId(id); if (!p) return;
+  if (!confirm('حذف ' + p.name + ' من الشجرة؟ سيتم فك ارتباطه بالآخرين.')) return;
+  people = people.filter(x => x.id !== id);
+  people.forEach(x => {
+    if (x.fatherId === id) x.fatherId = '';
+    if (x.motherId === id) x.motherId = '';
+    if (x.spouseId === id) x.spouseId = '';
+  });
+  persist(); renderAll();
+}
+
+// استيراد طلبات من ملف JSON (مثلاً ما يصل من النموذج أو من صفحة الشجرة)
+$('importSubBtn').onclick = () => $('fileSub').click();
+$('fileSub').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const parsed = JSON.parse(await f.text());
+    const list = (Array.isArray(parsed) ? parsed : [parsed]).filter(x => x && x.data && x.data.name);
+    let added = 0;
+    list.forEach(x => { if (!pending.some(p => p.id === x.id)){ pending.push(x); added++; } });
+    persist(); renderAll(); alert('تم استيراد ' + added + ' طلب');
+  } catch (err) { alert('الملف غير صالح'); }
+  e.target.value = '';
+};
+
+// نسخ احتياطي
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify({ people, pending }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'family-backup-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+};
+
+$('importBackupBtn').onclick = () => $('fileBackup').click();
+$('fileBackup').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data.people)) throw new Error();
+    if (!confirm('استعادة النسخة؟ سيتم استبدال الأشخاص المعتمدين الحاليين (' + people.length + ').')) { e.target.value = ''; return; }
+    people = data.people;
+    if (Array.isArray(data.pending)) pending = data.pending;
+    persist(); renderAll(); alert('تمت الاستعادة');
+  } catch (err) { alert('الملف غير صالح'); }
+  e.target.value = '';
+};
+
+// ===== بدء التشغيل =====
+if (sessionStorage.getItem('owner_ok') === '1') showApp(); else showLogin();
+</script>
+</body>
+</html>
