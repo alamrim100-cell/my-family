@@ -111,7 +111,7 @@ async function enter(){
 $('loginBtn').onclick = async () => {
   $('loginErr').textContent = '';
   const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('pw').value });
-  if (error){ $('loginErr').textContent = 'البريد أو كلمة المرور غير صحيحة'; return; }
+  if (error){ $('loginErr').textContent = 'تعذر الدخول: ' + error.message; return; }
   $('pw').value = '';
   await enter();
 };
