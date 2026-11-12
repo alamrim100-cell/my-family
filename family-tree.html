@@ -26,7 +26,6 @@ dialog{border:none;border-radius:14px;padding:20px;width:min(520px,94vw)}
 dialog::backdrop{background:rgba(0,0,0,.4)}
 label{display:block;margin:10px 0 4px;font-size:14px}
 input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit}
-.pend{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}
 .note{background:#fff8e1;border:1px solid #e8d48a;padding:10px;border-radius:8px;margin:10px 0}
 .sm{font-size:13px;color:#666}
 .hide{display:none}
@@ -62,22 +61,10 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
   </div>
 </dialog>
 
-<dialog id="adminDlg">
-  <h3>طلبات الإضافة والتعديل</h3>
-  <div class="bar">
-    <button class="sec" id="importBtn">استيراد طلبات (JSON)</button>
-    <button class="sec" id="exportBtn">نسخة احتياطية</button>
-  </div>
-  <input type="file" id="importFile" accept=".json" class="hide">
-  <div id="pendList"></div>
-  <div class="bar"><button class="sec" id="closeAdmin">إغلاق</button></div>
-</dialog>
-
 <script>
 // ===== الإعدادات =====
 const CONFIG = {
-  ADMIN_PASS: 'change-me',  // غيّر كلمة مرور المشرف
-  SUBMIT_URL: ''            // رابط استقبال الطلبات (اختياري): Formspree أو Google Apps Script أو Supabase
+  SUBMIT_URL: ''   // رابط استقبال الطلبات (اختياري): Formspree أو Google Apps Script أو Supabase
 };
 
 // ===== الحالة والتخزين =====
@@ -96,14 +83,14 @@ function flash(t){ const m=$('msg'); m.textContent=t; m.classList.remove('hide')
 // ===== حساب الأجيال =====
 function levels(){
   const lv = {}; people.forEach(p => lv[p.id] = 0);
-  for (let i = 0; i < people.length + 1; i++){          // حد أقصى للدورات
+  for (let i = 0; i < people.length + 1; i++){
     people.forEach(p => {
       [p.fatherId, p.motherId].forEach(pid => {
         if (byId(pid)) lv[p.id] = Math.max(lv[p.id], lv[pid] + 1);
       });
     });
   }
-  people.forEach(p => {                                  // مواءمة الزوجين في الجيل نفسه
+  people.forEach(p => {
     if (p.spouseId && byId(p.spouseId)){
       const m = Math.max(lv[p.id], lv[p.spouseId]); lv[p.id] = lv[p.spouseId] = m;
     }
@@ -210,78 +197,6 @@ $('saveBtn').onclick = async () => {
 
 $('addBtn').onclick = () => openForm();
 $('cancelBtn').onclick = () => $('formDlg').close();
-
-// ===== لوحة الاعتماد (للمشرف) =====
-function openAdmin(){
-  const pw = prompt('كلمة مرور المشرف:');
-  if (pw === null) return;
-  if (pw !== CONFIG.ADMIN_PASS){ alert('كلمة المرور غير صحيحة'); return; }
-  renderAdmin(); $('adminDlg').showModal();
-}
-// اللوحة مخفية: تُفتح فقط برابط ينتهي بـ #owner أو بالاختصار Ctrl+Alt+O
-if (location.hash === '#owner') openAdmin();
-document.addEventListener('keydown', e => {
-  if (e.ctrlKey && e.altKey && (e.key === 'o' || e.key === 'O')){ e.preventDefault(); openAdmin(); }
-});
-$('closeAdmin').onclick = () => $('adminDlg').close();
-
-function renderAdmin(){
-  const box = $('pendList'); box.innerHTML = '';
-  if (!pending.length){ box.innerHTML = '<p>لا توجد طلبات بانتظار الاعتماد.</p>'; return; }
-  pending.forEach((it, i) => {
-    const d = it.data, wrap = document.createElement('div'); wrap.className = 'pend';
-    const t = document.createElement('b');
-    t.textContent = (it.type === 'add' ? 'إضافة: ' : 'تعديل: ') + d.name +
-      (it.type === 'edit' ? '  (الاسم الحالي: ' + nameOf(it.personId) + ')' : '');
-    const det = document.createElement('div'); det.className = 'sm';
-    det.textContent = [
-      d.birth && 'ميلاد: ' + d.birth,
-      d.fatherId && 'الأب: ' + nameOf(d.fatherId),
-      d.motherId && 'الأم: ' + nameOf(d.motherId),
-      d.spouseId && 'الزوج: ' + nameOf(d.spouseId),
-      d.bio
-    ].filter(Boolean).join(' | ');
-    const ok = document.createElement('button'); ok.textContent = 'اعتماد';
-    ok.onclick = () => approve(i);
-    const no = document.createElement('button'); no.className = 'sec'; no.textContent = 'رفض';
-    no.onclick = () => reject(i);
-    const bar = document.createElement('div'); bar.className = 'bar'; bar.append(ok, no);
-    wrap.append(t, det, bar); box.appendChild(wrap);
-  });
-}
-
-function approve(i){
-  const it = pending[i];
-  if (it.type === 'add'){
-    people.push({ id: uid(), ...it.data });
-  } else {
-    const p = byId(it.personId);
-    if (p) Object.assign(p, it.data);
-    else people.push({ id: it.personId || uid(), ...it.data });
-  }
-  pending.splice(i, 1); persist(); renderAdmin(); render();
-}
-
-function reject(i){ pending.splice(i, 1); persist(); renderAdmin(); }
-
-$('importBtn').onclick = () => $('importFile').click();
-$('importFile').onchange = async e => {
-  const f = e.target.files[0]; if (!f) return;
-  try {
-    const parsed = JSON.parse(await f.text());
-    const list = (Array.isArray(parsed) ? parsed : [parsed]).filter(x => x && x.data && x.data.name);
-    let added = 0;
-    list.forEach(x => { if (!pending.some(p => p.id === x.id)){ pending.push(x); added++; } });
-    persist(); renderAdmin(); flash('تم استيراد ' + added + ' طلب');
-  } catch (err) { alert('الملف غير صالح'); }
-  e.target.value = '';
-};
-
-$('exportBtn').onclick = () => {
-  const blob = new Blob([JSON.stringify({ people, pending }, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'family-backup.json'; a.click();
-};
 
 render();
 </script>
