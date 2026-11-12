@@ -10,7 +10,9 @@
 body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 header{background:var(--accent);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 header h1{margin:0;font-size:20px}
+header a{color:#fff}
 button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff}
+button:disabled{opacity:.6;cursor:wait}
 button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
 button.ok{background:var(--ok)}
 button.no{background:var(--no)}
@@ -27,16 +29,18 @@ main{max-width:900px;margin:auto;padding:20px}
 .sm{font-size:13px;color:#666;margin-top:4px}
 .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;background:var(--bg);margin-inline-start:6px}
 #login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;text-align:center}
-#login input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;margin:12px 0}
+#login input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;margin:8px 0}
 .err{color:var(--no);font-size:14px;min-height:20px}
 .hide{display:none}
 .empty{color:#888}
+img.thumb{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-top:6px}
 </style>
 </head>
 <body>
 
 <div id="login" class="hide">
   <h2 style="color:var(--accent);margin-top:0">لوحة المالك</h2>
+  <input id="email" type="email" placeholder="البريد الإلكتروني">
   <input id="pw" type="password" placeholder="كلمة المرور">
   <button id="loginBtn">دخول</button>
   <div id="loginErr" class="err"></div>
@@ -46,11 +50,10 @@ main{max-width:900px;margin:auto;padding:20px}
   <header>
     <h1>لوحة المالك - شجرة العائلة</h1>
     <div class="bar">
-      <a href="family-tree.html" style="color:#fff">عرض الشجرة</a>
+      <a href="family-tree.html">عرض الشجرة</a>
       <button class="sec" id="logoutBtn">خروج</button>
     </div>
   </header>
-
   <main>
     <div class="box">
       <div class="stats">
@@ -61,10 +64,7 @@ main{max-width:900px;margin:auto;padding:20px}
 
     <div class="box">
       <h2>طلبات الإضافة والتعديل</h2>
-      <div class="bar" style="margin-bottom:10px">
-        <button class="sec" id="importSubBtn">استيراد طلبات (JSON)</button>
-        <button class="sec" id="approveAllBtn">اعتماد الكل</button>
-      </div>
+      <div class="bar" style="margin-bottom:10px"><button class="sec" id="reloadBtn">تحديث</button></div>
       <div id="pendList"></div>
     </div>
 
@@ -72,56 +72,63 @@ main{max-width:900px;margin:auto;padding:20px}
       <h2>الأشخاص المعتمدون</h2>
       <div id="peopleList"></div>
     </div>
-
-    <div class="box">
-      <h2>النسخ الاحتياطية</h2>
-      <div class="bar">
-        <button class="sec" id="exportBtn">تصدير نسخة احتياطية</button>
-        <button class="sec" id="importBackupBtn">استعادة نسخة احتياطية</button>
-      </div>
-      <div class="sm">الاستعادة تستبدل كل الأشخاص المعتمدين بمحتوى الملف.</div>
-    </div>
   </main>
 </div>
 
-<input type="file" id="fileSub" accept=".json" hidden>
-<input type="file" id="fileBackup" accept=".json" hidden>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ===== الإعدادات =====
-const CONFIG = { ADMIN_PASS: 'change-me' };   // غيّر كلمة المرور
+const SUPABASE_URL = 'https://nrddblppxdiklixjxsni.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ===== التخزين (نفس مفاتيح صفحة الشجرة) =====
-const KP = 'family_published', KQ = 'family_pending';
-let people  = JSON.parse(localStorage.getItem(KP) || '[]');
-let pending = JSON.parse(localStorage.getItem(KQ) || '[]');
-
+let people = [], pending = [];
 const $ = id => document.getElementById(id);
-const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const byId = id => people.find(p => p.id === id);
 const nameOf = id => (byId(id) || {}).name || '';
-const persist = () => { localStorage.setItem(KP, JSON.stringify(people)); localStorage.setItem(KQ, JSON.stringify(pending)); };
-const reload = () => {
-  people  = JSON.parse(localStorage.getItem(KP) || '[]');
-  pending = JSON.parse(localStorage.getItem(KQ) || '[]');
-};
+const nz = v => (v === '' || v === undefined) ? null : v;
 
 // ===== الدخول =====
-function showApp(){ $('login').classList.add('hide'); $('app').classList.remove('hide'); renderAll(); }
+async function checkSession(){
+  const { data } = await sb.auth.getSession();
+  if (data.session) await enter(); else showLogin();
+}
+
 function showLogin(){ $('app').classList.add('hide'); $('login').classList.remove('hide'); }
 
-$('loginBtn').onclick = () => {
-  if ($('pw').value === CONFIG.ADMIN_PASS){
-    sessionStorage.setItem('owner_ok', '1'); $('pw').value = ''; $('loginErr').textContent = ''; showApp();
-  } else {
-    $('loginErr').textContent = 'كلمة المرور غير صحيحة';
+async function enter(){
+  // جدول owners يسمح للمالك فقط برؤية صفه، فإن لم يظهر صف فالحساب ليس مالكاً
+  const { data, error } = await sb.from('owners').select('user_id');
+  if (error || !data || !data.length){
+    await sb.auth.signOut();
+    $('loginErr').textContent = 'هذا الحساب ليس مالكاً للوحة';
+    showLogin(); return;
   }
+  $('login').classList.add('hide'); $('app').classList.remove('hide');
+  await refresh();
+}
+
+$('loginBtn').onclick = async () => {
+  $('loginErr').textContent = '';
+  const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('pw').value });
+  if (error){ $('loginErr').textContent = 'البريد أو كلمة المرور غير صحيحة'; return; }
+  $('pw').value = '';
+  await enter();
 };
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
-$('logoutBtn').onclick = () => { sessionStorage.removeItem('owner_ok'); showLogin(); };
+$('logoutBtn').onclick = async () => { await sb.auth.signOut(); showLogin(); };
+$('reloadBtn').onclick = () => refresh();
 
-// ===== العرض =====
-function renderAll(){ reload(); renderStats(); renderPending(); renderPeople(); }
+// ===== تحميل البيانات =====
+async function refresh(){
+  const [p, s] = await Promise.all([
+    sb.from('people').select('*').order('created_at'),
+    sb.from('submissions').select('*').eq('status', 'pending').order('created_at')
+  ]);
+  if (p.error || s.error){ alert('تعذر تحميل البيانات'); return; }
+  people = p.data; pending = s.data;
+  renderStats(); renderPending(); renderPeople();
+}
 
 function renderStats(){
   $('cntPeople').textContent = people.length;
@@ -131,134 +138,88 @@ function renderStats(){
 function renderPending(){
   const box = $('pendList'); box.innerHTML = '';
   if (!pending.length){ box.innerHTML = '<div class="empty">لا توجد طلبات بانتظار الاعتماد.</div>'; return; }
-  pending.forEach((it, i) => {
+  pending.forEach(it => {
     const d = it.data || {};
     const wrap = document.createElement('div'); wrap.className = 'item';
-    const t = document.createElement('div'); t.className = 't';
-    t.textContent = d.name || '(بدون اسم)';
+    const t = document.createElement('div'); t.className = 't'; t.textContent = d.name || '(بدون اسم)';
     const tag = document.createElement('span'); tag.className = 'tag';
     tag.textContent = it.type === 'add' ? 'إضافة' : 'تعديل';
     t.appendChild(tag);
     const det = document.createElement('div'); det.className = 'sm';
     det.textContent = [
-      it.type === 'edit' && 'الاسم الحالي: ' + nameOf(it.personId),
+      it.type === 'edit' && 'الشخص الحالي: ' + nameOf(it.person_id),
       d.birth && 'ميلاد: ' + d.birth,
       d.gender && 'الجنس: ' + (d.gender === 'male' ? 'ذكر' : 'أنثى'),
       d.fatherId && 'الأب: ' + nameOf(d.fatherId),
       d.motherId && 'الأم: ' + nameOf(d.motherId),
       d.spouseId && 'الزوج: ' + nameOf(d.spouseId),
       d.bio && 'ملاحظات: ' + d.bio,
-      it.date && 'أُرسل: ' + new Date(it.date).toLocaleString('ar')
+      it.created_at && 'أُرسل: ' + new Date(it.created_at).toLocaleString('ar')
     ].filter(Boolean).join(' | ');
+    wrap.append(t, det);
+    if (d.photo_url){
+      const img = document.createElement('img'); img.className = 'thumb'; img.src = d.photo_url; wrap.appendChild(img);
+    }
     const bar = document.createElement('div'); bar.className = 'bar'; bar.style.marginTop = '8px';
     const ok = document.createElement('button'); ok.className = 'ok small'; ok.textContent = 'اعتماد';
-    ok.onclick = () => approve(i);
+    ok.onclick = () => approve(it);
     const no = document.createElement('button'); no.className = 'no small'; no.textContent = 'رفض';
-    no.onclick = () => reject(i);
-    bar.append(ok, no);
-    wrap.append(t, det);
-    if (it.data && it.data.photo){
-      const img = document.createElement('img'); img.src = it.data.photo;
-      img.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover;margin-top:6px';
-      wrap.appendChild(img);
-    }
-    wrap.appendChild(bar);
+    no.onclick = () => reject(it);
+    bar.append(ok, no); wrap.appendChild(bar);
     box.appendChild(wrap);
   });
 }
 
 function renderPeople(){
   const box = $('peopleList'); box.innerHTML = '';
-  if (!people.length){ box.innerHTML = '<div class="empty">لا يوجد أشخاص معتمدون بعد.</div>'; return; }
+  if (!people.length){ box.innerHTML = '<div class="empty">لا يوجد أشخاص بعد.</div>'; return; }
   people.forEach(p => {
     const row = document.createElement('div'); row.className = 'item';
-    row.style.display = 'flex'; row.style.justifyContent = 'space-between'; row.style.alignItems = 'center'; row.style.gap = '10px';
+    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:10px';
     const info = document.createElement('div');
-    info.innerHTML = '';
     const t = document.createElement('div'); t.className = 't'; t.textContent = p.name;
     const s = document.createElement('div'); s.className = 'sm';
-    s.textContent = [p.birth && 'ميلاد: ' + p.birth, p.fatherId && 'الأب: ' + nameOf(p.fatherId), p.motherId && 'الأم: ' + nameOf(p.motherId)].filter(Boolean).join(' | ');
+    s.textContent = [p.birth && 'ميلاد: ' + p.birth, p.father_id && 'الأب: ' + nameOf(p.father_id), p.mother_id && 'الأم: ' + nameOf(p.mother_id)].filter(Boolean).join(' | ');
     info.append(t, s);
     const del = document.createElement('button'); del.className = 'no small'; del.textContent = 'حذف';
-    del.onclick = () => removePerson(p.id);
-    row.append(info, del);
-    box.appendChild(row);
+    del.onclick = () => removePerson(p);
+    row.append(info, del); box.appendChild(row);
   });
 }
 
 // ===== الإجراءات =====
-function approve(i){
-  const it = pending[i];
+async function approve(it){
+  const d = it.data || {};
+  const fields = {
+    name: d.name, birth: nz(d.birth), gender: nz(d.gender),
+    father_id: nz(d.fatherId), mother_id: nz(d.motherId), spouse_id: nz(d.spouseId),
+    bio: nz(d.bio), photo_url: nz(d.photo_url)
+  };
+  let res;
   if (it.type === 'add'){
-    people.push({ id: uid(), ...it.data });
+    res = await sb.from('people').insert(fields);
   } else {
-    const p = byId(it.personId);
-    if (p) Object.assign(p, it.data);
-    else people.push({ id: it.personId || uid(), ...it.data });
+    res = await sb.from('people').update(fields).eq('id', it.person_id);
   }
-  pending.splice(i, 1); persist(); renderAll();
+  if (res.error){ alert('تعذر الاعتماد: ' + res.error.message); return; }
+  await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
+  refresh();
 }
 
-function reject(i){
-  if (!confirm('رفض هذا الطلب نهائياً؟')) return;
-  pending.splice(i, 1); persist(); renderAll();
+async function reject(it){
+  if (!confirm('رفض هذا الطلب؟')) return;
+  await sb.from('submissions').update({ status: 'rejected' }).eq('id', it.id);
+  refresh();
 }
 
-$('approveAllBtn').onclick = () => {
-  if (!pending.length) return;
-  if (!confirm('اعتماد جميع الطلبات (' + pending.length + ')؟')) return;
-  while (pending.length) approve(0);
-};
-
-function removePerson(id){
-  const p = byId(id); if (!p) return;
-  if (!confirm('حذف ' + p.name + ' من الشجرة؟ سيتم فك ارتباطه بالآخرين.')) return;
-  people = people.filter(x => x.id !== id);
-  people.forEach(x => {
-    if (x.fatherId === id) x.fatherId = '';
-    if (x.motherId === id) x.motherId = '';
-    if (x.spouseId === id) x.spouseId = '';
-  });
-  persist(); renderAll();
+async function removePerson(p){
+  if (!confirm('حذف ' + p.name + ' من الشجرة؟ سيُفك ارتباطه بالآخرين.')) return;
+  const { error } = await sb.from('people').delete().eq('id', p.id);
+  if (error){ alert('تعذر الحذف: ' + error.message); return; }
+  refresh();
 }
 
-// استيراد طلبات من ملف JSON (مثلاً ما يصل من النموذج أو من صفحة الشجرة)
-$('importSubBtn').onclick = () => $('fileSub').click();
-$('fileSub').onchange = async e => {
-  const f = e.target.files[0]; if (!f) return;
-  try {
-    const parsed = JSON.parse(await f.text());
-    const list = (Array.isArray(parsed) ? parsed : [parsed]).filter(x => x && x.data && x.data.name);
-    let added = 0;
-    list.forEach(x => { if (!pending.some(p => p.id === x.id)){ pending.push(x); added++; } });
-    persist(); renderAll(); alert('تم استيراد ' + added + ' طلب');
-  } catch (err) { alert('الملف غير صالح'); }
-  e.target.value = '';
-};
-
-// نسخ احتياطي
-$('exportBtn').onclick = () => {
-  const blob = new Blob([JSON.stringify({ people, pending }, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'family-backup-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
-};
-
-$('importBackupBtn').onclick = () => $('fileBackup').click();
-$('fileBackup').onchange = async e => {
-  const f = e.target.files[0]; if (!f) return;
-  try {
-    const data = JSON.parse(await f.text());
-    if (!Array.isArray(data.people)) throw new Error();
-    if (!confirm('استعادة النسخة؟ سيتم استبدال الأشخاص المعتمدين الحاليين (' + people.length + ').')) { e.target.value = ''; return; }
-    people = data.people;
-    if (Array.isArray(data.pending)) pending = data.pending;
-    persist(); renderAll(); alert('تمت الاستعادة');
-  } catch (err) { alert('الملف غير صالح'); }
-  e.target.value = '';
-};
-
-// ===== بدء التشغيل =====
-if (sessionStorage.getItem('owner_ok') === '1') showApp(); else showLogin();
+checkSession();
 </script>
 </body>
 </html>
