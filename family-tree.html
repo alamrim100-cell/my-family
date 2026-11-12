@@ -76,13 +76,12 @@ const SEED = [
   { id: 'sharifa', name: 'شريفة بنت خلفان العامرية', birth: '', gender: 'female', fatherId: '', motherId: '', spouseId: 'founder2', bio: 'زوجة خلفان، ثم تزوجها محمد بعد وفاته', photo: '' },
   { id: 'nusra', name: 'نصراء العامرية', birth: '', gender: 'female', fatherId: '', motherId: '', spouseId: 'founder1', bio: '', photo: '' }
 ];
-let people  = JSON.parse(localStorage.getItem(KP) || '[]');
-if (!people.length) people = SEED;
+let people = SEED;   // البيانات المعتمدة من الملف نفسه، لا من ذاكرة المتصفح
 let pending = JSON.parse(localStorage.getItem(KQ) || '[]');
 let editingId = null, photoData = null;
 
 const $ = id => document.getElementById(id);
-const persist = () => { localStorage.setItem(KP, JSON.stringify(people)); localStorage.setItem(KQ, JSON.stringify(pending)); };
+const persist = () => { localStorage.setItem(KQ, JSON.stringify(pending)); };
 const uid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const byId = id => people.find(p => p.id === id);
 const nameOf = id => (byId(id) || {}).name || '';
