@@ -167,7 +167,8 @@ function layout(id, row, depth = 0){
   const items = [], links = [];
   let x = 0, anchor = null;
   groups.forEach(g => {
-    const unitW = g.pid ? 2 * CW : CW;
+    const pw = row >= 1 ? SW : CW;   // الجيل الأول بحجم كامل، ومن الجيل الثاني فما بعد أصغر
+    const unitW = g.pid ? 2 * pw : pw;
     const kidRow = row + 1;
     const kl = g.kids.map(k => layout(k.id, kidRow, depth + 1));
     const kidsW = kl.reduce((s, l) => s + l.w, 0) + GAPX * Math.max(0, kl.length - 1);
@@ -244,7 +245,9 @@ function render(){
 
   t.items.forEach(it => {
     const a = byId(it.a); if (!a) return;
-    const W = it.type === 'couple' ? 2 * CW : CW;
+    const pw = it.row >= 1 ? SW : CW;
+    const W = it.type === 'couple' ? 2 * pw : pw;
+    const sm = it.row >= 1;
     const unit = document.createElement('div'); unit.className = 'unit';
     unit.style.width = W + 'px';
     unit.style.left = (it.cx - W / 2 + PAD) + 'px';
@@ -252,11 +255,11 @@ function render(){
     if (it.type === 'couple'){
       const b = byId(it.b);
       if (b){
-        unit.append(panel(a, b.id, false), panel(b, a.id, false));
+        unit.append(panel(a, b.id, sm), panel(b, a.id, sm));
       }
       else unit.append(panel(a, null));
     } else {
-      unit.append(panel(a, null));
+      unit.append(panel(a, null, sm));
     }
     tree.appendChild(unit);
   });
