@@ -3,70 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>شجرة العائلة</title>
+<title>شجرة العائلة - التعديل</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f3ea;--card:#fff;--ink:#2b2b2b;--accent:#8a5a2b;--line:#d9cbb4}
 *{box-sizing:border-box}
-body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:var(--accent);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-header h1{margin:0;font-size:22px}
-button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff}
-button:disabled{opacity:.6;cursor:wait}
-button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
-.linkbtn{display:inline-block;padding:8px 14px;border-radius:8px;background:#fff;color:var(--accent);border:1px solid #fff;text-decoration:none;font:inherit;font-weight:bold}
-main{padding:12px;max-width:100%;overflow:auto}
-#tree{position:relative}
-/* بطاقة الزوجين: شخصان في بطاقة واحدة */
-.unit{position:absolute;display:flex;height:270px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:visible;box-shadow:0 2px 6px rgba(0,0,0,.06);z-index:1}
-.panel{width:190px;height:268px;flex:0 0 190px;padding:10px 8px;text-align:center;overflow:hidden}
-.panel+.panel{border-right:1px solid var(--line)}
-/* الزوج/الزوجة من خارج العائلة: بطاقة أصغر لتتميز عن أفراد العائلة */
-.panel.small{width:125px;flex:0 0 125px;padding:8px 4px}
-.panel.small img,.panel.small .ph{width:44px;height:44px;margin-bottom:4px}
-.panel.small .n{font-size:11px;line-height:1.3}
-.panel.small .meta{font-size:10px;line-height:1.35}
-.panel.small button{font-size:10px;padding:2px 4px;margin-top:2px}
-/* وحدة عمودية: الشخص الأساسي بالأعلى، وشريكه في شريط صغير بالأسفل */
-.unit.vert{flex-direction:column}
-.unit.vert>.panel{width:190px;height:222px;flex:0 0 222px}
-.strip{width:190px;height:46px;flex:0 0 46px;display:flex;align-items:center;gap:8px;padding:4px 10px;border-top:1px dashed var(--line);background:#fbf8f2;cursor:pointer;border-radius:0 0 14px 14px}
-.strip img,.strip .sph{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--line);flex:0 0 34px}
-.strip .sn{font-size:12px;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:start;flex:1}
-/* شريك الحياة: شارة صغيرة متداخلة مع أسفل البطاقة */
-.chip{position:absolute;left:50%;transform:translateX(-50%);bottom:-22px;width:168px;height:46px;display:flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;background:#fff;border:1px solid var(--accent);border-radius:23px;box-shadow:0 2px 6px rgba(0,0,0,.14);cursor:pointer;z-index:2}
-.cph{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--line);flex:0 0 34px}
-.cn{flex:1;font-size:12px;font-weight:bold;line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:start}
-.panel img,.ph{width:80px;height:80px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 6px}
-.panel .n{font-weight:bold;font-size:14px;line-height:1.4}
-.panel .meta{font-size:12px;color:#666;margin-top:3px;line-height:1.45}
-.panel button{margin-top:4px;padding:3px 7px;font-size:12px}
-.btns{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:4px}
-#lines{position:absolute;top:0;left:0;pointer-events:none;z-index:0}
-#lines path{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-dialog{border:none;border-radius:14px;padding:20px;width:min(520px,94vw)}
-dialog::backdrop{background:rgba(0,0,0,.4)}
-label{display:block;margin:10px 0 4px;font-size:14px}
-input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit}
-.note{background:#fff8e1;border:1px solid #e8d48a;padding:10px;border-radius:8px;margin:10px 0}
-.sm{font-size:13px;color:#666}
-.hide{display:none}
+body{margin:0;min-height:100vh;font-family:Amiri,serif;color:#4a3420;overflow-x:hidden;
+  background:radial-gradient(ellipse at center,#fbf4e2 0,#efe2c4 70%,#e2cfa4 100%)}
+header{padding:16px 18px 6px;text-align:center}
+header h1{margin:0 0 10px;font-size:34px;color:#7a5520;letter-spacing:1px}
+.toolbar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar button,.toolbar .tlink{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;cursor:pointer;text-decoration:none;transition:all .25s}
+.toolbar button:hover:not(:disabled),.toolbar .tlink:hover{background:#f3e2b8}
+.toolbar button:disabled{opacity:.4;cursor:default}
+.toolbar .primary{background:#6b4a2b;color:#fff;border-color:#6b4a2b}
+.toolbar .primary:hover{background:#7a5520}
+.crumbs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:14px 0 0;font-size:16px;color:#8a6b3e}
+.crumbs button{font:inherit;font-size:16px;color:#6b4a2b;background:transparent;border:0;cursor:pointer;padding:2px 6px;border-bottom:1px dashed #b08d4c}
+.crumbs .sep{color:#b08d4c}
+main{padding:24px 14px 100px}
+.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:50px;animation:fade .5s both}
+.empty{text-align:center;color:#8a6b3e;padding:50px 0;font-size:20px}
+.note{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#fffaf0;border:1px solid #b08d4c;color:#5a3d1a;padding:10px 20px;border-radius:999px;box-shadow:0 8px 20px rgba(60,35,10,.2);z-index:40;font-size:16px;transition:opacity .4s}
+.note.hide{opacity:0;pointer-events:none}
+
+.focus{display:flex;justify-content:center;animation:up .5s both}
+.couplehead{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;animation:up .5s both}
+.bond{font-size:30px;color:#b08d4c;line-height:1}
+.choicesRow{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:34px;padding-top:44px;animation:fade .5s both}
+.choicesRow::before{content:'';position:absolute;top:0;left:50%;height:44px;border-left:1px dashed #b08d4c}
+
+/* البطاقة */
+.card{position:relative;overflow:hidden;width:225px;padding:18px 12px 12px;background:linear-gradient(160deg,rgba(255,255,255,.92),rgba(255,247,230,.7));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;
+  border:6px double #b08d4c;border-radius:50% 50% 16px 16px / 22% 22% 16px 16px;
+  box-shadow:inset 0 0 0 2px #fffaf0,inset 0 0 0 3px #d9bf85,0 10px 22px rgba(90,60,20,.15);transition:transform .35s}
+.card.clickable{cursor:pointer}
+.card.clickable:hover{transform:translateY(-5px)}
+.card.big{width:270px;padding:22px 16px 14px}
+.ring{width:124px;height:124px;margin:0 auto 10px;border-radius:50%;padding:5px;background:linear-gradient(135deg,#d9bf85,#8a6b3e,#d9bf85)}
+.card.big .ring{width:156px;height:156px}
+.ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee3c6}
+.n{font-size:25px;font-weight:700;color:#5a3d1a;line-height:1.3}
+.card.big .n{font-size:30px}
+.meta{font-size:16px;color:#8a6b3e;margin-top:4px}
+.cnt{margin-top:6px;font-size:15px;color:#7a5520;font-style:italic}
+.ebtns{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.ebtns button{font:inherit;font-size:13px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:3px 10px;cursor:pointer}
+.ebtns button:hover{background:#f3e2b8}
+.ebtns button.pri{background:#6b4a2b;color:#fff}
+.card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);
+  transform:translateX(-120%);transition:transform .9s ease}
+.card.clickable:hover::after{transform:translateX(120%)}
+.card.clickable:hover .n{background:linear-gradient(100deg,#5a3d1a 35%,#d4a94f 50%,#5a3d1a 65%);background-size:250% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 1.8s linear infinite}
+
+.kidsWrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;padding-top:44px;margin-top:6px;animation:fade .5s both}
+.kidsWrap::before{content:'';position:absolute;top:0;left:50%;height:44px;border-left:1px dashed #b08d4c}
+.pgroup{display:flex;flex-direction:column;align-items:center;gap:14px}
+.glabel span{padding:2px 16px;border:1px solid #b08d4c;border-radius:999px;background:#fffaf0;font-size:17px;color:#7a5520}
+.kidsRow{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+
+/* نماذج */
+dialog{border:none;border-radius:16px;padding:22px;width:min(520px,94vw);background:#fffaf0;color:#3b2a1a;font-family:Cairo,Tahoma,sans-serif;box-shadow:0 20px 50px rgba(60,35,10,.3)}
+dialog::backdrop{background:rgba(40,25,10,.45)}
+dialog h3{margin:0 0 8px;color:#7a5520}
+label{display:block;margin:10px 0 4px;font-size:14px;color:#5a4128}
+input,select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;font:inherit;background:#fff}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.bar button{font:inherit;font-size:15px;color:#fff;background:#6b4a2b;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+.bar button.sec{background:#fff;color:#6b4a2b;border:1px solid #6b4a2b}
+.bar button:disabled{opacity:.6;cursor:wait}
+.sm{font-size:13px;color:#8a6b3e}
+
+/* لوحة التفاصيل */
+#drawer{position:fixed;top:0;right:0;height:100%;width:370px;max-width:92vw;overflow:auto;padding:26px 22px;z-index:30;
+  background:#fffaf0;border-left:6px double #b08d4c;box-shadow:-12px 0 30px rgba(60,35,10,.2);
+  transform:translateX(105%);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+#drawer.open{transform:translateX(0)}
+#closeDrawer{position:absolute;top:12px;left:12px;font:inherit;font-size:18px;background:transparent;border:1px solid #b08d4c;border-radius:50%;width:36px;height:36px;cursor:pointer;color:#7a5520}
+#dbody{text-align:center;padding-top:20px}
+#dbody .big{width:150px;height:150px;margin:0 auto 14px;border-radius:50%;padding:6px;background:linear-gradient(135deg,#d9bf85,#8a6b3e,#d9bf85)}
+#dbody .big img,#dbody .big .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee3c6}
+#dbody h2{margin:0 0 12px;font-size:28px;color:#5a3d1a}
+#dbody .drow{font-size:19px;line-height:1.7;color:#5a4128;border-bottom:1px dotted #d9bf85;padding:6px 0}
+#dbody .bio{font-size:18px;color:#6b5030;margin-top:12px;font-style:italic;line-height:1.8}
+#dbody .pl{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px dotted #d9bf85;padding:8px 0;font-size:17px}
+#dbody .pl button{font:inherit;font-size:13px;color:#8a2b2b;background:#fff;border:1px solid #c98a8a;border-radius:999px;padding:3px 10px;cursor:pointer}
+#dbody .actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+#dbody .actions button{font:inherit;font-size:15px;color:#fff;background:#6b4a2b;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
 </style>
 </head>
 <body>
 <header>
-  <h1>شجرة العائلة</h1>
-  <div class="bar">
-    <button id="addBtn">+ إضافة شخص</button>
-    <a class="linkbtn" href="family-view.html">واجهة العرض</a>
+  <h1>شجرة العائلة · التعديل</h1>
+  <div class="toolbar">
+    <button id="backBtn" disabled>→ رجوع</button>
+    <button id="homeBtn" disabled>الجيل الأول</button>
+    <button id="addBtn" class="primary">+ إضافة شخص</button>
+    <a href="family-view.html" class="tlink">واجهة العرض</a>
   </div>
+  <div class="crumbs" id="crumbs"></div>
 </header>
+<main><div id="view"></div></main>
+<div id="msg" class="note hide"></div>
 
-<main>
-  <div id="msg" class="note hide"></div>
-  <div id="tree"></div>
-</main>
-
+<!-- نموذج الشخص -->
 <dialog id="formDlg">
   <h3 id="formTitle">إضافة شخص جديد</h3>
   <label>الاسم الكامل *</label><input id="fName">
@@ -80,481 +126,333 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
   <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input id="fOutsider" type="checkbox" style="width:auto;margin:0"> من خارج العائلة (زوج/زوجة فقط)</label>
   <label>الصورة</label><input id="fPhoto" type="file" accept="image/*">
   <label>ملاحظات</label><input id="fBio">
-  <div class="bar" style="margin-top:16px">
+  <div class="bar">
     <button id="saveBtn">إرسال</button>
     <button class="sec" id="cancelBtn">إلغاء</button>
   </div>
 </dialog>
 
-<dialog id="detailsDlg">
-  <div id="detailsBody"></div>
-  <div class="bar" style="margin-top:14px">
-    <button id="detailsEdit">تعديل</button>
-    <button class="sec" onclick="$('detailsDlg').close()">إغلاق</button>
-  </div>
-</dialog>
-
+<!-- زوج/زوجة جديد أو ربط موجود -->
 <dialog id="spouseDlg">
-  <h3 id="spouseTitle">ربط زوجة</h3>
+  <h3 id="spouseTitle">ربط زوج/زوجة</h3>
   <label>اختر من الشجرة</label>
   <select id="spSelect"></select>
-  <div class="sm" style="margin-top:8px">أو أضف زوجاً/زوجة جديداً من خارج العائلة (يُربط بهذا الشخص مباشرة):</div>
+  <div class="sm" style="margin-top:8px">أو أضف زوجاً/زوجة جديداً من خارج العائلة:</div>
   <label>الاسم</label><input id="spName">
   <label>تاريخ الميلاد</label><input id="spBirth" type="date">
   <label>تاريخ الوفاة (إن وُجد)</label><input id="spDeath" type="date">
-  <div class="bar" style="margin-top:16px">
+  <div class="bar">
     <button id="spSave">ربط</button>
     <button class="sec" id="spCancel">إلغاء</button>
   </div>
 </dialog>
 
+<aside id="drawer">
+  <button id="closeDrawer" title="إغلاق">✕</button>
+  <div id="dbody"></div>
+</aside>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ===== الإعدادات =====
-const SUPABASE_URL = 'https://nrddblppxdiklixjxsni.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient('https://nrddblppxdiklixjxsni.supabase.co','sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT');
+let people=[], marriages=[];
+let stack=[];
+let editingId=null, photoBlob=null, spouseHusband=null;
+const $=id=>document.getElementById(id);
+const byId=id=>people.find(p=>p.id===id);
+const nameOf=id=>(byId(id)||{}).name||'';
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const dispName=p=>(p.death?'المرحوم ':'')+p.name;
+const lifeText=p=>p.death?'الحياة: '+(p.birth||'؟')+' – '+p.death:(p.birth?'الميلاد: '+p.birth:'');
+function flash(t){ const m=$('msg'); m.textContent=t; m.classList.remove('hide'); clearTimeout(flash.t); flash.t=setTimeout(()=>m.classList.add('hide'),4000); }
 
-// ===== ثوابت التخطيط =====
-const CW = 190, SW = 125, CH = 270, ROWH = 340, GAPX = 30, PAD = 20;
-const PALETTE = ['#e6194b','#3cb44b','#4363d8','#f58231','#911eb4','#0097a7','#f032e6','#7cb342','#9a6324','#c2185b','#1565c0','#ef6c00','#6a1b9a','#2e7d32'];
-const svgNS = 'http://www.w3.org/2000/svg';
-
-// ===== الحالة =====
-let people = [], marriages = [];
-let editingId = null, photoBlob = null;
-
-const $ = id => document.getElementById(id);
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-const byId = id => people.find(p => p.id === id);
-const nameOf = id => (byId(id) || {}).name || '';
-function flash(t){ const m=$('msg'); m.textContent=t; m.classList.remove('hide'); setTimeout(()=>m.classList.add('hide'),6000); }
-
-// ===== تحميل البيانات =====
-async function loadPeople(){
-  const [p, m] = await Promise.all([
-    sb.from('people').select('*').order('created_at'),
-    sb.from('marriages').select('*')
-  ]);
-  if (p.error){ flash('تعذر تحميل الشجرة، حاول لاحقاً'); return; }
-  people = p.data.map(r => ({
-    id: r.id, name: r.name, birth: r.birth || '', death: r.death || '', gender: r.gender || '',
-    fatherId: r.father_id || '', motherId: r.mother_id || '', spouseId: r.spouse_id || '',
-    bio: r.bio || '', photo: r.photo_url || '', outsider: !!r.is_outsider
-  }));
-  marriages = (m.data || []).map(x => ({ h: x.husband_id, w: x.wife_id, pos: x.position || 0 }));
+// ===== تحميل =====
+async function load(){
+  const [p,m]=await Promise.all([sb.from('people').select('*').order('created_at'),sb.from('marriages').select('*')]);
+  if(p.error){ $('view').innerHTML='<div class="empty">تعذر تحميل الشجرة، حاول لاحقاً</div>'; return; }
+  people=(p.data||[]).map(r=>({id:r.id,name:r.name,birth:r.birth||'',death:r.death||'',gender:r.gender||'',fatherId:r.father_id||'',motherId:r.mother_id||'',spouseId:r.spouse_id||'',bio:r.bio||'',photo:r.photo_url||'',outsider:!!r.is_outsider}));
+  marriages=(m.data||[]).map(x=>({h:x.husband_id,w:x.wife_id,pos:x.position||0}));
   render();
 }
 
-// ===== الزوج/الزوجة لكل شخص بالترتيب المحدد =====
+// ===== المنطق =====
 function partnersOf(id){
-  const list = marriages
-    .filter(m => m.h === id || m.w === id)
-    .sort((a, b) => a.pos - b.pos)
-    .map(m => m.h === id ? m.w : m.h);
-  const me = byId(id);
-  if (me && me.spouseId && byId(me.spouseId) && !list.includes(me.spouseId)) list.push(me.spouseId);
-  // الربط في الاتجاه المعاكس: إذا اختار الشخص الجديد زوجه من القائمة
-  people.forEach(p => { if (p.spouseId === id && !list.includes(p.id)) list.push(p.id); });
-  return [...new Set(list)].filter(x => byId(x));
+  const list=marriages.filter(m=>m.h===id||m.w===id).sort((a,b)=>a.pos-b.pos).map(m=>m.h===id?m.w:m.h);
+  const me=byId(id); if(me&&me.spouseId&&byId(me.spouseId)&&!list.includes(me.spouseId))list.push(me.spouseId);
+  people.forEach(p=>{if(p.spouseId===id&&!list.includes(p.id))list.push(p.id);});
+  return [...new Set(list)].filter(x=>byId(x));
+}
+function primaryParent(c){const f=byId(c.fatherId),m=byId(c.motherId);if(f&&!f.outsider)return f.id;if(m&&!m.outsider)return m.id;if(f)return f.id;if(m)return m.id;return null;}
+function kidsOfPair(id,pid){
+  return people.filter(c=>!c.outsider && ((c.fatherId===id&&c.motherId===pid)||(c.fatherId===pid&&c.motherId===id)) && primaryParent(c)===id);
+}
+function childrenGroups(id){
+  const partners=partnersOf(id), map=new Map(); partners.forEach(p=>map.set(p,[])); map.set(null,[]);
+  people.forEach(c=>{if(c.outsider)return;if(c.fatherId!==id&&c.motherId!==id)return;if(primaryParent(c)!==id)return;const o=c.fatherId===id?c.motherId:c.fatherId;map.get(partners.includes(o)?o:null).push(c);});
+  const out=[]; partners.forEach(p=>{const k=map.get(p);if(k.length)out.push({label:'مع '+nameOf(p),kids:k});});
+  if(map.get(null).length)out.push({label:partners.length?'من غير الزوج/الزوجة المسجّل':'',kids:map.get(null)});
+  return out;
+}
+const countKids=id=>childrenGroups(id).reduce((s,g)=>s+g.kids.length,0);
+const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
+
+// ===== التنقل =====
+function open(id){ stack.push({id}); render(); }
+function openPair(id,pid){ stack.push({id,pid}); render(); }
+function back(){ stack.pop(); render(); }
+function jump(i){ stack=stack.slice(0,i+1); render(); }
+function home(){ stack=[]; render(); }
+
+// ===== أزرار التعديل على البطاقة =====
+function nodeCard(p,o){
+  const c=el('div','card'+(o.big?' big':'')+(o.onClick?' clickable':''));
+  const r=el('div','ring');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
+  c.appendChild(r);
+  c.appendChild(el('div','n',dispName(p)));
+  const life=lifeText(p); if(life)c.appendChild(el('div','meta',life));
+  const n=o.count!==undefined?o.count:countKids(p.id);
+  if(n) c.appendChild(el('div','cnt',n+' '+(n===1?'ابن':'أبناء')));
+
+  const eb=el('div','ebtns');
+  const bd=el('button','',"التفاصيل"); bd.onclick=ev=>{ev.stopPropagation();openDrawer(p.id);};
+  const be=el('button','pri','تعديل'); be.onclick=ev=>{ev.stopPropagation();openForm(p.id);};
+  const bk=el('button','','+ ابن'); bk.onclick=ev=>{ev.stopPropagation();openChildForm(p.id,o.partnerId||null);};
+  const bs=el('button','','+ زوجة'); bs.onclick=ev=>{ev.stopPropagation();openSpouseForm(p.id);};
+  eb.append(bd,be,bk,bs);
+  c.appendChild(eb);
+
+  if(o.onClick) c.addEventListener('click',ev=>{ if(!ev.target.closest('.ebtns')) o.onClick(); });
+  return c;
 }
 
-// ===== التخطيط =====
-// كل "وحدة" إما زوجان في بطاقة واحدة (couple)، أو شخص وحيد (single)
-// والأبناء تحت الوحدة مباشرة
-function shiftLayout(l, dx){
-  l.items.forEach(i => i.cx += dx);
-  l.links.forEach(k => { k.from.cx += dx; k.to.forEach(t => t.cx += dx); });
-  l.anchor += dx;
-  return l;
+function kidsSection(kids,parentId,partnerId){
+  if(!kids.length) return el('div','empty','لا يوجد أبناء مسجّلون');
+  const wrap=el('div','kidsWrap');
+  const row=el('div','kidsRow');
+  kids.forEach(k=>row.appendChild(nodeCard(k,{onClick:()=>open(k.id)})));
+  wrap.appendChild(row);
+  return wrap;
 }
 
-function colorFor(key){
-  let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return PALETTE[h % PALETTE.length];
-}
-
-// الوالد الأساسي للابن: الأب من أفراد العائلة، وإلا الأم من أفراد العائلة، وإلا أي والد موجود
-function primaryParent(c){
-  const f = byId(c.fatherId), m = byId(c.motherId);
-  if (f && !f.outsider) return f.id;
-  if (m && !m.outsider) return m.id;
-  if (f) return f.id;
-  if (m) return m.id;
-  return null;
-}
-
-function layout(id, row, depth = 0){
-  if (depth > 15) return { w: CW, anchor: CW / 2, items: [{ type: 'single', a: id, cx: CW / 2, row }], links: [] };
-  const partners = partnersOf(id);
-  const kb = new Map();
-  partners.forEach(p => kb.set(p, []));
-  kb.set(null, []);
-  people.forEach(c => {
-    if (c.fatherId !== id && c.motherId !== id) return;
-    // الابن يظهر مرة واحدة فقط: تحت الوالد من أفراد العائلة (وليس الزوج/الزوجة من خارجها)
-    if (primaryParent(c) !== id) return;
-    const other = c.fatherId === id ? c.motherId : c.fatherId;
-    kb.get(partners.includes(other) ? other : null).push(c);
-  });
-  const groups = partners.map(pid => ({ pid, kids: kb.get(pid) }));
-  if (kb.get(null).length || !groups.length) groups.push({ pid: null, kids: kb.get(null) });
-
-  const items = [], links = [];
-  let x = 0, anchor = null;
-  groups.forEach(g => {
-    const pw = row >= 1 ? SW : CW;   // الجيل الأول بحجم كامل، ومن الجيل الثاني فما بعد أصغر
-    const unitW = g.pid ? (row >= 1 ? CW : 2 * CW) : CW;
-    const kidRow = row + 1;
-    const kl = g.kids.map(k => layout(k.id, kidRow, depth + 1));
-    const kidsW = kl.reduce((s, l) => s + l.w, 0) + GAPX * Math.max(0, kl.length - 1);
-    const bw = Math.max(unitW, kidsW);
-    let kx = x + (bw - kidsW) / 2;
-    const kidCenters = [];
-    kl.forEach(l => {
-      const start = kx;
-      shiftLayout(l, start);
-      items.push(...l.items); links.push(...l.links);
-      kidCenters.push(l.anchor);
-      kx = start + l.w + GAPX;
-    });
-    const bcx = x + bw / 2;
-    if (anchor === null) anchor = bcx;
-    items.push(g.pid ? { type: 'couple', a: id, b: g.pid, cx: bcx, row } : { type: 'single', a: id, cx: bcx, row });
-    if (kl.length) links.push({ color: colorFor(id + '|' + (g.pid || '')), from: { cx: bcx, row }, to: kidCenters.map(c => ({ cx: c, row: kidRow })) });
-    x += bw + GAPX;
-  });
-
-  const W = Math.max(CW, x - GAPX);
-  return { w: W, anchor: anchor === null ? W / 2 : anchor, items, links };
-}
-
-function buildTree(){
-  const isFemalePartner = p => p.gender === 'female' && partnersOf(p.id).length > 0;
-  const roots = people.filter(p => !p.fatherId && !p.motherId && !p.outsider && !isFemalePartner(p));
-  let x = 0; const items = [], links = [], placed = new Set();
-  const addRoot = id => {
-    const l = layout(id, 0);
-    shiftLayout(l, x + l.w / 2 - l.anchor + l.anchor - l.w / 2 + (l.w / 2 - l.anchor) * 0);
-    items.push(...l.items); links.push(...l.links);
-    l.items.forEach(i => { placed.add(i.a); if (i.b) placed.add(i.b); });
-    x += l.w + GAPX * 3;
-  };
-  roots.forEach(r => addRoot(r.id));
-  people.forEach(p => { if (!placed.has(p.id) && !p.outsider) addRoot(p.id); });
-  const maxRow = items.reduce((m, i) => Math.max(m, i.row), 0);
-  return { items, links, w: Math.max(CW, x - GAPX * 3), h: (maxRow + 1) * ROWH };
-}
-
-// ===== العرض =====
 function render(){
-  const tree = $('tree'); tree.innerHTML = '';
-  if (!people.length){ tree.innerHTML = '<p>لا توجد بيانات بعد.</p>'; return; }
-  const t = buildTree();
-  tree.style.width = (t.w + PAD * 2) + 'px';
-  tree.style.height = (t.h + PAD * 2) + 'px';
-
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.id = 'lines';
-  svg.setAttribute('width', t.w + PAD * 2);
-  svg.setAttribute('height', t.h + PAD * 2);
-  tree.appendChild(svg);
-
-  const X = cx => cx + PAD;
-  const Y = row => row * ROWH + PAD;
-  const path = (d, color) => {
-    const el = document.createElementNS(svgNS, 'path');
-    el.setAttribute('d', d); el.setAttribute('stroke', color);
-    svg.appendChild(el);
-  };
-
-  t.links.forEach(l => {
-    const fy = Y(l.from.row) + CH, ky = Y(l.to[0].row);
-    const midY = (fy + ky) / 2;
-    const xs = [X(l.from.cx), ...l.to.map(c => X(c.cx))];
-    const minX = Math.min(...xs), maxX = Math.max(...xs);
-    let d = `M${X(l.from.cx)} ${fy} V${midY}`;
-    if (maxX > minX) d += ` M${minX} ${midY} H${maxX}`;
-    l.to.forEach(c => { d += ` M${X(c.cx)} ${midY} V${Y(c.row)}`; });
-    path(d, l.color);
-  });
-
-  t.items.forEach(it => {
-    const a = byId(it.a); if (!a) return;
-    const pw = it.row >= 1 ? SW : CW;
-    const sm = it.row >= 1;
-    const W = it.type === 'couple' ? (sm ? CW : 2 * CW) : CW;
-    const unit = document.createElement('div'); unit.className = 'unit';
-    unit.style.width = W + 'px';
-    unit.style.left = (it.cx - W / 2 + PAD) + 'px';
-    unit.style.top = (it.row * ROWH + PAD) + 'px';
-    if (it.type === 'couple'){
-      const b = byId(it.b);
-      if (b){
-        if (sm){
-          // الجيل الثاني فما بعد: الشخص الأساسي بحجم كامل، وشريكه أصغر داخل البطاقة نفسها
-          const outsider = marriedInId(a, b);
-          const main = outsider === a.id ? b : a;
-          const spouse = main === a ? b : a;
-          unit.classList.add('vert');
-          unit.append(panel(main, spouse.id, false), strip(spouse));
-        } else {
-          unit.append(panel(a, b.id, false), panel(b, a.id, false));
-        }
-      }
-      else unit.append(panel(a, null));
-    } else {
-      unit.append(panel(a, null, false));
-    }
-    tree.appendChild(unit);
-  });
-}
-
-// من هو الزوج/الزوجة من خارج العائلة؟ (ليس له أب ولا أم في الشجرة)
-function marriedInId(a, b){
-  // إذا حُدِّد الشخص يدوياً كـ"من خارج العائلة" فهو الزوج/الزوجة دائماً
-  if (a.outsider && !b.outsider) return a.id;
-  if (b.outsider && !a.outsider) return b.id;
-  const aHasParents = !!(a.fatherId || a.motherId);
-  const bHasParents = !!(b.fatherId || b.motherId);
-  if (!aHasParents && bHasParents) return a.id;
-  if (aHasParents && !bHasParents) return b.id;
-  if (!aHasParents && !bHasParents){
-    if (a.gender === 'female') return a.id;
-    if (b.gender === 'female') return b.id;
+  const cr=$('crumbs'); cr.innerHTML='';
+  if(stack.length){
+    const h=el('button','','الجيل الأول'); h.onclick=home; cr.appendChild(h);
+    stack.forEach((e,i)=>{
+      cr.appendChild(el('span','sep','‹'));
+      const label=e.pid?nameOf(e.id)+' و'+nameOf(e.pid):nameOf(e.id);
+      const b=el('button','',label); b.onclick=()=>jump(i); cr.appendChild(b);
+    });
   }
-  return null;
-}
+  $('backBtn').disabled=!stack.length;
+  $('homeBtn').disabled=!stack.length;
 
-// شريط الشريك أسفل البطاقة الأساسية (الضغط عليه يعرض تفاصيله)
-function strip(p){
-  const s = document.createElement('div'); s.className = 'strip'; s.title = 'عرض التفاصيل';
-  const img = document.createElement(p.photo ? 'img' : 'div');
-  if (p.photo){ img.src = p.photo; img.alt = ''; } else { img.className = 'sph'; }
-  const n = document.createElement('div'); n.className = 'sn'; n.textContent = p.name;
-  s.append(img, n);
-  s.onclick = () => openDetails(p.id);
-  return s;
-}
+  const v=$('view'); v.innerHTML='';
 
-// نافذة تفاصيل الشخص
-function openDetails(id){
-  const p = byId(id); if (!p) return;
-  const box = $('detailsBody'); box.innerHTML = '';
-  const img = document.createElement(p.photo ? 'img' : 'div');
-  img.style.cssText = 'width:110px;height:110px;border-radius:50%;object-fit:cover;background:#d9cbb4;display:block;margin:0 auto 10px';
-  if (p.photo) img.src = p.photo;
-  const h = document.createElement('h3'); h.textContent = p.name; h.style.textAlign = 'center';
-  box.append(img, h);
-  const lines = [];
-  if (p.death) lines.push('الحياة: ' + (p.birth || '؟') + ' – ' + p.death);
-  else if (p.birth) lines.push('الميلاد: ' + p.birth);
-  if (p.gender) lines.push('الجنس: ' + (p.gender === 'male' ? 'ذكر' : 'أنثى'));
-  if (p.fatherId) lines.push('الأب: ' + nameOf(p.fatherId));
-  if (p.motherId) lines.push('الأم: ' + nameOf(p.motherId));
-  const pts = partnersOf(id).map(nameOf);
-  if (pts.length) lines.push('الزوج / الزوجة: ' + pts.join('، '));
-  if (p.bio) lines.push(p.bio);
-  lines.forEach(t => { const d = document.createElement('div'); d.className = 'sm'; d.style.margin = '6px 0'; d.textContent = t; box.appendChild(d); });
-  // أزرار فك الربط مع كل زوج/زوجة
-  partnersOf(id).forEach(pid => {
-    const row = document.createElement('div'); row.className = 'bar';
-    const t = document.createElement('span'); t.className = 'sm'; t.textContent = 'مرتبط مع: ' + nameOf(pid);
-    const btn = document.createElement('button'); btn.className = 'sec'; btn.textContent = 'فك الربط';
-    btn.onclick = () => unlinkPartner(id, pid);
-    row.append(t, btn);
-    box.appendChild(row);
-  });
-  $('detailsEdit').onclick = () => { $('detailsDlg').close(); openForm(id); };
-  $('detailsDlg').showModal();
-}
-
-// فك الربط بين شخصين؛ الأبناء يبقون كما هم
-async function unlinkPartner(a, b){
-  if (!confirm('فك الربط بين ' + nameOf(a) + ' و' + nameOf(b) + '؟ الأبناء لن يتأثروا.')) return;
-  const { data: status, error } = await sb.rpc('unlink_marriage', { a, b });
-  $('detailsDlg').close();
-  if (error){ flash('تعذر فك الربط: ' + error.message); return; }
-  if (status === 'approved'){
-    flash('تم فك الربط.');
-    await loadPeople();
-  } else {
-    flash('تم إرسال طلب فك الربط، وينتظر اعتمادك.');
+  if(!stack.length){
+    const roots=rootsList();
+    if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد. ابدأ بإضافة أول شخص.</div>'; return; }
+    const row=el('div','roots');
+    roots.forEach(r=>row.appendChild(nodeCard(r,{onClick:()=>open(r.id)})));
+    v.appendChild(row);
+    return;
   }
+
+  const top=stack[stack.length-1];
+  const cur=top.id;
+  const partners=partnersOf(cur);
+
+  if(top.pid){
+    const cnt=kidsOfPair(cur,top.pid).length;
+    const head=el('div','couplehead');
+    head.appendChild(nodeCard(byId(cur),{big:true,count:cnt,partnerId:top.pid}));
+    head.appendChild(el('div','bond','⚭'));
+    head.appendChild(nodeCard(byId(top.pid),{big:true,count:cnt,partnerId:cur}));
+    v.appendChild(head);
+    v.appendChild(kidsSection(kidsOfPair(cur,top.pid),cur,top.pid));
+    return;
+  }
+
+  if(partners.length>=2){
+    const f=el('div','focus'); f.appendChild(nodeCard(byId(cur),{big:true})); v.appendChild(f);
+    const row=el('div','choicesRow');
+    partners.forEach(pid=>row.appendChild(nodeCard(byId(pid),{count:kidsOfPair(cur,pid).length,partnerId:cur,onClick:()=>openPair(cur,pid)})));
+    v.appendChild(row);
+    return;
+  }
+
+  const f=el('div','focus'); f.appendChild(nodeCard(byId(cur),{big:true})); v.appendChild(f);
+  const groups=childrenGroups(cur);
+  if(!groups.length){ v.appendChild(el('div','empty','لا يوجد أبناء مسجّلون لهذا الشخص')); return; }
+  const wrap=el('div','kidsWrap');
+  groups.forEach(g=>{
+    const pg=el('div','pgroup');
+    if(groups.length>1&&g.label){ const lb=el('div','glabel'); lb.appendChild(el('span','',g.label)); pg.appendChild(lb); }
+    const row=el('div','kidsRow');
+    g.kids.forEach(k=>row.appendChild(nodeCard(k,{onClick:()=>open(k.id)})));
+    pg.appendChild(row); wrap.appendChild(pg);
+  });
+  v.appendChild(wrap);
 }
 
-// شارة شريك الحياة المتداخلة أسفل البطاقة (الضغط عليها يفتح تعديله)
-function chip(p){
-  const c = document.createElement('div'); c.className = 'chip'; c.title = 'تعديل';
-  c.onclick = () => openForm(p.id);
-  const img = document.createElement(p.photo ? 'img' : 'div');
-  img.className = 'cph';
-  if (p.photo) img.src = p.photo;
-  const n = document.createElement('div'); n.className = 'cn'; n.textContent = p.name;
-  c.append(img, n);
-  return c;
-}
-
-// بطاقة شخص داخل الوحدة
-function panel(p, partnerId, small){
-  const c = document.createElement('div'); c.className = 'panel' + (small ? ' small' : '');
-  let ph;
-  if (p.photo){ ph = document.createElement('img'); ph.src = p.photo; ph.alt = ''; }
-  else { ph = document.createElement('div'); ph.className = 'ph'; }
-  const n = document.createElement('div'); n.className = 'n'; n.textContent = p.name;
-  const m = document.createElement('div'); m.className = 'meta';
-  const lines = [];
-  if (p.death) lines.push('الحياة: ' + (p.birth || '؟') + ' – ' + p.death);
-  else if (p.birth) lines.push('الميلاد: ' + p.birth);
-  if (p.fatherId) lines.push('الأب: ' + nameOf(p.fatherId));
-  if (p.motherId) lines.push('الأم: ' + nameOf(p.motherId));
-  if (p.bio) lines.push(p.bio);
-  lines.forEach(t => { const d = document.createElement('div'); d.textContent = t; m.appendChild(d); });
-
-  const edit = document.createElement('button'); edit.className = 'sec'; edit.textContent = 'تعديل';
-  edit.onclick = () => openForm(p.id);
-  const child = document.createElement('button'); child.className = 'sec'; child.textContent = '+ ابن';
-  child.onclick = () => openChildForm(p.id, partnerId);
-  const spouse = document.createElement('button'); spouse.className = 'sec'; spouse.textContent = '+ زوجة';
-  spouse.onclick = () => openSpouseForm(p.id);
-  const btns = document.createElement('div'); btns.className = 'btns';
-  btns.append(edit, child, spouse);
-
-  c.append(ph, n, m, btns);
-  return c;
-}
-
-// ===== نموذج الإضافة/التعديل =====
-function fillSelect(sel, selected, exclude){
-  sel.innerHTML = '<option value="">— لا يوجد —</option>';
-  people.filter(p => p.id !== exclude).forEach(p => {
-    const o = document.createElement('option'); o.value = p.id; o.textContent = p.name;
-    if (p.id === selected) o.selected = true;
+// ===== نموذج الشخص =====
+function fillSelect(sel,selected,exclude){
+  sel.innerHTML='<option value="">— لا يوجد —</option>';
+  people.filter(p=>p.id!==exclude).forEach(p=>{
+    const o=document.createElement('option'); o.value=p.id; o.textContent=p.name;
+    if(p.id===selected) o.selected=true;
     sel.appendChild(o);
   });
 }
-
-function openForm(id = null){
-  editingId = id; photoBlob = null;
-  const p = id ? byId(id) : {};
-  $('formTitle').textContent = id ? 'تعديل: ' + p.name : 'إضافة شخص جديد';
-  $('fName').value = p.name || ''; $('fBirth').value = p.birth || ''; $('fGender').value = p.gender || '';
-  fillSelect($('fFather'), p.fatherId, id); fillSelect($('fMother'), p.motherId, id); fillSelect($('fSpouse'), p.spouseId, id);
-  $('fDeath').value = p.death || '';
-  $('fOutsider').checked = !!p.outsider;
-  $('fBio').value = p.bio || ''; $('fPhoto').value = '';
+function openForm(id=null){
+  editingId=id; photoBlob=null;
+  const p=id?byId(id):{};
+  $('formTitle').textContent=id?'تعديل: '+p.name:'إضافة شخص جديد';
+  $('fName').value=p.name||''; $('fBirth').value=p.birth||''; $('fDeath').value=p.death||''; $('fGender').value=p.gender||'';
+  fillSelect($('fFather'),p.fatherId,id); fillSelect($('fMother'),p.motherId,id); fillSelect($('fSpouse'),p.spouseId,id);
+  $('fOutsider').checked=!!p.outsider;
+  $('fBio').value=p.bio||''; $('fPhoto').value='';
   $('formDlg').showModal();
 }
-
-// نموذج ابن/ابنة: الأب والأم يُملآن تلقائياً (الزوج المختار أو الأول)
-function openChildForm(parentId, partnerId){
-  editingId = null; photoBlob = null;
-  const par = byId(parentId);
-  const partner = partnerId || partnersOf(parentId)[0] || '';
-  $('formTitle').textContent = 'إضافة ابن/ابنة لـ ' + par.name;
-  $('fName').value = ''; $('fBirth').value = ''; $('fDeath').value = ''; $('fGender').value = '';
-  $('fOutsider').checked = false;
-  fillSelect($('fFather'), '', null); fillSelect($('fMother'), '', null); fillSelect($('fSpouse'), '', null);
-  if (par.gender === 'female'){
-    $('fMother').value = parentId; $('fFather').value = partner;
-  } else {
-    $('fFather').value = parentId; $('fMother').value = partner;
-  }
-  $('fBio').value = ''; $('fPhoto').value = '';
+function openChildForm(parentId,partnerId){
+  editingId=null; photoBlob=null;
+  const par=byId(parentId);
+  const partner=partnerId||partnersOf(parentId)[0]||'';
+  $('formTitle').textContent='إضافة ابن/ابنة لـ '+par.name;
+  $('fName').value=''; $('fBirth').value=''; $('fDeath').value=''; $('fGender').value=''; $('fOutsider').checked=false; $('fBio').value=''; $('fPhoto').value='';
+  fillSelect($('fFather'),'',null); fillSelect($('fMother'),'',null); fillSelect($('fSpouse'),'',null);
+  if(par.gender==='female'){ $('fMother').value=parentId; $('fFather').value=partner; }
+  else { $('fFather').value=parentId; $('fMother').value=partner; }
   $('formDlg').showModal();
 }
-
-$('fPhoto').onchange = e => {
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      const s = Math.min(1, 300 / Math.max(img.width, img.height));
-      const cv = document.createElement('canvas');
-      cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s);
-      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-      cv.toBlob(b => { photoBlob = b; }, 'image/jpeg', 0.82);
+$('fPhoto').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const s=Math.min(1,300/Math.max(img.width,img.height));
+      const cv=document.createElement('canvas');
+      cv.width=Math.round(img.width*s); cv.height=Math.round(img.height*s);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      cv.toBlob(b=>{photoBlob=b;},'image/jpeg',0.82);
     };
-    img.src = r.result;
+    img.src=r.result;
   };
   r.readAsDataURL(f);
 };
-
-$('saveBtn').onclick = async () => {
-  if (!$('fName').value.trim()){ alert('الاسم مطلوب'); return; }
-  const btn = $('saveBtn'); btn.disabled = true;
-  const base = editingId ? byId(editingId) : {};
-  let photo_url = base.photo || '';
-
-  if (photoBlob){
-    const path = uid() + '.jpg';
-    const up = await sb.storage.from('photos').upload(path, photoBlob, { contentType: 'image/jpeg' });
-    if (up.error){ alert('تعذر رفع الصورة، حاول مرة أخرى'); btn.disabled = false; return; }
-    photo_url = sb.storage.from('photos').getPublicUrl(path).data.publicUrl;
+$('saveBtn').onclick=async()=>{
+  if(!$('fName').value.trim()){ alert('الاسم مطلوب'); return; }
+  const btn=$('saveBtn'); btn.disabled=true;
+  const base=editingId?byId(editingId):{};
+  let photo_url=base.photo||'';
+  if(photoBlob){
+    const path=uid()+'.jpg';
+    const up=await sb.storage.from('photos').upload(path,photoBlob,{contentType:'image/jpeg'});
+    if(up.error){ alert('تعذر رفع الصورة، حاول مرة أخرى'); btn.disabled=false; return; }
+    photo_url=sb.storage.from('photos').getPublicUrl(path).data.publicUrl;
   }
-
-  const data = {
-    name: $('fName').value.trim(), birth: $('fBirth').value || null, death: $('fDeath').value || null,
-    gender: $('fGender').value || null, outsider: $('fOutsider').checked,
-    fatherId: $('fFather').value || null, motherId: $('fMother').value || null, spouseId: $('fSpouse').value || null,
-    bio: $('fBio').value.trim(), photo_url
+  const data={
+    name:$('fName').value.trim(), birth:$('fBirth').value||null, death:$('fDeath').value||null,
+    gender:$('fGender').value||null, outsider:$('fOutsider').checked,
+    fatherId:$('fFather').value||null, motherId:$('fMother').value||null, spouseId:$('fSpouse').value||null,
+    bio:$('fBio').value.trim(), photo_url
   };
-  const { data: status, error } = await sb.rpc('submit_person', { payload: data, target: editingId });
-  btn.disabled = false;
+  const {data:status,error}=await sb.rpc('submit_person',{payload:data,target:editingId});
+  btn.disabled=false;
   $('formDlg').close();
-  if (error){ flash('تعذر إرسال البيانات: ' + error.message); return; }
-  if (status === 'approved'){
-    flash('تمت الإضافة وظهرت في الشجرة.');
-    await loadPeople();
-  } else {
-    flash('تم إرسال البيانات، وستظهر بعد اعتمادها.');
-  }
+  if(error){ flash('تعذر إرسال البيانات: '+error.message); return; }
+  if(status==='approved'){ flash('تم الحفظ وظهر في الشجرة.'); await load(); }
+  else flash('تم إرسال البيانات، وستظهر بعد اعتمادها.');
 };
+$('addBtn').onclick=()=>openForm();
+$('cancelBtn').onclick=()=>$('formDlg').close();
 
-// ===== ربط زوجة/زوج إضافي =====
-let spouseHusband = null;
+// ===== الزوج/الزوجة =====
 function openSpouseForm(personId){
-  spouseHusband = personId;
-  const me = byId(personId);
-  $('spouseTitle').textContent = 'ربط زوجة لـ ' + me.name;
-  const taken = partnersOf(personId);
-  const sel = $('spSelect'); sel.innerHTML = '';
-  people.filter(p => p.id !== personId && !taken.includes(p.id)).forEach(p => {
-    const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o);
+  spouseHusband=personId;
+  $('spouseTitle').textContent='ربط زوج/زوجة لـ '+nameOf(personId);
+  const taken=partnersOf(personId);
+  const sel=$('spSelect'); sel.innerHTML='';
+  people.filter(p=>p.id!==personId&&!taken.includes(p.id)).forEach(p=>{
+    const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; sel.appendChild(o);
   });
-  $('spName').value = ''; $('spBirth').value = ''; $('spDeath').value = '';
+  $('spName').value=''; $('spBirth').value=''; $('spDeath').value='';
   $('spouseDlg').showModal();
 }
-$('spCancel').onclick = () => $('spouseDlg').close();
-$('spSave').onclick = async () => {
-  const newName = $('spName').value.trim();
-  let status, error;
-  if (newName){
-    // زوج/زوجة جديد من خارج العائلة، الجنس معاكس لجنس الشخص
-    const h = byId(spouseHusband);
-    const gender = h && h.gender === 'male' ? 'female' : (h && h.gender === 'female' ? 'male' : null);
-    const payload = { name: newName, birth: $('spBirth').value || null, death: $('spDeath').value || null, gender, outsider: true };
-    ({ data: status, error } = await sb.rpc('add_spouse_person', { payload, husband: spouseHusband }));
+$('spCancel').onclick=()=>$('spouseDlg').close();
+$('spSave').onclick=async()=>{
+  const newName=$('spName').value.trim();
+  let status,error;
+  if(newName){
+    const h=byId(spouseHusband);
+    const gender=h&&h.gender==='male'?'female':(h&&h.gender==='female'?'male':null);
+    const payload={name:newName,birth:$('spBirth').value||null,death:$('spDeath').value||null,gender,outsider:true};
+    ({data:status,error}=await sb.rpc('add_spouse_person',{payload,husband:spouseHusband}));
   } else {
-    const wife = $('spSelect').value;
-    if (!wife){ alert('اختر شخصاً من القائمة أو أدخل اسم الزوج/الزوجة الجديد'); return; }
-    ({ data: status, error } = await sb.rpc('link_marriage', { husband: spouseHusband, wife }));
+    const wife=$('spSelect').value;
+    if(!wife){ alert('اختر شخصاً من القائمة أو أدخل اسم الزوج/الزوجة الجديد'); return; }
+    ({data:status,error}=await sb.rpc('link_marriage',{husband:spouseHusband,wife}));
   }
   $('spouseDlg').close();
-  if (error){ flash('تعذر الربط: ' + error.message); return; }
-  if (status === 'approved'){
-    flash('تم الربط وظهر في الشجرة.');
-    await loadPeople();
-  } else {
-    flash('تم إرسال طلب الربط، وسيظهر بعد اعتماده.');
-  }
+  if(error){ flash('تعذر الربط: '+error.message); return; }
+  if(status==='approved'){ flash('تم الربط وظهر في الشجرة.'); await load(); }
+  else flash('تم إرسال طلب الربط، وسيظهر بعد اعتماده.');
 };
 
-$('addBtn').onclick = () => openForm();
-$('cancelBtn').onclick = () => $('formDlg').close();
+// ===== فك الربط =====
+async function unlinkPartner(a,b){
+  if(!confirm('فك الربط بين '+nameOf(a)+' و'+nameOf(b)+'؟ الأبناء لن يتأثروا.')) return;
+  const {data:status,error}=await sb.rpc('unlink_marriage',{a,b});
+  $('drawer').classList.remove('open');
+  if(error){ flash('تعذر فك الربط: '+error.message); return; }
+  if(status==='approved'){ flash('تم فك الربط.'); await load(); }
+  else flash('تم إرسال طلب فك الربط، وينتظر اعتمادك.');
+}
 
-loadPeople();
+// ===== لوحة التفاصيل مع أدوات التعديل =====
+function openDrawer(id){
+  const p=byId(id); if(!p) return;
+  const b=$('dbody'); b.innerHTML='';
+  const big=el('div','big');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';big.appendChild(i);} else big.appendChild(el('div','ph'));
+  b.append(big, el('h2','',dispName(p)));
+  const rows=[];
+  if(p.gender) rows.push('الجنس: '+(p.gender==='male'?'ذكر':'أنثى'));
+  if(p.death) rows.push('فترة الحياة: من '+(p.birth||'؟')+' إلى '+p.death);
+  else if(p.birth) rows.push('تاريخ الميلاد: '+p.birth);
+  if(p.fatherId) rows.push('الأب: '+nameOf(p.fatherId));
+  if(p.motherId) rows.push('الأم: '+nameOf(p.motherId));
+  rows.push('عدد الأبناء: '+countKids(id));
+  rows.forEach(t=>b.appendChild(el('div','drow',t)));
+  if(p.bio) b.appendChild(el('div','bio',p.bio));
+
+  const pts=partnersOf(id);
+  if(pts.length){
+    b.appendChild(el('div','sm','الزوج / الزوجة'));
+    pts.forEach(pid=>{
+      const row=el('div','pl');
+      row.appendChild(el('span','',nameOf(pid)));
+      const u=el('button','','فك الربط'); u.onclick=()=>unlinkPartner(id,pid);
+      row.appendChild(u); b.appendChild(row);
+    });
+  }
+
+  const acts=el('div','actions');
+  const be=el('button','','تعديل'); be.onclick=()=>{ $('drawer').classList.remove('open'); openForm(id); };
+  const bk=el('button','','+ ابن'); bk.onclick=()=>{ $('drawer').classList.remove('open'); openChildForm(id,null); };
+  const bs=el('button','','+ زوجة'); bs.onclick=()=>{ $('drawer').classList.remove('open'); openSpouseForm(id); };
+  acts.append(be,bk,bs); b.appendChild(acts);
+
+  $('drawer').classList.add('open');
+}
+$('closeDrawer').onclick=()=>$('drawer').classList.remove('open');
+
+$('backBtn').onclick=back;
+$('homeBtn').onclick=home;
+load();
 </script>
 </body>
 </html>
