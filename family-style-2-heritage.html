@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>الوثيقة العريقة</title>
+<title>شجرة العائلة</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
@@ -13,23 +13,25 @@ header{text-align:center;padding:22px 16px 4px}
 header h1{margin:0;font-size:36px;color:#7a5520;letter-spacing:1px}
 header .orn{color:#b08d4c;font-size:20px;letter-spacing:10px}
 .toolbar{display:flex;justify-content:center;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
-.toolbar button{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;cursor:pointer;transition:all .25s}
-.toolbar button:hover:not(:disabled){background:#f3e2b8}
+.toolbar button,.toolbar .tlink{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;cursor:pointer;text-decoration:none;transition:all .25s}
+.toolbar button:hover:not(:disabled),.toolbar .tlink:hover{background:#f3e2b8}
 .toolbar button:disabled{opacity:.45;cursor:default}
-.toolbar .tlink{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;text-decoration:none;transition:all .25s}
-.toolbar .tlink:hover{background:#f3e2b8}
 main{padding:20px 14px 100px}
 .roots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px}
 .empty{text-align:center;color:#8a6b3e;padding:50px 0;font-size:20px}
 
-/* الوحدة: الزوجان ثم الأبناء تحتهما */
+/* الوحدة */
 .unit{position:relative;display:flex;flex-direction:column;align-items:center}
 .unit.anim{animation:up .7s both}
 .unit.child::before{content:'';position:absolute;top:-30px;left:50%;height:30px;border-left:1px dashed #b08d4c}
 .couple{display:flex;align-items:flex-start;gap:14px}
 .bond{align-self:center;font-size:28px;color:#b08d4c;line-height:1}
 
-/* البطاقة: إطار مزدوج كالميدالية */
+/* خيارات الزوجات (عند وجود أكثر من زوج/زوجة) */
+.choices{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:40px;margin-top:30px;padding-top:30px;animation:fade .5s both}
+.choices::before{content:'';position:absolute;top:0;left:50%;height:30px;border-left:1px dashed #b08d4c}
+
+/* البطاقة */
 .card{position:relative;width:215px;padding:18px 12px 14px;background:#fffaf0;text-align:center;cursor:pointer;
   border:6px double #b08d4c;border-radius:50% 50% 16px 16px / 24% 24% 16px 16px;
   box-shadow:inset 0 0 0 2px #fffaf0,inset 0 0 0 3px #d9bf85,0 10px 22px rgba(90,60,20,.15);transition:transform .35s,background .35s}
@@ -55,7 +57,7 @@ main{padding:20px 14px 100px}
 .glabel{width:100%;text-align:center;margin-bottom:14px;font-size:17px;color:#7a5520}
 .glabel span{padding:2px 16px;border:1px solid #b08d4c;border-radius:999px;background:#fffaf0}
 
-/* لوحة التفاصيل الجانبية */
+/* لوحة التفاصيل */
 #drawer{position:fixed;top:0;right:0;height:100%;width:360px;max-width:92vw;overflow:auto;padding:26px 22px;z-index:30;
   background:#fffaf0;border-left:6px double #b08d4c;box-shadow:-12px 0 30px rgba(60,35,10,.2);
   transform:translateX(105%);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
@@ -102,6 +104,7 @@ const nameOf=id=>(byId(id)||{}).name||'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
 const dispName=p=>(p.death?'المرحوم ':'')+p.name;
 const lifeText=p=>p.death?'الحياة: '+(p.birth||'؟')+' – '+p.death:(p.birth?'الميلاد: '+p.birth:'');
+const pairKey=(id,pid)=>'pair:'+id+'|'+pid;
 
 async function load(){
   const [p,m]=await Promise.all([sb.from('people').select('*').order('created_at'),sb.from('marriages').select('*')]);
@@ -117,6 +120,9 @@ function partnersOf(id){
   return [...new Set(list)].filter(x=>byId(x));
 }
 function primaryParent(c){const f=byId(c.fatherId),m=byId(c.motherId);if(f&&!f.outsider)return f.id;if(m&&!m.outsider)return m.id;if(f)return f.id;if(m)return m.id;return null;}
+function kidsOfPair(id,pid){
+  return people.filter(c=>!c.outsider && ((c.fatherId===id&&c.motherId===pid)||(c.fatherId===pid&&c.motherId===id)) && primaryParent(c)===id);
+}
 function childrenGroups(id){
   const partners=partnersOf(id), map=new Map(); partners.forEach(p=>map.set(p,[])); map.set(null,[]);
   people.forEach(c=>{if(c.outsider)return;if(c.fatherId!==id&&c.motherId!==id)return;if(primaryParent(c)!==id)return;const o=c.fatherId===id?c.motherId:c.fatherId;map.get(partners.includes(o)?o:null).push(c);});
@@ -137,6 +143,11 @@ function clickCard(id){
   if(expandedSet.has(id)){ const n=new Set(expandedSet); n.delete(id); go(n); }
   else { const n=new Set(pathToRoot(id)); n.add(id); go(n); }
 }
+function togglePair(id,pid){
+  const key=pairKey(id,pid);
+  if(expandedSet.has(key)){ const n=new Set(expandedSet); n.delete(key); go(n); }
+  else { const n=new Set(pathToRoot(id)); n.add(id); n.add(key); go(n); }
+}
 function undo(){ if(!undoStack.length) return; expandedSet=undoStack.pop(); render(); }
 function collapseAll(){ go(new Set()); }
 
@@ -155,25 +166,60 @@ function makeCard(p,o){
   return c;
 }
 
-// ===== الوحدة: الشخص مع زوجه/زوجاته، ثم أبناؤه عند فتحه =====
+// ===== الوحدة =====
+// شخص له زوج/زوجة واحدة أو بلا زوج: يظهر مع زوجه بجانبه، ثم أبناؤهما مباشرة عند الفتح
+// شخص له أكثر من زوج/زوجة: يُظهر الخيارات تحته عند الفتح، وكل خيار يفتح أبناءه معه
 function unitFor(id,depth,isChild,index){
   visible.add(id);
   const p=byId(id);
   const box=el('div','unit'+(isChild?' child':''));
   if(!prevVisible.has(id)){ box.classList.add('anim'); box.style.animationDelay=(index*90)+'ms'; }
   const open=expandedSet.has(id);
-  const row=el('div','couple');
-  const main=makeCard(p,{open,count:countKids(id),clickable:true});
-  main.onclick=()=>clickCard(id);
-  row.appendChild(main);
-  partnersOf(id).forEach(pid=>{
-    row.appendChild(el('div','bond','⚭'));
-    row.appendChild(makeCard(byId(pid),{open:false,count:0,clickable:false,partner:true}));
-  });
-  box.appendChild(row);
-  if(open) box.appendChild(kidsEl(id,depth));
+  const partners=partnersOf(id);
+
+  if(partners.length>=2){
+    const main=makeCard(p,{open,count:0,clickable:true});
+    main.onclick=()=>clickCard(id);
+    box.appendChild(main);
+    if(open){
+      const ch=el('div','choices');
+      partners.forEach(pid=>ch.appendChild(pairUnit(id,pid,depth)));
+      box.appendChild(ch);
+    }
+  } else {
+    const main=makeCard(p,{open,count:countKids(id),clickable:true});
+    main.onclick=()=>clickCard(id);
+    const row=el('div','couple');
+    row.appendChild(main);
+    partners.forEach(pid=>{
+      row.appendChild(el('div','bond','⚭'));
+      row.appendChild(makeCard(byId(pid),{open:false,count:0,clickable:false,partner:true}));
+    });
+    box.appendChild(row);
+    if(open) box.appendChild(kidsEl(id,depth));
+  }
   return box;
 }
+
+// خيار زوج/زوجة (في حالة وجود أكثر من زوج): بطاقته تفتح أبناء هذا الزوج معه
+function pairUnit(id,pid,depth){
+  const key=pairKey(id,pid);
+  const open=expandedSet.has(key);
+  const kids=kidsOfPair(id,pid);
+  const u=el('div','unit child');
+  const pc=makeCard(byId(pid),{open,count:kids.length,clickable:true,partner:true});
+  pc.onclick=()=>togglePair(id,pid);
+  u.appendChild(pc);
+  if(open && kids.length){
+    const h=el('div','kids');
+    const gr=el('div','group');
+    kids.forEach((k,j)=>gr.appendChild(unitFor(k.id,depth+1,true,j)));
+    h.appendChild(gr);
+    u.appendChild(h);
+  }
+  return u;
+}
+
 function kidsEl(id,depth){
   const groups=childrenGroups(id);
   const h=el('div','kids');
@@ -215,7 +261,7 @@ function openDrawer(id){
   if(p.fatherId) rows.push('الأب: '+nameOf(p.fatherId));
   if(p.motherId) rows.push('الأم: '+nameOf(p.motherId));
   const pts=partnersOf(id); if(pts.length) rows.push('الزوج / الزوجة: '+pts.map(nameOf).join('، '));
-  const n=countKids(id); rows.push('عدد الأبناء: '+n);
+  rows.push('عدد الأبناء: '+countKids(id));
   rows.forEach(t=>b.appendChild(el('div','drow',t)));
   if(p.bio) b.appendChild(el('div','bio',p.bio));
   $('drawer').classList.add('open');
