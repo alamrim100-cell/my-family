@@ -352,8 +352,31 @@ function openDetails(id){
   if (pts.length) lines.push('الزوج / الزوجة: ' + pts.join('، '));
   if (p.bio) lines.push(p.bio);
   lines.forEach(t => { const d = document.createElement('div'); d.className = 'sm'; d.style.margin = '6px 0'; d.textContent = t; box.appendChild(d); });
+  // أزرار فك الربط مع كل زوج/زوجة
+  partnersOf(id).forEach(pid => {
+    const row = document.createElement('div'); row.className = 'bar';
+    const t = document.createElement('span'); t.className = 'sm'; t.textContent = 'مرتبط مع: ' + nameOf(pid);
+    const btn = document.createElement('button'); btn.className = 'sec'; btn.textContent = 'فك الربط';
+    btn.onclick = () => unlinkPartner(id, pid);
+    row.append(t, btn);
+    box.appendChild(row);
+  });
   $('detailsEdit').onclick = () => { $('detailsDlg').close(); openForm(id); };
   $('detailsDlg').showModal();
+}
+
+// فك الربط بين شخصين؛ الأبناء يبقون كما هم
+async function unlinkPartner(a, b){
+  if (!confirm('فك الربط بين ' + nameOf(a) + ' و' + nameOf(b) + '؟ الأبناء لن يتأثروا.')) return;
+  const { data: status, error } = await sb.rpc('unlink_marriage', { a, b });
+  $('detailsDlg').close();
+  if (error){ flash('تعذر فك الربط: ' + error.message); return; }
+  if (status === 'approved'){
+    flash('تم فك الربط.');
+    await loadPeople();
+  } else {
+    flash('تم إرسال طلب فك الربط، وينتظر اعتمادك.');
+  }
 }
 
 // شارة شريك الحياة المتداخلة أسفل البطاقة (الضغط عليها يفتح تعديله)
