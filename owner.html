@@ -166,7 +166,7 @@ function renderPending(){
     const t = document.createElement('div'); t.className = 't';
     t.textContent = it.type === 'marriage'
       ? 'ربط زوج/زوجة: ' + nameOf(d.husband_id) + ' ← ' + nameOf(d.wife_id)
-      : (d.name || '(بدون اسم)');
+      : (it.type === 'album' ? 'صورة في ألبوم: ' + nameOf(it.person_id) : (d.name || '(بدون اسم)'));
     const tag = document.createElement('span'); tag.className = 'tag';
     tag.textContent = it.type === 'add' ? 'إضافة' : (it.type === 'marriage' ? 'زواج' : (it.type === 'add_spouse' ? 'زوج/زوجة جديد' : 'تعديل'));
     t.appendChild(tag);
@@ -214,6 +214,14 @@ function renderPeople(){
 
 // ===== الإجراءات =====
 async function approve(it){
+  if (it.type === 'album'){
+    const d = it.data || {};
+    const r = await sb.from('album_photos').insert({ person_id: it.person_id, photo_url: d.photo_url, caption: nz(d.caption), taken_on: nz(d.taken_on) });
+    if (r.error){ alert('تعذر الإضافة للألبوم: ' + r.error.message); return; }
+    await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
+    refresh();
+    return;
+  }
   if (it.type === 'unlink'){
     const a = it.data.a, b = it.data.b;
     await sb.from('marriages').delete().or(`and(husband_id.eq.${a},wife_id.eq.${b}),and(husband_id.eq.${b},wife_id.eq.${a})`);
