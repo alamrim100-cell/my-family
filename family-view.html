@@ -147,6 +147,8 @@ main{padding:24px 14px 100px}
   #dbody h2{font-size:23px}
   #dbody .drow{font-size:17px}
   .empty{font-size:17px}
+  /* البطاقات بجانب بعضها على الهاتف، وإن ضاقت الشاشة تُسحب أفقياً */
+  .roots,.kidsRow,.couplehead,.choicesRow{flex-wrap:nowrap;overflow-x:auto;justify-content:safe center;width:100%;padding:6px 4px 10px;-webkit-overflow-scrolling:touch}
   /* العرض الكامل على الهاتف: تصغير الشجرة كلها لتناسب الشاشة */
   .ftree{zoom:.6}
 }
