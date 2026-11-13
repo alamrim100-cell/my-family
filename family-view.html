@@ -220,6 +220,9 @@ dialog select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
+.credit{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-family:Amiri,serif;font-size:14px;color:#8a6b3e;opacity:.85;pointer-events:none;z-index:5}
+.credit::before{content:'❖ ';color:#b08d4c}
+.credit::after{content:' ❖';color:#b08d4c}
 </style>
 </head>
 <body>
@@ -911,9 +914,48 @@ $('kinGo').onclick=()=>{
 };
 $('kinBtn').onclick=openKin;
 
+// ===== حاسبة القرابة (نسخة محسّنة): تفرّق بين المذكر والمؤنث، وإن لم يُحدَّد الجنس تُعرض الصيغتان =====
+function kinship(a,b){
+  const A=byId(a), B=byId(b);
+  if(!A||!B) return '';
+  if(a===b) return 'اختر شخصين مختلفين';
+  const mA=ancestorsMap(a), mB=ancestorsMap(b);
+  const gl=(p,m,f,u)=>p.gender==='male'?m:(p.gender==='female'?f:u);
+  const be=p=>gl(p,'هو','هي','هو/هي');
+  if(mB.has(a)){
+    const d=mB.get(a).d;
+    const lab=d===1?gl(B,'ابن','ابنة','ابن/ابنة'):d===2?gl(B,'حفيد','حفيدة','حفيد/حفيدة'):gl(B,'من أحفاده','من حفيداته','من الأحفاد')+' (الدرجة '+d+')';
+    return B.name+' '+be(B)+' '+lab+' لـ '+A.name;
+  }
+  if(mA.has(b)){
+    const d=mA.get(b).d;
+    const lab=d===1?gl(B,'أب','أم','أب/أم'):d===2?gl(B,'جد','جدة','جد/جدة'):gl(B,'جدّ أعلى','جدّة عليا','جدّ/جدّة عليا')+' (الدرجة '+d+')';
+    return B.name+' '+be(B)+' '+lab+' لـ '+A.name;
+  }
+  const sameF=A.fatherId&&A.fatherId===B.fatherId, sameM=A.motherId&&A.motherId===B.motherId;
+  if(sameF||sameM){
+    const lab=(sameF&&sameM)?gl(B,'أخ شقيق','أخت شقيقة','أخ/أخت شقيق'):sameF?gl(B,'أخ لأب','أخت لأب','أخ/أخت لأب'):gl(B,'أخ لأم','أخت لأم','أخ/أخت لأم');
+    return B.name+' '+be(B)+' '+lab+' لـ '+A.name;
+  }
+  let best=null;
+  mA.forEach((va,anc)=>{
+    const vb=mB.get(anc); if(!vb) return;
+    const tot=va.d+vb.d;
+    if(!best||tot<best.tot) best={dA:va.d,dB:vb.d,side:va.side,tot};
+  });
+  if(!best) return 'لا توجد صلة قرابة مسجّلة بين الشخصين';
+  const {dA,dB,side}=best;
+  const paternal=side==='father';
+  if(dA===1&&dB===2) return B.name+' '+be(B)+' '+gl(B,'ابن الأخ/الأخت','ابنة الأخ/الأخت','ابن/ابنة الأخ أو الأخت')+' لـ '+A.name;
+  if(dA===2&&dB===1) return B.name+' '+be(B)+' '+(paternal?gl(B,'عمّ','عمّة','عمّ/عمّة'):gl(B,'خال','خالة','خال/خالة'))+' لـ '+A.name;
+  if(dA===2&&dB===2) return B.name+' '+be(B)+' '+(paternal?gl(B,'ابن عمّ','ابنة عمّ','ابن/ابنة عمّ'):gl(B,'ابن خال','ابنة خال','ابن/ابنة خال'))+' لـ '+A.name;
+  return B.name+' '+be(B)+' من الأقارب (الدرجة '+dA+' و'+dB+') لـ '+A.name;
+}
+
 $('backBtn').onclick=back;
 $('homeBtn').onclick=home;
 load();
 </script>
+<div class="credit">تم تصميم هذا الموقع من قبل محمد بن أحمد العامري</div>
 </body>
 </html>
