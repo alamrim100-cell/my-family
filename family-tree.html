@@ -13,6 +13,7 @@ header h1{margin:0;font-size:22px}
 button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff}
 button:disabled{opacity:.6;cursor:wait}
 button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+.linkbtn{display:inline-block;padding:8px 14px;border-radius:8px;background:#fff;color:var(--accent);border:1px solid #fff;text-decoration:none;font:inherit;font-weight:bold}
 main{padding:12px;max-width:100%;overflow:auto}
 #tree{position:relative}
 /* بطاقة الزوجين: شخصان في بطاقة واحدة */
@@ -55,7 +56,10 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
 <body>
 <header>
   <h1>شجرة العائلة</h1>
-  <div class="bar"><button id="addBtn">+ إضافة شخص</button></div>
+  <div class="bar">
+    <button id="addBtn">+ إضافة شخص</button>
+    <a class="linkbtn" href="family-view.html">واجهة العرض</a>
+  </div>
 </header>
 
 <main>
