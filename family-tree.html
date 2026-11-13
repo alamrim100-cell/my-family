@@ -234,7 +234,8 @@ function childrenGroups(id){
   if(map.get(null).length)out.push({label:partners.length?'من غير الزوج/الزوجة المسجّل':'',kids:map.get(null)});
   return out;
 }
-const countKids=id=>childrenGroups(id).reduce((s,g)=>s+g.kids.length,0);
+// عدد أبناء الشخص: كل من يكون أباً أو أماً لهم (حتى لو كان الزوج/الزوجة من خارج العائلة)
+const countKids=id=>people.filter(c=>!c.outsider && (c.fatherId===id || c.motherId===id)).length;
 const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
 
 // ===== التنقل =====
