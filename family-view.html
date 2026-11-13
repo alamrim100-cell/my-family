@@ -24,27 +24,22 @@ main{padding:20px 14px 100px}
 .unit{position:relative;display:flex;flex-direction:column;align-items:center}
 .unit.anim{animation:up .7s both}
 .unit.child::before{content:'';position:absolute;top:-30px;left:50%;height:30px;border-left:1px dashed #b08d4c}
-.couple{display:flex;align-items:flex-start;gap:14px}
-.bond{align-self:center;font-size:28px;color:#b08d4c;line-height:1}
 
-/* خيارات الزوجات (عند وجود أكثر من زوج/زوجة) */
-.choices{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:40px;margin-top:30px;padding-top:30px;animation:fade .5s both}
-.choices::before{content:'';position:absolute;top:0;left:50%;height:30px;border-left:1px dashed #b08d4c}
-
-/* البطاقة */
-.card{position:relative;width:215px;padding:18px 12px 14px;background:#fffaf0;text-align:center;cursor:pointer;
-  border:6px double #b08d4c;border-radius:50% 50% 16px 16px / 24% 24% 16px 16px;
+/* البطاقة وفيها الأزواج */
+.card{position:relative;width:225px;padding:18px 12px 14px;background:#fffaf0;text-align:center;cursor:pointer;
+  border:6px double #b08d4c;border-radius:50% 50% 16px 16px / 22% 22% 16px 16px;
   box-shadow:inset 0 0 0 2px #fffaf0,inset 0 0 0 3px #d9bf85,0 10px 22px rgba(90,60,20,.15);transition:transform .35s,background .35s}
 .card:hover{transform:translateY(-4px)}
-.card.static{cursor:default}
-.card.static:hover{transform:none}
 .card.open{background:#fff3d6}
-.card.partner{background:#fbf3df}
 .ring{width:124px;height:124px;margin:0 auto 10px;border-radius:50%;padding:5px;background:linear-gradient(135deg,#d9bf85,#8a6b3e,#d9bf85)}
 .ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee3c6}
 .n{font-size:25px;font-weight:700;color:#5a3d1a;line-height:1.3}
 .meta{font-size:16px;color:#8a6b3e;margin-top:4px}
 .cnt{margin-top:8px;font-size:16px;color:#7a5520;font-style:italic}
+.pchips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px;animation:fade .4s both}
+.pchip{font:inherit;font-size:15px;color:#6b4a2b;background:#fffaf0;border:1px dashed #b08d4c;border-radius:999px;padding:3px 12px;cursor:pointer;transition:all .25s}
+.pchip:hover{background:#f3e2b8}
+.pchip.on{background:#6b4a2b;color:#fff;border-style:solid}
 .dbtn{margin-top:10px;font:inherit;font-size:15px;color:#7a5520;background:transparent;border:1px solid #b08d4c;border-radius:999px;padding:2px 14px;cursor:pointer}
 .dbtn:hover{background:#f3e2b8}
 
@@ -131,10 +126,20 @@ function childrenGroups(id){
 }
 const countKids=id=>childrenGroups(id).reduce((s,g)=>s+g.kids.length,0);
 const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
+
+// مسار الأجداد مع مفاتيح الأزواج، حتى تبقى الأغصان المفتوحة ظاهرة عند فتح حفيد
 function pathToRoot(id){
-  const path=[]; let cur=id; const seen=new Set();
-  while(cur&&!seen.has(cur)){ seen.add(cur); const p=byId(cur); if(!p) break; const par=primaryParent(p); if(!par) break; path.push(par); cur=par; }
-  return path;
+  const keys=[]; let cur=id; const seen=new Set();
+  while(cur&&!seen.has(cur)){
+    seen.add(cur);
+    const p=byId(cur); if(!p) break;
+    const par=primaryParent(p); if(!par) break;
+    keys.push(par);
+    const other=p.fatherId===par?p.motherId:p.fatherId;
+    if(other&&byId(other)) keys.push(pairKey(par,other));
+    cur=par;
+  }
+  return keys;
 }
 
 // ===== التنقل: فتح فرع يطوي ما سواه، والتراجع يعيد الحالة السابقة =====
@@ -145,30 +150,43 @@ function clickCard(id){
 }
 function togglePair(id,pid){
   const key=pairKey(id,pid);
-  if(expandedSet.has(key)){ const n=new Set(expandedSet); n.delete(key); go(n); }
-  else { const n=new Set(pathToRoot(id)); n.add(id); n.add(key); go(n); }
+  const n=new Set(expandedSet);
+  if(n.has(key)){ n.delete(key); }
+  else {
+    partnersOf(id).forEach(o=>n.delete(pairKey(id,o)));
+    pathToRoot(id).forEach(k=>n.add(k));
+    n.add(id); n.add(key);
+  }
+  go(n);
 }
 function undo(){ if(!undoStack.length) return; expandedSet=undoStack.pop(); render(); }
 function collapseAll(){ go(new Set()); }
 
-// ===== بطاقة =====
+// ===== بطاقة (مع الأزواج داخلها عند الفتح) =====
 function makeCard(p,o){
-  const c=el('div','card'+(o.open?' open':'')+(o.clickable?'':' static')+(o.partner?' partner':''));
+  const c=el('div','card'+(o.open?' open':''));
   const r=el('div','ring');
   if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
   c.appendChild(r);
   c.appendChild(el('div','n',dispName(p)));
   const life=lifeText(p); if(life)c.appendChild(el('div','meta',life));
   if(o.count)c.appendChild(el('div','cnt',(o.open?'طيّ ':'عرض ')+o.count+' '+(o.count===1?'ابن':'أبناء')));
+  if(o.partners&&o.partners.length){
+    const pc=el('div','pchips');
+    o.partners.forEach(pid=>{
+      const b=el('button',o.isActive(pid)?'pchip on':'pchip',nameOf(pid));
+      b.onclick=ev=>{ev.stopPropagation();o.onPartner(pid);};
+      pc.appendChild(b);
+    });
+    c.appendChild(pc);
+  }
   const d=el('button','dbtn','التفاصيل');
   d.onclick=ev=>{ev.stopPropagation();openDrawer(p.id);};
   c.appendChild(d);
   return c;
 }
 
-// ===== الوحدة =====
-// شخص له زوج/زوجة واحدة أو بلا زوج: يظهر مع زوجه بجانبه، ثم أبناؤهما مباشرة عند الفتح
-// شخص له أكثر من زوج/زوجة: يُظهر الخيارات تحته عند الفتح، وكل خيار يفتح أبناءه معه
+// ===== الوحدة: الشخص بزوجه أو أزواجه داخل بطاقته، ثم الأبناء تحتها =====
 function unitFor(id,depth,isChild,index){
   visible.add(id);
   const p=byId(id);
@@ -176,48 +194,36 @@ function unitFor(id,depth,isChild,index){
   if(!prevVisible.has(id)){ box.classList.add('anim'); box.style.animationDelay=(index*90)+'ms'; }
   const open=expandedSet.has(id);
   const partners=partnersOf(id);
+  const card=makeCard(p,{
+    open,
+    count:countKids(id),
+    partners: open ? partners : [],
+    isActive: pid=>expandedSet.has(pairKey(id,pid)),
+    onPartner: pid=> partners.length>=2 ? togglePair(id,pid) : openDrawer(pid)
+  });
+  card.onclick=()=>clickCard(id);
+  box.appendChild(card);
 
-  if(partners.length>=2){
-    const main=makeCard(p,{open,count:0,clickable:true});
-    main.onclick=()=>clickCard(id);
-    box.appendChild(main);
-    if(open){
-      const ch=el('div','choices');
-      partners.forEach(pid=>ch.appendChild(pairUnit(id,pid,depth)));
-      box.appendChild(ch);
+  if(open){
+    if(partners.length<=1){
+      box.appendChild(kidsEl(id,depth));
+    } else {
+      partners.forEach(pid=>{
+        if(!expandedSet.has(pairKey(id,pid))) return;
+        const kids=kidsOfPair(id,pid);
+        if(kids.length) box.appendChild(pairKidsEl(kids,depth));
+      });
     }
-  } else {
-    const main=makeCard(p,{open,count:countKids(id),clickable:true});
-    main.onclick=()=>clickCard(id);
-    const row=el('div','couple');
-    row.appendChild(main);
-    partners.forEach(pid=>{
-      row.appendChild(el('div','bond','⚭'));
-      row.appendChild(makeCard(byId(pid),{open:false,count:0,clickable:false,partner:true}));
-    });
-    box.appendChild(row);
-    if(open) box.appendChild(kidsEl(id,depth));
   }
   return box;
 }
 
-// خيار زوج/زوجة (عند وجود أكثر من زوج): بطاقته تفتح أبناء هذا الزوج معه
-function pairUnit(id,pid,depth){
-  const key=pairKey(id,pid);
-  const open=expandedSet.has(key);
-  const kids=kidsOfPair(id,pid);
-  const u=el('div','unit child');
-  const pc=makeCard(byId(pid),{open,count:kids.length,clickable:true,partner:true});
-  pc.onclick=()=>togglePair(id,pid);
-  u.appendChild(pc);
-  if(open && kids.length){
-    const h=el('div','kids');
-    const gr=el('div','group');
-    kids.forEach((k,j)=>gr.appendChild(unitFor(k.id,depth+1,true,j)));
-    h.appendChild(gr);
-    u.appendChild(h);
-  }
-  return u;
+function pairKidsEl(kids,depth){
+  const h=el('div','kids');
+  const gr=el('div','group');
+  kids.forEach((k,j)=>gr.appendChild(unitFor(k.id,depth+1,true,j)));
+  h.appendChild(gr);
+  return h;
 }
 
 function kidsEl(id,depth){
