@@ -118,6 +118,15 @@ dialog select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;
 .bar button.sec{background:#fff;color:#6b4a2b;border:1px solid #6b4a2b}
 .kinres{margin-top:14px;font-size:20px;color:#5a3d1a;text-align:center;line-height:1.7;min-height:30px}
 
+/* ===== شجرة النسب الأحادية ===== */
+.lineBtn{font:inherit;font-size:15px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 16px;cursor:pointer;margin-top:12px}
+.lineBtn:hover{background:#f3e2b8}
+.lineStep{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #d9bf85;border-radius:16px;padding:10px 14px;max-width:440px;margin:0 auto}
+.lineImg{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#eee3c6;flex:0 0 56px;border:2px solid #d9bf85}
+.lineLbl{font-size:13px;color:#8a5a2b;font-weight:700}
+.lineSub{font-size:13px;color:#6b5030}
+.lineConn{width:0;height:24px;margin:0 auto;border-left:2px dashed #b08d4c}
+
 /* ===== شاشة الترحيب ===== */
 .welcome{max-width:560px;margin:10px auto;padding:34px 22px;text-align:center;border:6px double #b08d4c;border-radius:28px;
   background:linear-gradient(160deg,rgba(255,255,255,.9),rgba(255,247,230,.75));box-shadow:0 14px 34px rgba(90,60,20,.18);animation:up .8s both}
@@ -250,6 +259,11 @@ dialog select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;
   <button id="pickB" class="pickbtn" style="margin-top:8px">الشخص الثاني: لم يُختر</button>
   <div class="bar"><button id="kinGo">احسب القرابة</button><button class="sec" onclick="document.getElementById('kinDlg').close()">إغلاق</button></div>
   <div id="kinRes" class="kinres"></div>
+</dialog>
+<dialog id="lineDlg">
+  <h3 id="lineTitle">شجرة النسب</h3>
+  <div id="lineBody"></div>
+  <div class="bar"><button class="sec" onclick="document.getElementById('lineDlg').close()">إغلاق</button></div>
 </dialog>
 <aside id="drawer">
   <button id="closeDrawer" title="إغلاق">✕</button>
@@ -483,6 +497,9 @@ function openDrawer(id){
   rows.push('عدد الأبناء: '+countKids(id));
   rows.forEach(t=>b.appendChild(el('div','drow',t)));
   if(p.bio) b.appendChild(el('div','bio',p.bio));
+  const lineBtn=el('button','lineBtn','شجرة النسب');
+  lineBtn.onclick=()=>openLineage(id);
+  b.appendChild(lineBtn);
   albumSection(id,b,false);
   $('drawer').classList.add('open'); $('drawerBg').classList.add('open');
 }
@@ -950,6 +967,42 @@ function kinship(a,b){
   if(dA===2&&dB===1) return B.name+' '+be(B)+' '+(paternal?gl(B,'عمّ','عمّة','عمّ/عمّة'):gl(B,'خال','خالة','خال/خالة'))+' لـ '+A.name;
   if(dA===2&&dB===2) return B.name+' '+be(B)+' '+(paternal?gl(B,'ابن عمّ','ابنة عمّ','ابن/ابنة عمّ'):gl(B,'ابن خال','ابنة خال','ابن/ابنة خال'))+' لـ '+A.name;
   return B.name+' '+be(B)+' من الأقارب (الدرجة '+dA+' و'+dB+') لـ '+A.name;
+}
+
+// ===== شجرة النسب الأحادية: الشخص ← الأب ← الجد ← ... =====
+function lineageLabel(p,depth){
+  const m=p.gender!=='female';
+  if(depth===0) return 'الشخص';
+  if(depth===1) return m?'الأب':'الأم';
+  if(depth===2) return m?'الجد':'الجدة';
+  if(depth===3) return m?'جدّ الجدّ':'جدّة الجدّة';
+  return (m?'الجدّ الأعلى':'الجدّة العليا')+' (الدرجة '+depth+')';
+}
+function openLineage(id){
+  const chain=[]; let cur=byId(id); const seen=new Set(); let depth=0;
+  while(cur && !seen.has(cur.id)){
+    seen.add(cur.id);
+    chain.push({p:cur,depth});
+    const next=(cur.fatherId&&byId(cur.fatherId))?byId(cur.fatherId):((cur.motherId&&byId(cur.motherId))?byId(cur.motherId):null);
+    if(!next) break;
+    cur=next; depth++;
+  }
+  const body=$('lineBody'); body.innerHTML='';
+  chain.forEach((s,i)=>{
+    const row=el('div','lineStep');
+    const img=el(s.p.photo?'img':'div','lineImg');
+    if(s.p.photo) img.src=s.p.photo;
+    const txt=el('div','');
+    txt.appendChild(el('div','lineLbl',lineageLabel(s.p,s.depth)));
+    txt.appendChild(el('div','',dispName(s.p)));
+    const life=lifeText(s.p); if(life) txt.appendChild(el('div','lineSub',life));
+    if(s.p.motherId && i<chain.length-1) txt.appendChild(el('div','lineSub','الأم: '+nameOf(s.p.motherId)));
+    row.append(img,txt);
+    body.appendChild(row);
+    if(i<chain.length-1) body.appendChild(el('div','lineConn'));
+  });
+  $('lineTitle').textContent='شجرة النسب: '+(byId(id)||{}).name;
+  $('lineDlg').showModal();
 }
 
 $('backBtn').onclick=back;
