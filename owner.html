@@ -4,288 +4,351 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة المالك - شجرة العائلة</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f3ea;--card:#fff;--ink:#2b2b2b;--accent:#8a5a2b;--line:#d9cbb4;--ok:#2e7d32;--no:#a33}
 *{box-sizing:border-box}
-body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:var(--accent);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-header h1{margin:0;font-size:20px}
-header a{color:#fff}
-button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff}
-button:disabled{opacity:.6;cursor:wait}
-button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
-button.ok{background:var(--ok)}
-button.no{background:var(--no)}
-button.small{padding:4px 10px;font-size:13px}
-main{max-width:900px;margin:auto;padding:20px}
-.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px}
-.box h2{margin:0 0 12px;font-size:18px;color:var(--accent)}
-.stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat{flex:1;min-width:140px;background:var(--bg);border-radius:10px;padding:12px;text-align:center}
-.stat b{display:block;font-size:26px;color:var(--accent)}
-.bar{display:flex;gap:8px;flex-wrap:wrap}
-.item{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
-.item .t{font-weight:bold}
-.sm{font-size:13px;color:#666;margin-top:4px}
-.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;background:var(--bg);margin-inline-start:6px}
-#login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;text-align:center}
-#login input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;margin:8px 0}
-.err{color:var(--no);font-size:14px;min-height:20px}
-.hide{display:none}
-.empty{color:#888}
-img.thumb{width:64px;height:64px;border-radius:50%;object-fit:cover;margin-top:6px}
+body{margin:0;min-height:100vh;font-family:Cairo,Tahoma,sans-serif;color:#3b2a1a;
+  background:radial-gradient(ellipse at top,#fbf4e2 0,#efe2c4 60%,#e2cfa4 100%)}
+.hide{display:none !important}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 22px;
+  background:linear-gradient(120deg,#6e4320,#8a5a2b 55%,#b98a4f);color:#fff;box-shadow:0 6px 20px rgba(60,35,10,.25)}
+header h1{margin:0;font-family:Amiri,serif;font-size:28px}
+.hbar{display:flex;gap:8px;flex-wrap:wrap}
+.hbar a,.hbar button,.btn{font:inherit;font-size:14px;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:6px 14px;text-decoration:none;cursor:pointer}
+.hbar a:hover,.hbar button:hover,.btn:hover{background:rgba(255,255,255,.28)}
+main{max-width:980px;margin:0 auto;padding:22px 14px 80px}
+.box{background:rgba(255,255,255,.85);border:6px double #b08d4c;border-radius:22px;padding:18px 18px 20px;margin-bottom:20px;box-shadow:0 10px 26px rgba(90,60,20,.12)}
+.box h2{margin:0 0 12px;font-family:Amiri,serif;font-size:24px;color:#7a5520}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}
+.stat{background:#fffaf0;border:1px solid #d9bf85;border-radius:18px;padding:16px;text-align:center}
+.stat b{display:block;font-size:34px;color:#7a5520}
+.stat span{font-size:15px;color:#8a6b3e}
+.toggle{display:flex;align-items:center;gap:10px;font-size:16px;cursor:pointer}
+.toggle input{width:20px;height:20px;accent-color:#8a5a2b}
+.sm{font-size:13px;color:#8a6b3e;margin-top:4px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input[type=search],.tools input,.psearch{flex:1;min-width:180px;font:inherit;font-size:15px;padding:9px 14px;border:1px solid #d9bf85;border-radius:999px;background:#fff;outline:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:inherit;font-size:13px;color:#6b4a2b;background:#fffaf0;border:1px dashed #b08d4c;border-radius:999px;padding:4px 12px;cursor:pointer}
+.chip.on{background:#6b4a2b;color:#fff;border-style:solid}
+.item{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fffaf0;border:1px solid #d9bf85;border-radius:16px;padding:12px;margin-bottom:10px}
+.thumb{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#eee3c6;flex:0 0 52px;border:2px solid #d9bf85}
+.info{flex:1;min-width:160px}
+.info .t{font-weight:800;font-size:16px}
+.badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;background:#f3e2b8;color:#6b4a2b;margin-inline-start:6px;vertical-align:middle}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.acts button{font:inherit;font-size:13px;border-radius:999px;padding:5px 12px;border:1px solid #b08d4c;background:#fff;color:#6b4a2b;cursor:pointer}
+.acts button.ok{background:#6b4a2b;color:#fff}
+.acts button.no{color:#8a2b2b;border-color:#c98a8a}
+.empty{text-align:center;color:#8a6b3e;padding:20px}
+.login{max-width:380px;margin:90px auto;background:rgba(255,255,255,.9);border:6px double #b08d4c;border-radius:24px;padding:28px;text-align:center}
+.login h2{font-family:Amiri,serif;color:#7a5520;margin:0 0 14px;font-size:28px}
+.login input{width:100%;font:inherit;font-size:16px;padding:10px 14px;border:1px solid #d9bf85;border-radius:12px;margin:6px 0}
+.err{color:#8a2b2b;font-size:14px;min-height:20px}
+.big-btn{font:inherit;font-size:17px;color:#fff;background:#6b4a2b;border:0;border-radius:999px;padding:10px 30px;cursor:pointer;width:100%;margin-top:6px}
+/* نافذة المعاينة */
+dialog{border:none;border-radius:22px;padding:22px;width:min(640px,94vw);background:#fffaf0;color:#3b2a1a;box-shadow:0 20px 50px rgba(60,35,10,.3)}
+dialog::backdrop{background:rgba(40,25,10,.5)}
+dialog h3{margin:0 0 10px;font-family:Amiri,serif;font-size:26px;color:#7a5520}
+.pcard{display:flex;gap:14px;align-items:center;background:#fff;border:6px double #b08d4c;border-radius:20px;padding:14px;margin:8px 0}
+.pcard img,.pcard .ph{width:96px;height:96px;border-radius:50%;object-fit:cover;background:#eee3c6;flex:0 0 96px;border:3px solid #d9bf85}
+.pcard .n{font-weight:800;font-size:18px}
+.pcard .d{font-size:14px;color:#6b5030;line-height:1.7}
+.cmp{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+.cmp th,.cmp td{border-bottom:1px dashed #d9bf85;padding:7px 6px;text-align:right;vertical-align:top}
+.cmp th{color:#7a5520}
+.old{color:#8a2b2b;text-decoration:line-through}
+.new{color:#2e6b2e;font-weight:700}
+.bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.bar button{font:inherit;font-size:15px;color:#fff;background:#6b4a2b;border:0;border-radius:999px;padding:8px 18px;cursor:pointer}
+.bar button.sec{background:#fff;color:#6b4a2b;border:1px solid #6b4a2b}
+.bar button.no{background:#8a2b2b}
+.imgprev{width:100%;max-height:300px;object-fit:contain;border-radius:14px;background:#eee3c6;margin-top:8px}
 </style>
 </head>
 <body>
 
-<div id="login" class="hide">
-  <h2 style="color:var(--accent);margin-top:0">لوحة المالك</h2>
+<div id="login" class="login hide">
+  <h2>لوحة المالك</h2>
   <input id="email" type="email" placeholder="البريد الإلكتروني">
   <input id="pw" type="password" placeholder="كلمة المرور">
-  <button id="loginBtn">دخول</button>
+  <button id="loginBtn" class="big-btn">دخول</button>
   <div id="loginErr" class="err"></div>
 </div>
 
 <div id="app" class="hide">
   <header>
-    <h1>لوحة المالك - شجرة العائلة</h1>
-    <div class="bar">
-      <a href="family-tree.html">عرض الشجرة</a>
-      <button class="sec" id="logoutBtn">خروج</button>
+    <h1>لوحة المالك</h1>
+    <div class="hbar">
+      <a href="family-view.html">واجهة العرض</a>
+      <a href="family-tree.html">واجهة التعديل</a>
+      <button id="logoutBtn">خروج</button>
     </div>
   </header>
   <main>
-    <div class="box">
-      <div class="stats">
-        <div class="stat"><b id="cntPeople">0</b>أشخاص معتمدون</div>
-        <div class="stat"><b id="cntPending">0</b>طلبات بانتظار الاعتماد</div>
-      </div>
-    </div>
+    <section class="stats">
+      <div class="stat"><b id="cntPeople">0</b><span>فرد معتمد</span></div>
+      <div class="stat"><b id="cntPending">0</b><span>طلب بانتظار الاعتماد</span></div>
+    </section>
 
-    <div class="box">
+    <section class="box">
       <h2>الإعدادات</h2>
-      <label style="display:flex;gap:10px;align-items:center;font-size:15px;cursor:pointer">
-        <input type="checkbox" id="autoToggle" style="width:auto;margin:0">
-        اعتماد تلقائي للطلبات الجديدة والتعديلات
-      </label>
-      <div class="sm" style="margin-top:6px">عند التفعيل تظهر البيانات في الشجرة مباشرة، وعند التعطيل تنتظر مراجعتك.</div>
-    </div>
+      <label class="toggle"><input type="checkbox" id="autoToggle"> اعتماد تلقائي للطلبات الجديدة</label>
+      <div class="sm">عند التفعيل تظهر البيانات مباشرة في الشجرة، وعند التعطيل تنتظر مراجعتك.</div>
+    </section>
 
-    <div class="box">
-      <h2>طلبات الإضافة والتعديل</h2>
-      <div class="bar" style="margin-bottom:10px"><button class="sec" id="reloadBtn">تحديث</button></div>
+    <section class="box">
+      <h2>الطلبات</h2>
+      <div class="tools">
+        <input type="search" id="qSearch" placeholder="ابحث باسم الشخص...">
+      </div>
+      <div class="chips" id="chips" style="margin-bottom:14px"></div>
       <div id="pendList"></div>
-    </div>
+    </section>
 
-    <div class="box">
+    <section class="box">
       <h2>الأشخاص المعتمدون</h2>
+      <input type="search" id="pSearch" class="psearch" placeholder="ابحث عن شخص..." style="width:100%;margin-bottom:12px">
       <div id="peopleList"></div>
-    </div>
+    </section>
   </main>
 </div>
 
+<dialog id="prevDlg">
+  <div id="prevBody"></div>
+  <div class="bar">
+    <button id="prevApprove">اعتماد</button>
+    <button class="no" id="prevReject">رفض</button>
+    <button class="sec" id="prevClose">إغلاق</button>
+  </div>
+</dialog>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ===== الإعدادات =====
-const SUPABASE_URL = 'https://nrddblppxdiklixjxsni.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let people = [], pending = [];
-const $ = id => document.getElementById(id);
-const byId = id => people.find(p => p.id === id);
-const nameOf = id => (byId(id) || {}).name || '';
-const nz = v => (v === '' || v === undefined) ? null : v;
+const sb = window.supabase.createClient('https://nrddblppxdiklixjxsni.supabase.co','sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT');
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const nz=v=>(v===''||v===undefined)?null:v;
+let people=[], pending=[], filterType='all', prevItem=null;
+const TYPES={add:'إضافة شخص',edit:'تعديل شخص',marriage:'ربط زوجة',add_spouse:'زوج/زوجة جديد',unlink:'فك ربط',album:'صورة ألبوم'};
+const byId=id=>people.find(p=>p.id===id);
+const nameOf=id=>(byId(id)||{}).name||'';
+const dispName=p=>(p.death?'المرحوم ':'')+p.name;
+const lifeOf=p=>p.death?'من '+(p.birth||'؟')+' إلى '+p.death:(p.birth?'ميلاد '+p.birth:'');
+const FIELDS=[['name','الاسم'],['birth','الميلاد'],['death','الوفاة'],['gender','الجنس'],['father_id','الأب'],['mother_id','الأم'],['spouse_id','الزوج/الزوجة'],['bio','ملاحظات'],['photo_url','الصورة']];
+const shown=(k,v)=>{ if(!v) return '—'; if(k==='father_id'||k==='mother_id'||k==='spouse_id') return nameOf(v)||'—'; if(k==='gender') return v==='male'?'ذكر':'أنثى'; if(k==='photo_url') return 'صورة'; return v; };
 
 // ===== الدخول =====
-async function checkSession(){
-  const { data } = await sb.auth.getSession();
-  if (data.session) await enter(); else showLogin();
-}
-
 function showLogin(){ $('app').classList.add('hide'); $('login').classList.remove('hide'); }
-
 async function enter(){
-  // جدول owners يسمح للمالك فقط برؤية صفه، فإن لم يظهر صف فالحساب ليس مالكاً
-  const { data, error } = await sb.from('owners').select('user_id');
-  if (error || !data || !data.length){
-    await sb.auth.signOut();
-    $('loginErr').textContent = 'هذا الحساب ليس مالكاً للوحة';
-    showLogin(); return;
-  }
+  const {data,error}=await sb.from('owners').select('user_id');
+  if(error||!data||!data.length){ await sb.auth.signOut(); $('loginErr').textContent='هذا الحساب ليس مالكاً للوحة'; showLogin(); return; }
   $('login').classList.add('hide'); $('app').classList.remove('hide');
-  await refresh();
+  refresh();
 }
-
-$('loginBtn').onclick = async () => {
-  $('loginErr').textContent = '';
-  const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('pw').value });
-  if (error){ $('loginErr').textContent = 'تعذر الدخول: ' + error.message; return; }
-  $('pw').value = '';
-  await enter();
+$('loginBtn').onclick=async()=>{
+  $('loginErr').textContent='';
+  const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pw').value});
+  if(error){ $('loginErr').textContent='تعذر الدخول: '+error.message; return; }
+  $('pw').value=''; enter();
 };
-$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
-$('logoutBtn').onclick = async () => { await sb.auth.signOut(); showLogin(); };
-$('reloadBtn').onclick = () => refresh();
+$('pw').addEventListener('keydown',e=>{ if(e.key==='Enter') $('loginBtn').click(); });
+$('logoutBtn').onclick=async()=>{ await sb.auth.signOut(); showLogin(); };
 
-// ===== تحميل البيانات =====
-async function loadSetting(){
-  const { data } = await sb.from('settings').select('value').eq('key', 'auto_approve').single();
-  $('autoToggle').checked = !!(data && data.value);
-}
-
-$('autoToggle').onchange = async e => {
-  const v = e.target.checked;
-  const { error } = await sb.from('settings').update({ value: v }).eq('key', 'auto_approve');
-  if (error){ alert('تعذر حفظ الإعداد: ' + error.message); e.target.checked = !v; return; }
-  alert(v ? 'الاعتماد التلقائي مفعّل: الطلبات الجديدة تظهر مباشرة' : 'الاعتماد التلقائي معطّل: الطلبات تنتظر مراجعتك');
-};
-
+// ===== البيانات =====
 async function refresh(){
-  loadSetting();
-  const [p, s] = await Promise.all([
+  const [p,s,st]=await Promise.all([
     sb.from('people').select('*').order('created_at'),
-    sb.from('submissions').select('*').eq('status', 'pending').order('created_at')
+    sb.from('submissions').select('*').eq('status','pending').order('created_at'),
+    sb.from('settings').select('value').eq('key','auto_approve').single()
   ]);
-  if (p.error || s.error){ alert('تعذر تحميل البيانات'); return; }
-  people = p.data; pending = s.data;
-  renderStats(); renderPending(); renderPeople();
+  if(p.error||s.error){ alert('تعذر تحميل البيانات'); return; }
+  people=p.data||[]; pending=s.data||[];
+  $('autoToggle').checked=!!(st.data&&st.data.value);
+  renderStats(); renderChips(); renderPending(); renderPeople();
 }
-
 function renderStats(){
-  $('cntPeople').textContent = people.length;
-  $('cntPending').textContent = pending.length;
+  $('cntPeople').textContent=people.length;
+  $('cntPending').textContent=pending.length;
 }
 
+// ===== الإعداد =====
+$('autoToggle').onchange=async e=>{
+  const v=e.target.checked;
+  const {error}=await sb.from('settings').update({value:v}).eq('key','auto_approve');
+  if(error){ alert('تعذر الحفظ'); e.target.checked=!v; return; }
+  alert(v?'الاعتماد التلقائي مفعّل':'الاعتماد التلقائي معطّل');
+};
+
+// ===== الطلبات: الفلترة والبحث =====
+function itemTitle(it){
+  const d=it.data||{};
+  if(it.type==='marriage') return nameOf(d.husband_id)+' و'+nameOf(d.wife_id);
+  if(it.type==='unlink') return nameOf(d.a)+' و'+nameOf(d.b);
+  if(it.type==='album') return nameOf(it.person_id);
+  return d.name||'(بدون اسم)';
+}
+function renderChips(){
+  const c=$('chips'); c.innerHTML='';
+  const all=[['all','الكل',pending.length]];
+  Object.keys(TYPES).forEach(t=>{ const n=pending.filter(x=>x.type===t).length; if(n) all.push([t,TYPES[t],n]); });
+  all.forEach(([k,label,n])=>{
+    const b=el('button',filterType===k?'chip on':'chip',label+' ('+n+')');
+    b.onclick=()=>{ filterType=k; renderChips(); renderPending(); };
+    c.appendChild(b);
+  });
+}
 function renderPending(){
-  const box = $('pendList'); box.innerHTML = '';
-  if (!pending.length){ box.innerHTML = '<div class="empty">لا توجد طلبات بانتظار الاعتماد.</div>'; return; }
-  pending.forEach(it => {
-    const d = it.data || {};
-    const wrap = document.createElement('div'); wrap.className = 'item';
-    const t = document.createElement('div'); t.className = 't';
-    t.textContent = it.type === 'marriage'
-      ? 'ربط زوج/زوجة: ' + nameOf(d.husband_id) + ' ← ' + nameOf(d.wife_id)
-      : (it.type === 'album' ? 'صورة في ألبوم: ' + nameOf(it.person_id) : (d.name || '(بدون اسم)'));
-    const tag = document.createElement('span'); tag.className = 'tag';
-    tag.textContent = it.type === 'add' ? 'إضافة' : (it.type === 'marriage' ? 'زواج' : (it.type === 'add_spouse' ? 'زوج/زوجة جديد' : 'تعديل'));
-    t.appendChild(tag);
-    const det = document.createElement('div'); det.className = 'sm';
-    det.textContent = [
-      it.type === 'edit' && 'الشخص الحالي: ' + nameOf(it.person_id),
-      d.birth && 'ميلاد: ' + d.birth,
-      d.gender && 'الجنس: ' + (d.gender === 'male' ? 'ذكر' : 'أنثى'),
-      d.fatherId && 'الأب: ' + nameOf(d.fatherId),
-      d.motherId && 'الأم: ' + nameOf(d.motherId),
-      d.spouseId && 'الزوج: ' + nameOf(d.spouseId),
-      d.bio && 'ملاحظات: ' + d.bio,
-      it.created_at && 'أُرسل: ' + new Date(it.created_at).toLocaleString('ar')
-    ].filter(Boolean).join(' | ');
-    wrap.append(t, det);
-    if (d.photo_url){
-      const img = document.createElement('img'); img.className = 'thumb'; img.src = d.photo_url; wrap.appendChild(img);
-    }
-    const bar = document.createElement('div'); bar.className = 'bar'; bar.style.marginTop = '8px';
-    const ok = document.createElement('button'); ok.className = 'ok small'; ok.textContent = 'اعتماد';
-    ok.onclick = () => approve(it);
-    const no = document.createElement('button'); no.className = 'no small'; no.textContent = 'رفض';
-    no.onclick = () => reject(it);
-    bar.append(ok, no); wrap.appendChild(bar);
-    box.appendChild(wrap);
+  const box=$('pendList'); box.innerHTML='';
+  const q=$('qSearch').value.trim();
+  const list=pending.filter(it=>(filterType==='all'||it.type===filterType)&&(!q||itemTitle(it).includes(q)));
+  if(!list.length){ box.appendChild(el('div','empty',pending.length?'لا توجد طلبات تطابق البحث':'لا توجد طلبات بانتظار الاعتماد')); return; }
+  list.forEach(it=>{
+    const d=it.data||{};
+    const row=el('div','item');
+    const img=el(d.photo_url?'img':'div','thumb'); if(d.photo_url) img.src=d.photo_url;
+    const info=el('div','info');
+    const t=el('div','t',itemTitle(it)); t.appendChild(el('span','badge',TYPES[it.type]||it.type));
+    info.appendChild(t);
+    info.appendChild(el('div','sm',it.created_at?new Date(it.created_at).toLocaleString('ar'):''));
+    const acts=el('div','acts');
+    const bp=el('button','','معاينة'); bp.onclick=()=>openPreview(it);
+    const ba=el('button','ok','اعتماد'); ba.onclick=()=>approve(it);
+    const br=el('button','no','رفض'); br.onclick=()=>reject(it);
+    acts.append(bp,ba,br);
+    row.append(img,info,acts);
+    box.appendChild(row);
   });
 }
+$('qSearch').oninput=renderPending;
 
-function renderPeople(){
-  const box = $('peopleList'); box.innerHTML = '';
-  if (!people.length){ box.innerHTML = '<div class="empty">لا يوجد أشخاص بعد.</div>'; return; }
-  people.forEach(p => {
-    const row = document.createElement('div'); row.className = 'item';
-    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:10px';
-    const info = document.createElement('div');
-    const t = document.createElement('div'); t.className = 't'; t.textContent = p.name;
-    const s = document.createElement('div'); s.className = 'sm';
-    s.textContent = [p.birth && 'ميلاد: ' + p.birth, p.father_id && 'الأب: ' + nameOf(p.father_id), p.mother_id && 'الأم: ' + nameOf(p.mother_id)].filter(Boolean).join(' | ');
-    info.append(t, s);
-    const del = document.createElement('button'); del.className = 'no small'; del.textContent = 'حذف';
-    del.onclick = () => removePerson(p);
-    row.append(info, del); box.appendChild(row);
-  });
+// ===== المعاينة قبل الاعتماد =====
+function cardHTML(d){
+  const wrap=el('div','pcard');
+  const img=el(d.photo_url?'img':'div','', ''); if(d.photo_url) img.src=d.photo_url; else img.className='ph';
+  const body=el('div','');
+  body.appendChild(el('div','n',(d.death?'المرحوم ':'')+(d.name||'')));
+  const lines=[];
+  if(d.death) lines.push('فترة الحياة: من '+(d.birth||'؟')+' إلى '+d.death); else if(d.birth) lines.push('الميلاد: '+d.birth);
+  if(d.gender) lines.push('الجنس: '+(d.gender==='male'?'ذكر':'أنثى'));
+  if(d.fatherId) lines.push('الأب: '+nameOf(d.fatherId));
+  if(d.motherId) lines.push('الأم: '+nameOf(d.motherId));
+  if(d.spouseId) lines.push('الزوج/الزوجة: '+nameOf(d.spouseId));
+  if(d.outsider||d.is_outsider) lines.push('من خارج العائلة');
+  if(d.bio) lines.push('ملاحظات: '+d.bio);
+  const dd=el('div','d'); lines.forEach(t=>dd.appendChild(el('div','',t))); body.appendChild(dd);
+  wrap.append(img,body);
+  return wrap;
 }
+function openPreview(it){
+  prevItem=it;
+  const d=it.data||{}, body=$('prevBody'); body.innerHTML='';
+  body.appendChild(el('h3','',TYPES[it.type]+' — '+itemTitle(it)));
+  if(it.type==='add'||it.type==='add_spouse'){
+    body.appendChild(el('div','sm','كما سيظهر في الشجرة:'));
+    body.appendChild(cardHTML(d));
+  } else if(it.type==='edit'){
+    const cur=byId(it.person_id)||{};
+    const curMap={name:cur.name,birth:cur.birth,death:cur.death,gender:cur.gender,father_id:cur.fatherId,mother_id:cur.motherId,spouse_id:cur.spouseId,bio:cur.bio,photo_url:cur.photo};
+    const newMap={name:d.name,birth:d.birth,death:d.death,gender:d.gender,father_id:d.fatherId,mother_id:d.motherId,spouse_id:d.spouseId,bio:d.bio,photo_url:d.photo_url};
+    const table=el('table','cmp');
+    table.innerHTML='<tr><th>الحقل</th><th>قبل</th><th>بعد</th></tr>';
+    let changed=0;
+    FIELDS.forEach(([k,label])=>{
+      if((curMap[k]||'')===(newMap[k]||'')) return;
+      changed++;
+      const tr=document.createElement('tr');
+      const td1=el('td','',label), td2=el('td','old',shown(k,curMap[k])), td3=el('td','new',shown(k,newMap[k]));
+      tr.append(td1,td2,td3); table.appendChild(tr);
+    });
+    body.appendChild(el('div','sm',changed?'الحقول التي ستتغير ('+changed+'):':'لا توجد تغييرات ظاهرة'));
+    if(changed) body.appendChild(table);
+  } else if(it.type==='marriage'){
+    body.appendChild(el('div','',nameOf(d.husband_id)+' ⚭ '+nameOf(d.wife_id)+' — سيُربطان كزوج وزوجة.'));
+  } else if(it.type==='unlink'){
+    body.appendChild(el('div','',"فك الارتباط بين "+nameOf(d.a)+' و'+nameOf(d.b)+'. الأبناء لن يتأثروا.'));
+  } else if(it.type==='album'){
+    body.appendChild(el('div','sm','صورة لألبوم '+nameOf(it.person_id)+':'));
+    if(d.photo_url){ const i=el('img','imgprev'); i.src=d.photo_url; body.appendChild(i); }
+    const meta=[d.caption,d.taken_on].filter(Boolean).join(' · ');
+    if(meta) body.appendChild(el('div','',meta));
+  }
+  $('prevDlg').showModal();
+}
+$('prevClose').onclick=()=>$('prevDlg').close();
+$('prevApprove').onclick=async()=>{ $('prevDlg').close(); if(prevItem) await approve(prevItem); };
+$('prevReject').onclick=async()=>{ $('prevDlg').close(); if(prevItem) await reject(prevItem); };
 
-// ===== الإجراءات =====
+// ===== الاعتماد والرفض =====
 async function approve(it){
-  if (it.type === 'album'){
-    const d = it.data || {};
-    const r = await sb.from('album_photos').insert({ person_id: it.person_id, photo_url: d.photo_url, caption: nz(d.caption), taken_on: nz(d.taken_on) });
-    if (r.error){ alert('تعذر الإضافة للألبوم: ' + r.error.message); return; }
-    await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
-    refresh();
-    return;
-  }
-  if (it.type === 'unlink'){
-    const a = it.data.a, b = it.data.b;
+  const d=it.data||{};
+  if(it.type==='album'){
+    const r=await sb.from('album_photos').insert({person_id:it.person_id,photo_url:d.photo_url,caption:nz(d.caption),taken_on:nz(d.taken_on)});
+    if(r.error){ alert('تعذر الإضافة للألبوم: '+r.error.message); return; }
+  } else if(it.type==='marriage'){
+    const h=d.husband_id, w=d.wife_id;
+    const {data:ms}=await sb.from('marriages').select('position').eq('husband_id',h);
+    const pos=ms&&ms.length?Math.max(...ms.map(m=>m.position||0))+1:1;
+    const r=await sb.from('marriages').insert({husband_id:h,wife_id:w,position:pos});
+    if(r.error){ alert('تعذر الربط: '+r.error.message); return; }
+  } else if(it.type==='add_spouse'){
+    const ins=await sb.from('people').insert({name:d.name,birth:nz(d.birth),death:nz(d.death),gender:nz(d.gender),is_outsider:true}).select('id').single();
+    if(ins.error){ alert('تعذر الإضافة: '+ins.error.message); return; }
+    const {data:ms}=await sb.from('marriages').select('position').eq('husband_id',it.person_id);
+    const pos=ms&&ms.length?Math.max(...ms.map(m=>m.position||0))+1:1;
+    const r=await sb.from('marriages').insert({husband_id:it.person_id,wife_id:ins.data.id,position:pos});
+    if(r.error){ alert('تمت الإضافة لكن تعذر الربط: '+r.error.message); return; }
+  } else if(it.type==='unlink'){
+    const a=d.a, b=d.b;
     await sb.from('marriages').delete().or(`and(husband_id.eq.${a},wife_id.eq.${b}),and(husband_id.eq.${b},wife_id.eq.${a})`);
-    await sb.from('people').update({ spouse_id: null }).eq('id', a).eq('spouse_id', b);
-    await sb.from('people').update({ spouse_id: null }).eq('id', b).eq('spouse_id', a);
-    await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
-    refresh();
-    return;
-  }
-  if (it.type === 'add_spouse'){
-    const d = it.data || {};
-    const ins = await sb.from('people').insert({
-      name: d.name, birth: nz(d.birth), death: nz(d.death), gender: nz(d.gender), is_outsider: true
-    }).select('id').single();
-    if (ins.error){ alert('تعذر الإضافة: ' + ins.error.message); return; }
-    const { data: ms } = await sb.from('marriages').select('position').eq('husband_id', it.person_id);
-    const pos = ms && ms.length ? Math.max(...ms.map(m => m.position || 0)) + 1 : 1;
-    const r = await sb.from('marriages').insert({ husband_id: it.person_id, wife_id: ins.data.id, position: pos });
-    if (r.error){ alert('تمت الإضافة لكن تعذر الربط: ' + r.error.message); return; }
-    await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
-    refresh();
-    return;
-  }
-  if (it.type === 'marriage'){
-    const h = it.data.husband_id, w = it.data.wife_id;
-    const { data: ms } = await sb.from('marriages').select('position').eq('husband_id', h);
-    const pos = ms && ms.length ? Math.max(...ms.map(m => m.position || 0)) + 1 : 1;
-    const r = await sb.from('marriages').insert({ husband_id: h, wife_id: w, position: pos });
-    if (r.error){ alert('تعذر الربط: ' + r.error.message); return; }
-    await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
-    refresh();
-    return;
-  }
-  const d = it.data || {};
-  const fields = {
-    name: d.name, birth: nz(d.birth), death: nz(d.death), gender: nz(d.gender), is_outsider: !!d.outsider,
-    father_id: nz(d.fatherId), mother_id: nz(d.motherId), spouse_id: nz(d.spouseId),
-    bio: nz(d.bio), photo_url: nz(d.photo_url)
-  };
-  let res;
-  if (it.type === 'add'){
-    res = await sb.from('people').insert(fields);
+    await sb.from('people').update({spouse_id:null}).eq('id',a).eq('spouse_id',b);
+    await sb.from('people').update({spouse_id:null}).eq('id',b).eq('spouse_id',a);
   } else {
-    res = await sb.from('people').update(fields).eq('id', it.person_id);
+    const fields={name:d.name,birth:nz(d.birth),death:nz(d.death),gender:nz(d.gender),father_id:nz(d.fatherId),mother_id:nz(d.motherId),spouse_id:nz(d.spouseId),bio:nz(d.bio),photo_url:nz(d.photo_url),is_outsider:!!d.outsider};
+    const r=it.type==='add'?await sb.from('people').insert(fields):await sb.from('people').update(fields).eq('id',it.person_id);
+    if(r.error){ alert('تعذر الاعتماد: '+r.error.message); return; }
   }
-  if (res.error){ alert('تعذر الاعتماد: ' + res.error.message); return; }
-  await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
+  await sb.from('submissions').update({status:'approved'}).eq('id',it.id);
   refresh();
 }
-
 async function reject(it){
-  if (!confirm('رفض هذا الطلب؟')) return;
-  await sb.from('submissions').update({ status: 'rejected' }).eq('id', it.id);
+  if(!confirm('رفض هذا الطلب؟')) return;
+  await sb.from('submissions').update({status:'rejected'}).eq('id',it.id);
   refresh();
 }
 
+// ===== الأشخاص المعتمدون =====
+function renderPeople(){
+  const box=$('peopleList'); box.innerHTML='';
+  const q=$('pSearch').value.trim();
+  const list=people.filter(p=>!q||p.name.includes(q));
+  if(!list.length){ box.appendChild(el('div','empty','لا يوجد أشخاص مطابقون')); return; }
+  list.forEach(p=>{
+    const row=el('div','item');
+    const img=el(p.photo_url?'img':'div','thumb'); if(p.photo_url) img.src=p.photo_url;
+    const info=el('div','info');
+    info.appendChild(el('div','t',dispName(p)));
+    info.appendChild(el('div','sm',lifeOf(p)));
+    const acts=el('div','acts');
+    const del=el('button','no','حذف'); del.onclick=()=>removePerson(p);
+    acts.appendChild(del);
+    row.append(img,info,acts);
+    box.appendChild(row);
+  });
+}
+$('pSearch').oninput=renderPeople;
 async function removePerson(p){
-  if (!confirm('حذف ' + p.name + ' من الشجرة؟ سيُفك ارتباطه بالآخرين.')) return;
-  const { error } = await sb.from('people').delete().eq('id', p.id);
-  if (error){ alert('تعذر الحذف: ' + error.message); return; }
+  if(!confirm('حذف '+p.name+' من الشجرة؟ سيُفك ارتباطه بالآخرين.')) return;
+  const {error}=await sb.from('people').delete().eq('id',p.id);
+  if(error){ alert('تعذر الحذف: '+error.message); return; }
   refresh();
 }
 
-checkSession();
+// ===== البدء =====
+(async()=>{
+  const {data}=await sb.auth.getSession();
+  if(data.session) enter(); else showLogin();
+})();
 </script>
 </body>
 </html>
