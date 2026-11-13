@@ -3,277 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>شجرة العائلة</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<title>شجرة العائلة - العرض</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#3b2a1a;--accent:#8a5a2b}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;font-family:'Cairo',Tahoma,sans-serif;color:var(--ink);
-  background:radial-gradient(circle at 15% 10%,#fff6e3 0,#f7efe0 35%,#ecdcc0 100%);overflow-x:hidden}
-
-/* ===== الترويسة ===== */
-header{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
-  padding:14px 22px;background:linear-gradient(120deg,#6e4320,#8a5a2b 55%,#b98a4f);color:#fff;box-shadow:0 6px 20px rgba(60,35,10,.25)}
-header h1{margin:0;font-size:22px;font-weight:800;letter-spacing:.5px}
-header .actions{display:flex;gap:10px}
-header button,header a{font:inherit;font-weight:600;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.6);
-  border-radius:999px;padding:7px 16px;text-decoration:none;cursor:pointer;transition:background .25s,transform .2s}
-header button:hover,header a:hover{background:rgba(255,255,255,.28);transform:translateY(-1px)}
-
-main{padding:30px 14px 80px}
-.hint{text-align:center;color:#7a6146;font-size:14px;margin:0 auto 26px;max-width:520px}
-
-/* ===== الجذور ===== */
-.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:44px}
-
-/* ===== الوحدة (بطاقة + أبناؤها) ===== */
-.unit{position:relative;display:flex;flex-direction:column;align-items:center;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
-.unit.child::before{content:'';position:absolute;top:-24px;left:50%;height:24px;border-left:2px solid hsl(var(--h) 55% 48%);opacity:.8}
-
-/* ===== البطاقة ===== */
-.card{position:relative;width:200px;padding:16px 12px 14px;border-radius:24px;cursor:pointer;text-align:center;
-  background:rgba(255,255,255,.82);backdrop-filter:blur(8px);border:1px solid rgba(138,90,43,.16);
-  box-shadow:0 10px 28px rgba(90,60,20,.12);transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s,border-color .4s}
-.card:hover{transform:translateY(-6px) scale(1.03);box-shadow:0 18px 40px rgba(90,60,20,.22)}
-.card.open{border-color:hsl(var(--h) 60% 48%);box-shadow:0 0 0 4px hsl(var(--h) 75% 90%),0 16px 36px rgba(90,60,20,.18)}
-.card::after{content:'';position:absolute;inset:0;border-radius:24px;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);
-  transform:translateX(-100%);transition:transform .9s;pointer-events:none}
-.card:hover::after{transform:translateX(100%)}
-
-.ring{width:92px;height:92px;margin:0 auto 10px;padding:4px;border-radius:50%;
-  background:conic-gradient(hsl(var(--h) 70% 55%),#fff7e6,hsl(var(--h) 70% 55%));
-  box-shadow:0 6px 16px rgba(90,60,20,.15)}
-.ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eadfcc}
-.card .n{font-weight:800;font-size:16px;line-height:1.4}
-.card .meta{font-size:12px;color:#7a6146;margin-top:4px;line-height:1.5}
-.card .sp{font-size:12px;color:#5a4128;margin-top:6px;padding:4px 8px;border-radius:12px;background:rgba(138,90,43,.07)}
-.cnt{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;
-  background:hsl(var(--h) 75% 92%);color:hsl(var(--h) 55% 30%);transition:transform .3s}
-.cnt.bump{animation:pop .4s ease}
-
-/* ===== الأبناء ===== */
-.kids{position:relative;margin-top:26px;padding-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:30px;
-  animation:drop .55s cubic-bezier(.2,.8,.2,1) both}
-.kids::before{content:'';position:absolute;top:0;left:50%;height:26px;border-left:2px solid hsl(var(--h) 55% 48%)}
-.group{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:24px;padding-top:0}
-.group::before{content:'';position:absolute;top:0;left:14%;right:14%;border-top:2px solid hsl(var(--h) 55% 48%);opacity:.8}
-.group.labeled::before{display:none}
-.glabel{width:100%;text-align:center;margin-bottom:12px;font-size:12px;font-weight:700;color:hsl(var(--h) 55% 32%)}
-.glabel span{display:inline-block;padding:3px 12px;border-radius:999px;background:hsl(var(--h) 80% 92%)}
-
-.empty{text-align:center;color:#8a7055;padding:50px 0;font-size:16px}
-.closing{animation:fadeOut .35s ease forwards;pointer-events:none}
-
-/* ===== الحركات ===== */
-@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}
-@keyframes drop{from{opacity:0;transform:translateY(-22px)}to{opacity:1;transform:none}}
-@keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
-@keyframes fadeOut{to{opacity:0;transform:translateY(-12px) scale(.98)}}
-
-@media (max-width:560px){
-  .card{width:170px}
-  .ring{width:80px;height:80px}
-  .kids{gap:18px}
-}
+html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;font-family:Cairo,Tahoma,sans-serif;background:#f3eee4;color:#3b2a1a}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 18px;background:#6b4a2b;color:#fff}
+header h1{margin:0;font-size:19px;font-weight:800}
+.styles{display:flex;gap:8px;flex-wrap:wrap}
+.styles button,header a{font:inherit;font-size:14px;font-weight:700;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.55);border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none;transition:background .25s}
+.styles button:hover,header a:hover{background:rgba(255,255,255,.3)}
+.styles button.active{background:#fff;color:#6b4a2b}
+iframe{flex:1;width:100%;border:0;display:block}
 </style>
 </head>
 <body>
 <header>
   <h1>شجرة العائلة</h1>
-  <div class="actions">
-    <button id="collapseAll">طيّ الكل</button>
-    <a href="family-tree.html">واجهة التعديل</a>
+  <div class="styles" id="styles">
+    <button data-file="family-style-1-branches.html">1 · الفروع النامية</button>
+    <button data-file="family-style-2-heritage.html">2 · الوثيقة العريقة</button>
+    <button data-file="family-style-3-zoom.html">3 · التكبير والتنقل</button>
+    <button data-file="family-style-4-night.html">4 · الوضع الليلي</button>
   </div>
+  <a href="family-tree.html">واجهة التعديل</a>
 </header>
+<iframe id="frame" title="شجرة العائلة"></iframe>
 
-<main>
-  <div class="hint">اضغط على أي شخص لتتفتح أغصانه، واضغط مجدداً لتطويها</div>
-  <div id="tree"></div>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ===== الإعدادات =====
-const SUPABASE_URL = 'https://nrddblppxdiklixjxsni.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const KEY = 'family_view_style';
+const buttons = [...document.querySelectorAll('#styles button')];
+const frame = document.getElementById('frame');
 
-// ===== الحالة =====
-let people = [], marriages = [];
-const expanded = new Set();
-const $ = id => document.getElementById(id);
-const byId = id => people.find(p => p.id === id);
-const nameOf = id => (byId(id) || {}).name || '';
-
-// ===== تحميل البيانات =====
-async function load(){
-  const [p, m] = await Promise.all([
-    sb.from('people').select('*').order('created_at'),
-    sb.from('marriages').select('*')
-  ]);
-  if (p.error){ $('tree').innerHTML = '<div class="empty">تعذر تحميل الشجرة، حاول لاحقاً</div>'; return; }
-  people = p.data.map(r => ({
-    id: r.id, name: r.name, birth: r.birth || '', death: r.death || '', gender: r.gender || '',
-    fatherId: r.father_id || '', motherId: r.mother_id || '', spouseId: r.spouse_id || '',
-    bio: r.bio || '', photo: r.photo_url || '', outsider: !!r.is_outsider
-  }));
-  marriages = (m.data || []).map(x => ({ h: x.husband_id, w: x.wife_id, pos: x.position || 0 }));
-  render();
+function show(file){
+  frame.src = file;
+  buttons.forEach(b => b.classList.toggle('active', b.dataset.file === file));
+  try { localStorage.setItem(KEY, file); } catch (e) {}
 }
 
-// ===== المنطق (مطابق لواجهة التعديل) =====
-function partnersOf(id){
-  const list = marriages
-    .filter(m => m.h === id || m.w === id)
-    .sort((a, b) => a.pos - b.pos)
-    .map(m => m.h === id ? m.w : m.h);
-  const me = byId(id);
-  if (me && me.spouseId && byId(me.spouseId) && !list.includes(me.spouseId)) list.push(me.spouseId);
-  people.forEach(p => { if (p.spouseId === id && !list.includes(p.id)) list.push(p.id); });
-  return [...new Set(list)].filter(x => byId(x));
-}
+buttons.forEach(b => b.addEventListener('click', () => show(b.dataset.file)));
 
-function primaryParent(c){
-  const f = byId(c.fatherId), m = byId(c.motherId);
-  if (f && !f.outsider) return f.id;
-  if (m && !m.outsider) return m.id;
-  if (f) return f.id;
-  if (m) return m.id;
-  return null;
-}
-
-function childrenGroups(id){
-  const partners = partnersOf(id);
-  const map = new Map();
-  partners.forEach(pid => map.set(pid, []));
-  map.set(null, []);
-  people.forEach(c => {
-    if (c.outsider) return;
-    if (c.fatherId !== id && c.motherId !== id) return;
-    if (primaryParent(c) !== id) return;
-    const other = c.fatherId === id ? c.motherId : c.fatherId;
-    map.get(partners.includes(other) ? other : null).push(c);
-  });
-  const out = [];
-  partners.forEach(pid => { const kids = map.get(pid); if (kids.length) out.push({ label: 'مع ' + nameOf(pid), kids }); });
-  if (map.get(null).length) out.push({ label: partners.length ? 'من غير الزوج/الزوجة المسجّل' : '', kids: map.get(null) });
-  return out;
-}
-
-const countKids = id => childrenGroups(id).reduce((s, g) => s + g.kids.length, 0);
-const countText = (id, open) => {
-  const n = countKids(id);
-  if (!n) return '';
-  const word = n === 1 ? 'ابن/ابنة' : 'أبناء';
-  return (open ? '▲ طيّ ' : '▼ عرض ') + n + ' ' + word;
-};
-
-// ===== العرض =====
-function render(){
-  const tree = $('tree'); tree.innerHTML = '';
-  const roots = people.filter(p => !p.fatherId && !p.motherId && !p.outsider && !(p.gender === 'female' && partnersOf(p.id).length));
-  if (!roots.length){ tree.innerHTML = '<div class="empty">لا توجد بيانات بعد.</div>'; return; }
-  const wrap = document.createElement('div'); wrap.className = 'roots';
-  roots.forEach((r, i) => {
-    const u = unit(r.id, 0, false);
-    u.style.animationDelay = (i * 120) + 'ms';
-    wrap.appendChild(u);
-  });
-  tree.appendChild(wrap);
-}
-
-function unit(id, depth, isChild){
-  const p = byId(id);
-  const box = document.createElement('div');
-  box.className = 'unit' + (isChild ? ' child' : '');
-  box.dataset.depth = depth;
-  box.style.setProperty('--h', (24 + depth * 42) % 360);
-
-  const card = document.createElement('div');
-  const open = expanded.has(id);
-  card.className = 'card' + (open ? ' open' : '');
-
-  const ring = document.createElement('div'); ring.className = 'ring';
-  const ph = document.createElement(p.photo ? 'img' : 'div');
-  if (p.photo){ ph.src = p.photo; ph.alt = ''; } else { ph.className = 'ph'; }
-  ring.appendChild(ph);
-
-  const n = document.createElement('div'); n.className = 'n'; n.textContent = p.name;
-  card.append(ring, n);
-
-  if (p.death) addMeta(card, 'الحياة: ' + (p.birth || '؟') + ' – ' + p.death);
-  else if (p.birth) addMeta(card, 'الميلاد: ' + p.birth);
-
-  const partners = partnersOf(id);
-  if (partners.length){
-    const sp = document.createElement('div'); sp.className = 'sp';
-    sp.textContent = 'الزوج / الزوجة: ' + partners.map(nameOf).join('، ');
-    card.appendChild(sp);
-  }
-
-  const cnt = document.createElement('div'); cnt.className = 'cnt';
-  cnt.textContent = countText(id, open);
-  cnt.style.display = countKids(id) ? '' : 'none';
-  card.appendChild(cnt);
-
-  card.onclick = () => toggle(id, box, card);
-  box.appendChild(card);
-
-  if (open) box.appendChild(kidsEl(id, depth));
-  return box;
-}
-
-function addMeta(card, text){
-  const d = document.createElement('div'); d.className = 'meta'; d.textContent = text; card.appendChild(d);
-}
-
-function kidsEl(id, depth){
-  const groups = childrenGroups(id);
-  const holder = document.createElement('div'); holder.className = 'kids';
-  holder.style.setProperty('--h', (24 + depth * 42) % 360);
-  let k = 0;
-  groups.forEach(g => {
-    const gr = document.createElement('div');
-    gr.className = 'group' + (groups.length > 1 && g.label ? ' labeled' : '');
-    if (groups.length > 1 && g.label){
-      const lb = document.createElement('div'); lb.className = 'glabel';
-      const sp = document.createElement('span'); sp.textContent = g.label;
-      lb.appendChild(sp); gr.appendChild(lb);
-    }
-    g.kids.forEach(child => {
-      const u = unit(child.id, depth + 1, true);
-      u.style.animationDelay = (k * 90) + 'ms';
-      k++;
-      gr.appendChild(u);
-    });
-    holder.appendChild(gr);
-  });
-  return holder;
-}
-
-// فتح/طيّ في المكان نفسه دون إعادة رسم الشجرة
-function toggle(id, box, card){
-  const depth = Number(box.dataset.depth || 0);
-  const existing = box.querySelector(':scope > .kids');
-  const cnt = card.querySelector('.cnt');
-  if (existing){
-    expanded.delete(id);
-    card.classList.remove('open');
-    existing.classList.add('closing');
-    setTimeout(() => existing.remove(), 350);
-  } else {
-    expanded.add(id);
-    card.classList.add('open');
-    box.appendChild(kidsEl(id, depth));
-  }
-  cnt.textContent = countText(id, expanded.has(id));
-  cnt.classList.remove('bump'); void cnt.offsetWidth; cnt.classList.add('bump');
-}
-
-$('collapseAll').onclick = () => { expanded.clear(); render(); };
-
-load();
+let saved = null;
+try { saved = localStorage.getItem(KEY); } catch (e) {}
+const valid = buttons.map(b => b.dataset.file);
+show(valid.includes(saved) ? saved : valid[0]);
 </script>
 </body>
 </html>
