@@ -23,6 +23,15 @@ main{padding:24px 14px 100px}
 .roots{display:flex;flex-wrap:wrap;justify-content:center;gap:50px;animation:fade .5s both}
 .empty{text-align:center;color:#8a6b3e;padding:50px 0;font-size:20px}
 
+/* الشخص المفتوح والزوجان */
+.focus{display:flex;justify-content:center;animation:up .5s both}
+.couplehead{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;animation:up .5s both}
+.bond{font-size:30px;color:#b08d4c;line-height:1}
+
+/* خيارات الزوجات: بطاقات تظهر تحت الشخص */
+.choicesRow{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:34px;padding-top:44px;animation:fade .5s both}
+.choicesRow::before{content:'';position:absolute;top:0;left:50%;height:44px;border-left:1px dashed #b08d4c}
+
 /* البطاقة */
 .card{position:relative;overflow:hidden;width:215px;padding:18px 12px 14px;background:linear-gradient(160deg,rgba(255,255,255,.92),rgba(255,247,230,.7));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;
   border:6px double #b08d4c;border-radius:50% 50% 16px 16px / 22% 22% 16px 16px;
@@ -35,6 +44,10 @@ main{padding:24px 14px 100px}
 .ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee3c6}
 .n{font-size:25px;font-weight:700;color:#5a3d1a;line-height:1.3}
 .card.big .n{font-size:30px}
+.meta{font-size:16px;color:#8a6b3e;margin-top:4px}
+.cnt{margin-top:8px;font-size:16px;color:#7a5520;font-style:italic}
+.dbtn{margin-top:10px;font:inherit;font-size:15px;color:#7a5520;background:transparent;border:1px solid #b08d4c;border-radius:999px;padding:2px 14px;cursor:pointer}
+.dbtn:hover{background:#f3e2b8}
 /* لمعة زجاجية تمر على البطاقة عند المرور بالمؤشر */
 .card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
   background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);
@@ -43,23 +56,13 @@ main{padding:24px 14px 100px}
 /* اسم متلألئ عند المرور */
 .card.clickable:hover .n{background:linear-gradient(100deg,#5a3d1a 35%,#d4a94f 50%,#5a3d1a 65%);background-size:250% 100%;
   -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 1.8s linear infinite}
-@keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
-.meta{font-size:16px;color:#8a6b3e;margin-top:4px}
-.cnt{margin-top:8px;font-size:16px;color:#7a5520;font-style:italic}
-.pchips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px}
-.pchip{font:inherit;font-size:14px;color:#6b4a2b;background:#fffaf0;border:1px dashed #b08d4c;border-radius:999px;padding:2px 11px;cursor:pointer}
-.pchip:hover{background:#f3e2b8}
-.dbtn{margin-top:10px;font:inherit;font-size:15px;color:#7a5520;background:transparent;border:1px solid #b08d4c;border-radius:999px;padding:2px 14px;cursor:pointer}
-.dbtn:hover{background:#f3e2b8}
 
-/* الأبناء: تظهر وحدهم تحت الأب المفتوح */
+/* الأبناء وحدهم */
 .kidsWrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;padding-top:44px;margin-top:6px;animation:fade .5s both}
 .kidsWrap::before{content:'';position:absolute;top:0;left:50%;height:44px;border-left:1px dashed #b08d4c}
 .pgroup{display:flex;flex-direction:column;align-items:center;gap:14px}
-.glabel{font-size:17px;color:#7a5520}
-.glabel span{padding:2px 16px;border:1px solid #b08d4c;border-radius:999px;background:#fffaf0}
+.glabel span{padding:2px 16px;border:1px solid #b08d4c;border-radius:999px;background:#fffaf0;font-size:17px;color:#7a5520}
 .kidsRow{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
-.focus{display:flex;justify-content:center;animation:up .5s both}
 
 /* لوحة التفاصيل */
 #drawer{position:fixed;top:0;right:0;height:100%;width:360px;max-width:92vw;overflow:auto;padding:26px 22px;z-index:30;
@@ -76,14 +79,15 @@ main{padding:24px 14px 100px}
 
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
 </style>
 </head>
 <body>
 <header>
   <h1>شجرة العائلة</h1>
   <div class="toolbar">
-    <button id="backBtn" disabled>→ رجوع إلى الأب</button>
-    <button id="homeBtn">الجيل الأول</button>
+    <button id="backBtn" disabled>→ رجوع</button>
+    <button id="homeBtn" disabled>الجيل الأول</button>
     <a href="family-tree.html" class="tlink">واجهة التعديل</a>
   </div>
   <div class="crumbs" id="crumbs"></div>
@@ -99,7 +103,8 @@ main{padding:24px 14px 100px}
 <script>
 const sb = window.supabase.createClient('https://nrddblppxdiklixjxsni.supabase.co','sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT');
 let people=[], marriages=[];
-let stack=[];                      // مسار التنقل: كل عنصر هو شخص مفتوح
+// مسار التنقل: {id} لشخص، أو {id, pid} لزوجين محددين
+let stack=[];
 const $=id=>document.getElementById(id);
 const byId=id=>people.find(p=>p.id===id);
 const nameOf=id=>(byId(id)||{}).name||'';
@@ -121,6 +126,9 @@ function partnersOf(id){
   return [...new Set(list)].filter(x=>byId(x));
 }
 function primaryParent(c){const f=byId(c.fatherId),m=byId(c.motherId);if(f&&!f.outsider)return f.id;if(m&&!m.outsider)return m.id;if(f)return f.id;if(m)return m.id;return null;}
+function kidsOfPair(id,pid){
+  return people.filter(c=>!c.outsider && ((c.fatherId===id&&c.motherId===pid)||(c.fatherId===pid&&c.motherId===id)) && primaryParent(c)===id);
+}
 function childrenGroups(id){
   const partners=partnersOf(id), map=new Map(); partners.forEach(p=>map.set(p,[])); map.set(null,[]);
   people.forEach(c=>{if(c.outsider)return;if(c.fatherId!==id&&c.motherId!==id)return;if(primaryParent(c)!==id)return;const o=c.fatherId===id?c.motherId:c.fatherId;map.get(partners.includes(o)?o:null).push(c);});
@@ -131,10 +139,11 @@ function childrenGroups(id){
 const countKids=id=>childrenGroups(id).reduce((s,g)=>s+g.kids.length,0);
 const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
 
-// ===== التنقل: الأبناء وحدهم، ومعهم زر الرجوع =====
-function open(id){ stack.push(id); render(); }
+// ===== التنقل =====
+function open(id){ stack.push({id}); render(); }
+function openPair(id,pid){ stack.push({id,pid}); render(); }
 function back(){ stack.pop(); render(); }
-function jump(i){ stack=stack.slice(0,i); render(); }
+function jump(i){ stack=stack.slice(0,i+1); render(); }
 function home(){ stack=[]; render(); }
 
 // ===== بطاقة شخص =====
@@ -145,14 +154,8 @@ function nodeCard(p,o){
   c.appendChild(r);
   c.appendChild(el('div','n',dispName(p)));
   const life=lifeText(p); if(life)c.appendChild(el('div','meta',life));
-  const n=countKids(p.id);
+  const n=o.count!==undefined?o.count:countKids(p.id);
   if(n) c.appendChild(el('div','cnt',n+' '+(n===1?'ابن':'أبناء')));
-  const pts=partnersOf(p.id);
-  if(pts.length){
-    const pc=el('div','pchips');
-    pts.forEach(pid=>{const b=el('button','pchip',nameOf(pid)); b.onclick=ev=>{ev.stopPropagation();openDrawer(pid);}; pc.appendChild(b);});
-    c.appendChild(pc);
-  }
   const d=el('button','dbtn','التفاصيل');
   d.onclick=ev=>{ev.stopPropagation();openDrawer(p.id);};
   c.appendChild(d);
@@ -160,21 +163,32 @@ function nodeCard(p,o){
   return c;
 }
 
+function kidsSection(kids){
+  if(!kids.length) return el('div','empty','لا يوجد أبناء مسجّلون');
+  const wrap=el('div','kidsWrap');
+  const row=el('div','kidsRow');
+  kids.forEach(k=>row.appendChild(nodeCard(k,{onClick:()=>open(k.id)})));
+  wrap.appendChild(row);
+  return wrap;
+}
+
 function render(){
   // شريط المسار
   const cr=$('crumbs'); cr.innerHTML='';
   if(stack.length){
     const h=el('button','','الجيل الأول'); h.onclick=home; cr.appendChild(h);
-    stack.forEach((id,i)=>{
+    stack.forEach((e,i)=>{
       cr.appendChild(el('span','sep','‹'));
-      const b=el('button','',nameOf(id)); b.onclick=()=>jump(i+1); cr.appendChild(b);
+      const label=e.pid?nameOf(e.id)+' و'+nameOf(e.pid):nameOf(e.id);
+      const b=el('button','',label); b.onclick=()=>jump(i); cr.appendChild(b);
     });
   }
   $('backBtn').disabled=!stack.length;
   $('homeBtn').disabled=!stack.length;
 
   const v=$('view'); v.innerHTML='';
-  // الجيل الأول: الجذور فقط
+
+  // الجيل الأول
   if(!stack.length){
     const roots=rootsList();
     if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
@@ -184,12 +198,36 @@ function render(){
     return;
   }
 
-  // الشخص المفتوح بالأعلى، وأبناؤه وحدهم تحته
-  const cur=stack[stack.length-1];
-  const top=el('div','focus');
-  top.appendChild(nodeCard(byId(cur),{big:true}));
-  v.appendChild(top);
+  const top=stack[stack.length-1];
+  const cur=top.id;
+  const partners=partnersOf(cur);
 
+  // زوجان محددان: الاثنان بالأعلى، وأبناؤهما تحتهما
+  if(top.pid){
+    const head=el('div','couplehead');
+    head.appendChild(nodeCard(byId(cur),{big:true,count:kidsOfPair(cur,top.pid).length}));
+    head.appendChild(el('div','bond','⚭'));
+    head.appendChild(nodeCard(byId(top.pid),{big:true,count:kidsOfPair(cur,top.pid).length}));
+    v.appendChild(head);
+    v.appendChild(kidsSection(kidsOfPair(cur,top.pid)));
+    return;
+  }
+
+  // أكثر من زوج/زوجة: تظهر بطاقاتهم تحت الشخص لاختيار أحدهم
+  if(partners.length>=2){
+    v.appendChild(el('div','focus'));
+    v.lastChild.appendChild(nodeCard(byId(cur),{big:true}));
+    const row=el('div','choicesRow');
+    partners.forEach(pid=>{
+      row.appendChild(nodeCard(byId(pid),{count:kidsOfPair(cur,pid).length,onClick:()=>openPair(cur,pid)}));
+    });
+    v.appendChild(row);
+    return;
+  }
+
+  // زوج/زوجة واحدة أو بلا زوج: الأبناء مباشرة
+  v.appendChild(el('div','focus'));
+  v.lastChild.appendChild(nodeCard(byId(cur),{big:true}));
   const groups=childrenGroups(cur);
   if(!groups.length){ v.appendChild(el('div','empty','لا يوجد أبناء مسجّلون لهذا الشخص')); return; }
   const wrap=el('div','kidsWrap');
