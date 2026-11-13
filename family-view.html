@@ -88,6 +88,13 @@ main{padding:24px 14px 100px}
 #dbody .big .ph{width:170px;height:170px;margin:0 auto;border-radius:50%;background:#eee3c6}
 
 /* ===== العرض الكامل ===== */
+.fullWrap{overflow:auto;padding-bottom:24px}
+.ftitle{text-align:center;margin-bottom:12px}
+.ftree{position:relative;margin:0 auto}
+.ftree .card.fcard{position:absolute;z-index:1;width:180px;height:230px;padding:14px 8px 10px;overflow:hidden}
+.ftree .fbond{position:absolute;z-index:2;font-size:26px;color:#b08d4c;line-height:1}
+.flines{position:absolute;left:0;top:0;pointer-events:none;z-index:0}
+.flines path{fill:none;stroke:#8a5a2b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .fullTree{display:flex;flex-direction:column;align-items:center;gap:30px;padding-bottom:40px}
 .ftitle{font-size:30px;color:#7a5520}
 .froots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px;align-items:flex-start}
@@ -363,6 +370,87 @@ function closeDrawer(){ $('drawer').classList.remove('open'); $('drawerBg').clas
 $('closeDrawer').onclick=closeDrawer;
 $('drawerBg').onclick=closeDrawer;
 
+// ===== تخطيط العرض الكامل: خطوط واضحة وبلا تداخل =====
+const FW=180, FH=230, FROW=320, FBOND=44, FKG=34, FGAP=90;
+function shiftF(l,dx){
+  l.items.forEach(i=>i.cx+=dx);
+  l.bonds.forEach(b=>b.cx+=dx);
+  l.links.forEach(k=>{ k.px+=dx; k.xs=k.xs.map(v=>v+dx); });
+  return l;
+}
+function fullLayoutF(id,depth,seen){
+  seen.add(id);
+  const members=[id,...partnersOf(id)];
+  const uw=members.length*FW+(members.length-1)*FBOND;
+  const kids=[];
+  childrenGroups(id).forEach(g=>g.kids.forEach(k=>{ if(!seen.has(k.id)) kids.push(k); }));
+  const kl=kids.map(k=>fullLayoutF(k.id,depth+1,seen));
+  const kidsW=kl.reduce((s,l)=>s+l.w,0)+Math.max(0,kl.length-1)*FKG;
+  const w=Math.max(uw,kidsW,FW);
+  const y=depth*FROW;
+  const items=[], bonds=[], links=[];
+  const left=(w-uw)/2;
+  members.forEach((m,i)=>items.push({id:m,cx:left+FW/2+i*(FW+FBOND),y}));
+  for(let i=1;i<members.length;i++) bonds.push({cx:left+FW+(i-1)*(FW+FBOND)+FBOND/2,y:y+FH/2});
+  let x=(w-kidsW)/2;
+  const xs=[];
+  kl.forEach(l=>{
+    shiftF(l,x);
+    items.push(...l.items); bonds.push(...l.bonds); links.push(...l.links);
+    xs.push(x+l.w/2);
+    x+=l.w+FKG;
+  });
+  if(kl.length) links.push({px:w/2,py:y+FH,ky:(depth+1)*FROW,xs});
+  return {w,items,bonds,links};
+}
+function renderFull(){
+  setModeButtons(true);
+  $('crumbs').innerHTML='';
+  const v=$('view'); v.innerHTML='';
+  const roots=rootsList();
+  if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+  const seen=new Set();
+  let x=0; const all={items:[],bonds:[],links:[]};
+  roots.forEach(r=>{
+    if(seen.has(r.id)) return;
+    const l=shiftF(fullLayoutF(r.id,0,seen),x);
+    all.items.push(...l.items); all.bonds.push(...l.bonds); all.links.push(...l.links);
+    x+=l.w+FGAP;
+  });
+  const W=Math.max(FW,x-FGAP);
+  const H=Math.max(...all.items.map(i=>i.y))+FH;
+  const svgNS='http://www.w3.org/2000/svg';
+  const wrap=el('div','fullWrap');
+  wrap.appendChild(el('div','ftitle','شجرة العائلة'));
+  const box=el('div','ftree');
+  box.style.width=(W+40)+'px'; box.style.height=(H+40)+'px';
+  const svg=document.createElementNS(svgNS,'svg');
+  svg.setAttribute('class','flines'); svg.setAttribute('width',W+40); svg.setAttribute('height',H+40);
+  all.links.forEach(k=>{
+    const px=k.px+20, py=k.py+20, ky=k.ky+20;
+    const midY=(py+ky)/2;
+    const xs=k.xs.map(v=>v+20);
+    const minX=Math.min(px,...xs), maxX=Math.max(px,...xs);
+    let d=`M${px} ${py} V${midY}`;
+    if(maxX>minX) d+=` M${minX} ${midY} H${maxX}`;
+    xs.forEach(v=>{ d+=` M${v} ${midY} V${ky}`; });
+    const path=document.createElementNS(svgNS,'path'); path.setAttribute('d',d); svg.appendChild(path);
+  });
+  box.appendChild(svg);
+  all.items.forEach(it=>{
+    const p=byId(it.id); if(!p) return;
+    const c=fcard(p);
+    c.style.left=(it.cx-FW/2+20)+'px'; c.style.top=(it.y+20)+'px';
+    box.appendChild(c);
+  });
+  all.bonds.forEach(b=>{
+    const d=el('div','fbond','⚭');
+    d.style.left=(b.cx+20-10)+'px'; d.style.top=(b.y+20-13)+'px';
+    box.appendChild(d);
+  });
+  wrap.appendChild(box);
+  v.appendChild(wrap);
+}
 $('backBtn').onclick=back;
 $('homeBtn').onclick=home;
 load();
