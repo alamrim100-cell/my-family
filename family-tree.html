@@ -16,7 +16,7 @@ button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
 main{padding:12px;max-width:100%;overflow:auto}
 #tree{position:relative}
 /* بطاقة الزوجين: شخصان في بطاقة واحدة */
-.unit{position:absolute;display:flex;height:270px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06);z-index:1}
+.unit{position:absolute;display:flex;height:270px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:visible;box-shadow:0 2px 6px rgba(0,0,0,.06);z-index:1}
 .panel{width:190px;height:268px;flex:0 0 190px;padding:10px 8px;text-align:center;overflow:hidden}
 .panel+.panel{border-right:1px solid var(--line)}
 /* الزوج/الزوجة من خارج العائلة: بطاقة أصغر لتتميز عن أفراد العائلة */
@@ -25,6 +25,10 @@ main{padding:12px;max-width:100%;overflow:auto}
 .panel.small .n{font-size:12px}
 .panel.small .meta{font-size:11px}
 .panel.small button{font-size:11px;padding:2px 5px}
+/* شريك الحياة: شارة صغيرة متداخلة مع أسفل البطاقة */
+.chip{position:absolute;left:50%;transform:translateX(-50%);bottom:-22px;width:168px;height:46px;display:flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;background:#fff;border:1px solid var(--accent);border-radius:23px;box-shadow:0 2px 6px rgba(0,0,0,.14);cursor:pointer;z-index:2}
+.cph{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--line);flex:0 0 34px}
+.cn{flex:1;font-size:12px;font-weight:bold;line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:start}
 .panel img,.ph{width:80px;height:80px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 6px}
 .panel .n{font-weight:bold;font-size:14px;line-height:1.4}
 .panel .meta{font-size:12px;color:#666;margin-top:3px;line-height:1.45}
@@ -163,7 +167,7 @@ function layout(id, row, depth = 0){
   const items = [], links = [];
   let x = 0, anchor = null;
   groups.forEach(g => {
-    const unitW = g.pid ? CW + SW : CW;
+    const unitW = CW;
     const kidRow = row + 1;
     const kl = g.kids.map(k => layout(k.id, kidRow, depth + 1));
     const kidsW = kl.reduce((s, l) => s + l.w, 0) + GAPX * Math.max(0, kl.length - 1);
@@ -240,7 +244,7 @@ function render(){
 
   t.items.forEach(it => {
     const a = byId(it.a); if (!a) return;
-    const W = it.type === 'couple' ? CW + SW : CW;
+    const W = CW;
     const unit = document.createElement('div'); unit.className = 'unit';
     unit.style.width = W + 'px';
     unit.style.left = (it.cx - W / 2 + PAD) + 'px';
@@ -249,7 +253,9 @@ function render(){
       const b = byId(it.b);
       if (b){
         const outsider = marriedInId(a, b);
-        unit.append(panel(a, it.b, outsider === a.id), panel(b, it.a, outsider === b.id));
+        const main = outsider === a.id ? b : a;
+        const spouse = main === a ? b : a;
+        unit.append(panel(main, spouse.id, false), chip(spouse));
       }
       else unit.append(panel(a, null));
     } else {
@@ -270,6 +276,18 @@ function marriedInId(a, b){
     if (b.gender === 'female') return b.id;
   }
   return null;
+}
+
+// شارة شريك الحياة المتداخلة أسفل البطاقة (الضغط عليها يفتح تعديله)
+function chip(p){
+  const c = document.createElement('div'); c.className = 'chip'; c.title = 'تعديل';
+  c.onclick = () => openForm(p.id);
+  const img = document.createElement(p.photo ? 'img' : 'div');
+  img.className = 'cph';
+  if (p.photo) img.src = p.photo;
+  const n = document.createElement('div'); n.className = 'cn'; n.textContent = p.name;
+  c.append(img, n);
+  return c;
 }
 
 // بطاقة شخص داخل الوحدة
