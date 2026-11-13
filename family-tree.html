@@ -172,7 +172,10 @@ function layout(id, row, depth = 0){
   kb.set(null, []);
   people.forEach(c => {
     if (c.fatherId !== id && c.motherId !== id) return;
-    const other = c.fatherId === id ? c.motherId : c.fatherId;
+    const isFather = c.fatherId === id;
+    // الابن يظهر مرة واحدة فقط: من جانب الأب، ولا يتكرر من جانب الأم إذا كان الأب موجوداً في الشجرة
+    if (!isFather && c.fatherId && byId(c.fatherId)) return;
+    const other = isFather ? c.motherId : c.fatherId;
     kb.get(partners.includes(other) ? other : null).push(c);
   });
   const groups = partners.map(pid => ({ pid, kids: kb.get(pid) }));
