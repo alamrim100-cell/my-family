@@ -77,6 +77,31 @@ main{padding:24px 14px 100px}
 #dbody .drow{font-size:19px;line-height:1.7;color:#5a4128;border-bottom:1px dotted #d9bf85;padding:6px 0}
 #dbody .bio{font-size:18px;color:#6b5030;margin-top:12px;font-style:italic;line-height:1.8}
 
+/* ===== العرض الكامل ===== */
+.fullTree{display:flex;flex-direction:column;align-items:center;gap:30px;padding-bottom:40px}
+.ftitle{font-size:30px;color:#7a5520}
+.froots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px;align-items:flex-start}
+.fnode{display:flex;flex-direction:column;align-items:center;break-inside:avoid}
+.fcouple{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.card.fcard{width:190px;padding:14px 10px 12px;cursor:default}
+.card.fcard:hover{transform:none}
+.card.fcard .ring{width:96px;height:96px}
+.card.fcard .n{font-size:18px}
+.card.fcard .meta{font-size:13px}
+.fkids{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px;padding-top:40px}
+.fkids::before{content:'';position:absolute;top:0;left:50%;height:40px;border-left:1px dashed #b08d4c}
+.fgroup{display:flex;flex-direction:column;align-items:center;gap:12px}
+.frow{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+@media print{
+  @page{size:A3 landscape;margin:10mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff}
+  .toolbar,.crumbs,#drawer,.note{display:none !important}
+  header{padding:0}
+  main{padding:0}
+  .card.fcard{box-shadow:none}
+}
+
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
@@ -88,6 +113,9 @@ main{padding:24px 14px 100px}
   <div class="toolbar">
     <button id="backBtn" disabled>→ رجوع</button>
     <button id="homeBtn" disabled>الجيل الأول</button>
+    <button id="fullBtn">العرض الكامل</button>
+    <button id="printBtn" hidden>طباعة / PDF</button>
+    <button id="interBtn" hidden>العودة للعرض التفاعلي</button>
     <a href="family-tree.html" class="tlink">واجهة التعديل</a>
   </div>
   <div class="crumbs" id="crumbs"></div>
@@ -172,7 +200,10 @@ function kidsSection(kids){
   return wrap;
 }
 
+let fullMode=false;
 function render(){
+  if(fullMode){ renderFull(); return; }
+  setModeButtons(false);
   // شريط المسار
   const cr=$('crumbs'); cr.innerHTML='';
   if(stack.length){
@@ -241,6 +272,62 @@ function render(){
   });
   v.appendChild(wrap);
 }
+
+// ===== العرض الكامل: كل الأجيال ظاهرة دفعة واحدة =====
+function setModeButtons(full){
+  $('fullBtn').hidden=full; $('printBtn').hidden=!full; $('interBtn').hidden=!full;
+  $('backBtn').hidden=full; $('homeBtn').hidden=full;
+}
+function fcard(p){
+  const c=el('div','card fcard');
+  const r=el('div','ring');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
+  c.appendChild(r);
+  c.appendChild(el('div','n',dispName(p)));
+  const life=lifeText(p); if(life)c.appendChild(el('div','meta',life));
+  return c;
+}
+function fullNode(id,seen){
+  seen.add(id);
+  const box=el('div','fnode');
+  const couple=el('div','fcouple');
+  couple.appendChild(fcard(byId(id)));
+  partnersOf(id).forEach(pid=>{ couple.appendChild(el('div','bond','⚭')); couple.appendChild(fcard(byId(pid))); });
+  box.appendChild(couple);
+  const groups=childrenGroups(id);
+  const kb=el('div','fkids');
+  let any=false;
+  groups.forEach(g=>{
+    const todo=g.kids.filter(k=>!seen.has(k.id));
+    if(!todo.length) return;
+    any=true;
+    const gr=el('div','fgroup');
+    if(groups.length>1&&g.label){ const lb=el('div','glabel'); lb.appendChild(el('span','',g.label)); gr.appendChild(lb); }
+    const row=el('div','frow');
+    todo.forEach(k=>{ if(!seen.has(k.id)) row.appendChild(fullNode(k.id,seen)); });
+    gr.appendChild(row);
+    kb.appendChild(gr);
+  });
+  if(any) box.appendChild(kb);
+  return box;
+}
+function renderFull(){
+  setModeButtons(true);
+  $('crumbs').innerHTML='';
+  const v=$('view'); v.innerHTML='';
+  const roots=rootsList();
+  if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+  const seen=new Set();
+  const wrap=el('div','fullTree');
+  wrap.appendChild(el('div','ftitle','شجرة العائلة'));
+  const row=el('div','froots');
+  roots.forEach(r=>{ if(!seen.has(r.id)) row.appendChild(fullNode(r.id,seen)); });
+  wrap.appendChild(row);
+  v.appendChild(wrap);
+}
+$('fullBtn').onclick=()=>{ fullMode=true; render(); };
+$('interBtn').onclick=()=>{ fullMode=false; render(); };
+$('printBtn').onclick=()=>window.print();
 
 // ===== لوحة التفاصيل =====
 function openDrawer(id){
