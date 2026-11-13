@@ -170,6 +170,16 @@ function colorFor(key){
   return PALETTE[h % PALETTE.length];
 }
 
+// الوالد الأساسي للابن: الأب من أفراد العائلة، وإلا الأم من أفراد العائلة، وإلا أي والد موجود
+function primaryParent(c){
+  const f = byId(c.fatherId), m = byId(c.motherId);
+  if (f && !f.outsider) return f.id;
+  if (m && !m.outsider) return m.id;
+  if (f) return f.id;
+  if (m) return m.id;
+  return null;
+}
+
 function layout(id, row, depth = 0){
   if (depth > 15) return { w: CW, anchor: CW / 2, items: [{ type: 'single', a: id, cx: CW / 2, row }], links: [] };
   const partners = partnersOf(id);
@@ -178,10 +188,9 @@ function layout(id, row, depth = 0){
   kb.set(null, []);
   people.forEach(c => {
     if (c.fatherId !== id && c.motherId !== id) return;
-    const isFather = c.fatherId === id;
-    // الابن يظهر مرة واحدة فقط: من جانب الأب، ولا يتكرر من جانب الأم إذا كان الأب موجوداً في الشجرة
-    if (!isFather && c.fatherId && byId(c.fatherId)) return;
-    const other = isFather ? c.motherId : c.fatherId;
+    // الابن يظهر مرة واحدة فقط: تحت الوالد من أفراد العائلة (وليس الزوج/الزوجة من خارجها)
+    if (primaryParent(c) !== id) return;
+    const other = c.fatherId === id ? c.motherId : c.fatherId;
     kb.get(partners.includes(other) ? other : null).push(c);
   });
   const groups = partners.map(pid => ({ pid, kids: kb.get(pid) }));
