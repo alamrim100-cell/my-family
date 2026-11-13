@@ -73,6 +73,7 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
   <label>الأب</label><select id="fFather"></select>
   <label>الأم</label><select id="fMother"></select>
   <label>الزوج / الزوجة</label><select id="fSpouse"></select>
+  <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input id="fOutsider" type="checkbox" style="width:auto;margin:0"> من خارج العائلة (زوج/زوجة فقط)</label>
   <label>الصورة</label><input id="fPhoto" type="file" accept="image/*">
   <label>ملاحظات</label><input id="fBio">
   <div class="bar" style="margin-top:16px">
@@ -132,7 +133,7 @@ async function loadPeople(){
   people = p.data.map(r => ({
     id: r.id, name: r.name, birth: r.birth || '', death: r.death || '', gender: r.gender || '',
     fatherId: r.father_id || '', motherId: r.mother_id || '', spouseId: r.spouse_id || '',
-    bio: r.bio || '', photo: r.photo_url || ''
+    bio: r.bio || '', photo: r.photo_url || '', outsider: !!r.is_outsider
   }));
   marriages = (m.data || []).map(x => ({ h: x.husband_id, w: x.wife_id, pos: x.position || 0 }));
   render();
@@ -212,7 +213,7 @@ function layout(id, row, depth = 0){
 
 function buildTree(){
   const isFemalePartner = p => p.gender === 'female' && partnersOf(p.id).length > 0;
-  const roots = people.filter(p => !p.fatherId && !p.motherId && !isFemalePartner(p));
+  const roots = people.filter(p => !p.fatherId && !p.motherId && !p.outsider && !isFemalePartner(p));
   let x = 0; const items = [], links = [], placed = new Set();
   const addRoot = id => {
     const l = layout(id, 0);
@@ -293,6 +294,9 @@ function render(){
 
 // من هو الزوج/الزوجة من خارج العائلة؟ (ليس له أب ولا أم في الشجرة)
 function marriedInId(a, b){
+  // إذا حُدِّد الشخص يدوياً كـ"من خارج العائلة" فهو الزوج/الزوجة دائماً
+  if (a.outsider && !b.outsider) return a.id;
+  if (b.outsider && !a.outsider) return b.id;
   const aHasParents = !!(a.fatherId || a.motherId);
   const bHasParents = !!(b.fatherId || b.motherId);
   if (!aHasParents && bHasParents) return a.id;
@@ -396,6 +400,7 @@ function openForm(id = null){
   $('fName').value = p.name || ''; $('fBirth').value = p.birth || ''; $('fGender').value = p.gender || '';
   fillSelect($('fFather'), p.fatherId, id); fillSelect($('fMother'), p.motherId, id); fillSelect($('fSpouse'), p.spouseId, id);
   $('fDeath').value = p.death || '';
+  $('fOutsider').checked = !!p.outsider;
   $('fBio').value = p.bio || ''; $('fPhoto').value = '';
   $('formDlg').showModal();
 }
@@ -407,6 +412,7 @@ function openChildForm(parentId, partnerId){
   const partner = partnerId || partnersOf(parentId)[0] || '';
   $('formTitle').textContent = 'إضافة ابن/ابنة لـ ' + par.name;
   $('fName').value = ''; $('fBirth').value = ''; $('fDeath').value = ''; $('fGender').value = '';
+  $('fOutsider').checked = false;
   fillSelect($('fFather'), '', null); fillSelect($('fMother'), '', null); fillSelect($('fSpouse'), '', null);
   if (par.gender === 'female'){
     $('fMother').value = parentId; $('fFather').value = partner;
@@ -449,7 +455,7 @@ $('saveBtn').onclick = async () => {
 
   const data = {
     name: $('fName').value.trim(), birth: $('fBirth').value || null, death: $('fDeath').value || null,
-    gender: $('fGender').value || null,
+    gender: $('fGender').value || null, outsider: $('fOutsider').checked,
     fatherId: $('fFather').value || null, motherId: $('fMother').value || null, spouseId: $('fSpouse').value || null,
     bio: $('fBio').value.trim(), photo_url
   };

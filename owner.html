@@ -226,7 +226,7 @@ async function approve(it){
   }
   const d = it.data || {};
   const fields = {
-    name: d.name, birth: nz(d.birth), death: nz(d.death), gender: nz(d.gender),
+    name: d.name, birth: nz(d.birth), death: nz(d.death), gender: nz(d.gender), is_outsider: !!d.outsider,
     father_id: nz(d.fatherId), mother_id: nz(d.motherId), spouse_id: nz(d.spouseId),
     bio: nz(d.bio), photo_url: nz(d.photo_url)
   };
