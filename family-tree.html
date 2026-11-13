@@ -168,7 +168,7 @@ function layout(id, row, depth = 0){
   let x = 0, anchor = null;
   groups.forEach(g => {
     const pw = row >= 1 ? SW : CW;   // الجيل الأول بحجم كامل، ومن الجيل الثاني فما بعد أصغر
-    const unitW = g.pid ? 2 * pw : pw;
+    const unitW = g.pid ? (row >= 1 ? CW + SW : 2 * CW) : CW;
     const kidRow = row + 1;
     const kl = g.kids.map(k => layout(k.id, kidRow, depth + 1));
     const kidsW = kl.reduce((s, l) => s + l.w, 0) + GAPX * Math.max(0, kl.length - 1);
@@ -246,7 +246,7 @@ function render(){
   t.items.forEach(it => {
     const a = byId(it.a); if (!a) return;
     const pw = it.row >= 1 ? SW : CW;
-    const W = it.type === 'couple' ? 2 * pw : pw;
+    const W = it.type === 'couple' ? (it.row >= 1 ? CW + SW : 2 * CW) : CW;
     const sm = it.row >= 1;
     const unit = document.createElement('div'); unit.className = 'unit';
     unit.style.width = W + 'px';
@@ -255,11 +255,19 @@ function render(){
     if (it.type === 'couple'){
       const b = byId(it.b);
       if (b){
-        unit.append(panel(a, b.id, sm), panel(b, a.id, sm));
+        if (sm){
+          // الجيل الثاني فما بعد: الشخص الأساسي بحجم كامل، وشريكه أصغر داخل البطاقة نفسها
+          const outsider = marriedInId(a, b);
+          const main = outsider === a.id ? b : a;
+          const spouse = main === a ? b : a;
+          unit.append(panel(main, spouse.id, false), panel(spouse, main.id, true));
+        } else {
+          unit.append(panel(a, b.id, false), panel(b, a.id, false));
+        }
       }
       else unit.append(panel(a, null));
     } else {
-      unit.append(panel(a, null, sm));
+      unit.append(panel(a, null, false));
     }
     tree.appendChild(unit);
   });
