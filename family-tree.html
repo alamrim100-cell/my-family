@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>شجرة العائلة</title>
 <style>
-:root{--bg:#f7f3ea;--card:#fff;--ink:#2b2b2b;--accent:#8a5a2b;--line:#d9cbb4}
+:root{--bg:#f7f3ea;--card:#fff;--ink:#2b2b2b;--accent:#8a5a2b;--line:#d9cbb4;--couple:#6b6b6b}
 *{box-sizing:border-box}
 body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 header{background:var(--accent);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
@@ -13,19 +13,16 @@ header h1{margin:0;font-size:22px}
 button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 14px;background:var(--accent);color:#fff}
 button:disabled{opacity:.6;cursor:wait}
 button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
-main{padding:20px;max-width:1200px;margin:auto}
-.gen{margin-bottom:28px}
-#tree{position:relative}
-.card{position:relative;z-index:1}
+main{padding:20px;max-width:1400px;margin:auto}
+#tree{position:relative;overflow-x:auto}
+.gen{display:flex;justify-content:center;gap:28px;flex-wrap:nowrap;margin-bottom:64px;position:relative;z-index:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 10px;width:190px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);position:relative;z-index:1}
+.card img,.ph{width:84px;height:84px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 8px}
+.card .n{font-weight:bold;font-size:15px;line-height:1.4}
+.card .meta{font-size:12px;color:#666;margin-top:4px;line-height:1.5}
+.card button{margin-top:6px;padding:3px 10px;font-size:12px}
 #lines{position:absolute;top:0;left:0;pointer-events:none;z-index:0}
-#lines path{fill:none;stroke:#8a5a2b;stroke-width:2}
-.gen h3{color:var(--accent);border-bottom:2px solid var(--line);padding-bottom:6px}
-.row{display:flex;flex-wrap:wrap;gap:16px;justify-content:center}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;width:210px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05)}
-.card img,.ph{width:96px;height:96px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 8px}
-.card .n{font-weight:bold}
-.card .meta{font-size:13px;color:#666;margin-top:4px}
-.card button{margin-top:8px;padding:4px 10px;font-size:13px}
+#lines path{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 dialog{border:none;border-radius:14px;padding:20px;width:min(520px,94vw)}
 dialog::backdrop{background:rgba(0,0,0,.4)}
@@ -59,7 +56,7 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
   <label>الصورة</label><input id="fPhoto" type="file" accept="image/*">
   <label>ملاحظات</label><input id="fBio">
   <div class="bar" style="margin-top:16px">
-    <button id="saveBtn">إرسال للاعتماد</button>
+    <button id="saveBtn">إرسال</button>
     <button class="sec" id="cancelBtn">إلغاء</button>
   </div>
 </dialog>
@@ -71,6 +68,10 @@ const SUPABASE_URL = 'https://nrddblppxdiklixjxsni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ألوان ثابتة: كل أسرة (أب + أم) لها لون موحد لخطوطها
+const PALETTE = ['#e6194b','#3cb44b','#4363d8','#f58231','#911eb4','#0097a7','#f032e6','#7cb342','#9a6324','#c2185b','#1565c0','#ef6c00','#6a1b9a','#2e7d32'];
+const svgNS = 'http://www.w3.org/2000/svg';
+
 // ===== الحالة =====
 let people = [];
 let editingId = null, photoBlob = null;
@@ -81,7 +82,7 @@ const byId = id => people.find(p => p.id === id);
 const nameOf = id => (byId(id) || {}).name || '';
 function flash(t){ const m=$('msg'); m.textContent=t; m.classList.remove('hide'); setTimeout(()=>m.classList.add('hide'),6000); }
 
-// ===== تحميل الأشخاص من قاعدة البيانات =====
+// ===== تحميل الأشخاص =====
 async function loadPeople(){
   const { data, error } = await sb.from('people').select('*').order('created_at');
   if (error){ flash('تعذر تحميل الشجرة، حاول لاحقاً'); return; }
@@ -111,19 +112,39 @@ function levels(){
   return lv;
 }
 
+// ===== ترتيب الصفوف: الأبناء بجانب إخوتهم، والزوجان متجاوران =====
+function orderedRows(){
+  const lv = levels();
+  const maxLv = Math.max(0, ...Object.values(lv));
+  const rows = [], pos = {};
+  for (let k = 0; k <= maxLv; k++){
+    let list = people.filter(p => lv[p.id] === k);
+    if (k > 0){
+      const parentPos = p => (pos[p.fatherId] ?? pos[p.motherId] ?? 1e6);
+      list.sort((a, b) => parentPos(a) - parentPos(b) || a.name.localeCompare(b.name, 'ar'));
+    }
+    const placed = new Set(), out = [];
+    list.forEach(p => {
+      if (placed.has(p.id)) return;
+      out.push(p); placed.add(p.id);
+      const s = list.find(x => x.id === p.spouseId && !placed.has(x.id));
+      if (s){ out.push(s); placed.add(s.id); }
+    });
+    out.forEach((p, i) => pos[p.id] = i);
+    if (out.length) rows.push(out);
+  }
+  return rows;
+}
+
 // ===== العرض =====
 function render(){
   requestAnimationFrame(drawLines);
   const tree = $('tree'); tree.innerHTML = '';
   if (!people.length){ tree.innerHTML = '<p>لا توجد بيانات بعد.</p>'; return; }
-  const lv = levels(), groups = {};
-  people.forEach(p => { (groups[lv[p.id]] ??= []).push(p); });
-  Object.keys(groups).map(Number).sort((a,b)=>a-b).forEach(k => {
-    const sec = document.createElement('section'); sec.className = 'gen';
-    sec.innerHTML = '<h3>الجيل ' + (k + 1) + '</h3>';
-    const row = document.createElement('div'); row.className = 'row';
-    groups[k].forEach(p => row.appendChild(card(p)));
-    sec.appendChild(row); tree.appendChild(sec);
+  orderedRows().forEach(row => {
+    const r = document.createElement('div'); r.className = 'gen';
+    row.forEach(p => r.appendChild(card(p)));
+    tree.appendChild(r);
   });
 }
 
@@ -135,7 +156,7 @@ function card(p){
   const n = document.createElement('div'); n.className = 'n'; n.textContent = p.name;
   const m = document.createElement('div'); m.className = 'meta';
   const lines = [];
-  if (p.birth) lines.push('تاريخ الميلاد: ' + p.birth);
+  if (p.birth) lines.push('الميلاد: ' + p.birth);
   if (p.fatherId) lines.push('الأب: ' + nameOf(p.fatherId));
   if (p.motherId) lines.push('الأم: ' + nameOf(p.motherId));
   if (p.spouseId) lines.push('الزوج / الزوجة: ' + nameOf(p.spouseId));
@@ -147,14 +168,13 @@ function card(p){
   return c;
 }
 
-// ===== خطوط الربط: من الأب والأم إلى الابن، وخط بين الزوجين =====
-const svgNS = 'http://www.w3.org/2000/svg';
+// ===== خطوط الربط =====
 function drawLines(){
   const tree = $('tree'); if (!tree) return;
   let svg = $('lines');
   if (!svg){ svg = document.createElementNS(svgNS, 'svg'); svg.id = 'lines'; tree.prepend(svg); }
-  svg.setAttribute('width', tree.offsetWidth);
-  svg.setAttribute('height', tree.offsetHeight);
+  svg.setAttribute('width', tree.scrollWidth);
+  svg.setAttribute('height', tree.scrollHeight);
   svg.innerHTML = '';
   const tr = tree.getBoundingClientRect();
   const box = id => {
@@ -162,27 +182,51 @@ function drawLines(){
     if (!el) return null;
     const r = el.getBoundingClientRect();
     return {
-      cx: r.left - tr.left + r.width / 2, left: r.left - tr.left, right: r.right - tr.left,
-      top: r.top - tr.top, bottom: r.bottom - tr.top, mid: r.top - tr.top + r.height / 2
+      cx: r.left - tr.left + tree.scrollLeft + r.width / 2,
+      left: r.left - tr.left + tree.scrollLeft, right: r.right - tr.left + tree.scrollLeft,
+      top: r.top - tr.top + tree.scrollTop, bottom: r.bottom - tr.top + tree.scrollTop,
+      mid: r.top - tr.top + tree.scrollTop + r.height / 2
     };
   };
-  const path = d => { const el = document.createElementNS(svgNS, 'path'); el.setAttribute('d', d); svg.appendChild(el); };
+  const path = (d, color) => {
+    const el = document.createElementNS(svgNS, 'path');
+    el.setAttribute('d', d); el.setAttribute('stroke', color);
+    svg.appendChild(el);
+  };
 
+  // خط الزواج (رمادي) بين كل زوجين
   people.forEach(p => {
-    const me = box(p.id);
-    if (!me) return;
-    // خط الزواج بين الشخص وزوجه (يُرسم مرة واحدة)
-    const s = box(p.spouseId);
-    if (s && p.id < p.spouseId){
+    const me = box(p.id), s = box(p.spouseId);
+    if (me && s && p.id < p.spouseId){
       const [L, R] = me.cx < s.cx ? [me, s] : [s, me];
-      path('M' + L.right + ' ' + L.mid + ' H' + R.left);
+      path('M' + L.right + ' ' + L.mid + ' H' + R.left, '#6b6b6b');
     }
-    // خطوط من الأب والأم إلى الابن
-    const parents = [box(p.fatherId), box(p.motherId)].filter(Boolean);
-    if (!parents.length) return;
-    const bottom = Math.max(...parents.map(x => x.bottom));
-    const midY = bottom + (me.top - bottom) / 2;
-    parents.forEach(pt => path('M' + pt.cx + ' ' + pt.bottom + ' V' + midY + ' H' + me.cx + ' V' + me.top));
+  });
+
+  // تجميع الأبناء حسب الأسرة (الأب + الأم)
+  const families = {};
+  people.forEach(p => {
+    const ps = [p.fatherId, p.motherId].filter(id => byId(id));
+    if (!ps.length) return;
+    const key = ps.slice().sort().join('|');
+    (families[key] ??= { parents: ps, children: [] }).children.push(p.id);
+  });
+
+  Object.values(families).forEach((fam, i) => {
+    const color = PALETTE[i % PALETTE.length];
+    const pb = fam.parents.map(box).filter(Boolean);
+    const kids = fam.children.map(box).filter(Boolean);
+    if (!pb.length || !kids.length) return;
+    const srcX = pb.reduce((s, x) => s + x.cx, 0) / pb.length;
+    const srcBottom = Math.max(...pb.map(x => x.bottom));
+    const kidTop = Math.min(...kids.map(x => x.top));
+    const midY = srcBottom + (kidTop - srcBottom) / 2;
+    const xs = [srcX, ...kids.map(k => k.cx)];
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    let d = 'M' + srcX + ' ' + srcBottom + ' V' + midY;
+    if (maxX > minX) d += ' M' + minX + ' ' + midY + ' H' + maxX;
+    kids.forEach(k => { d += ' M' + k.cx + ' ' + midY + ' V' + k.top; });
+    path(d, color);
   });
 }
 window.addEventListener('resize', () => drawLines());
@@ -207,7 +251,6 @@ function openForm(id = null){
   $('formDlg').showModal();
 }
 
-// تصغير الصورة قبل رفعها
 $('fPhoto').onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
@@ -225,7 +268,6 @@ $('fPhoto').onchange = e => {
   r.readAsDataURL(f);
 };
 
-// إرسال الطلب إلى قاعدة البيانات (للمراجعة من المالك)
 $('saveBtn').onclick = async () => {
   if (!$('fName').value.trim()){ alert('الاسم مطلوب'); return; }
   const btn = $('saveBtn'); btn.disabled = true;
