@@ -186,7 +186,7 @@ function layout(id, row, depth = 0){
   let x = 0, anchor = null;
   groups.forEach(g => {
     const pw = row >= 1 ? SW : CW;   // الجيل الأول بحجم كامل، ومن الجيل الثاني فما بعد أصغر
-    const unitW = g.pid ? ((row >= 1 || marriedInId(byId(id), byId(g.pid)) !== null) ? CW : 2 * CW) : CW;
+    const unitW = g.pid ? (row >= 1 ? CW : 2 * CW) : CW;
     const kidRow = row + 1;
     const kl = g.kids.map(k => layout(k.id, kidRow, depth + 1));
     const kidsW = kl.reduce((s, l) => s + l.w, 0) + GAPX * Math.max(0, kl.length - 1);
@@ -264,7 +264,7 @@ function render(){
   t.items.forEach(it => {
     const a = byId(it.a); if (!a) return;
     const pw = it.row >= 1 ? SW : CW;
-    const sm = it.row >= 1 || (it.type === 'couple' && byId(it.b) && marriedInId(byId(it.a), byId(it.b)) !== null);
+    const sm = it.row >= 1;
     const W = it.type === 'couple' ? (sm ? CW : 2 * CW) : CW;
     const unit = document.createElement('div'); unit.className = 'unit';
     unit.style.width = W + 'px';
