@@ -94,7 +94,10 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
   <h3 id="spouseTitle">ربط زوجة</h3>
   <label>اختر من الشجرة</label>
   <select id="spSelect"></select>
-  <div class="sm" style="margin-top:8px">إن لم تكن الزوجة في الشجرة، أضفها أولاً من "+ إضافة شخص" ثم اربطها هنا.</div>
+  <div class="sm" style="margin-top:8px">أو أضف زوجاً/زوجة جديداً من خارج العائلة (يُربط بهذا الشخص مباشرة):</div>
+  <label>الاسم</label><input id="spName">
+  <label>تاريخ الميلاد</label><input id="spBirth" type="date">
+  <label>تاريخ الوفاة (إن وُجد)</label><input id="spDeath" type="date">
   <div class="bar" style="margin-top:16px">
     <button id="spSave">ربط</button>
     <button class="sec" id="spCancel">إلغاء</button>
@@ -484,13 +487,24 @@ function openSpouseForm(personId){
   people.filter(p => p.id !== personId && !taken.includes(p.id)).forEach(p => {
     const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o);
   });
+  $('spName').value = ''; $('spBirth').value = ''; $('spDeath').value = '';
   $('spouseDlg').showModal();
 }
 $('spCancel').onclick = () => $('spouseDlg').close();
 $('spSave').onclick = async () => {
-  const wife = $('spSelect').value;
-  if (!wife){ alert('اختر شخصاً من القائمة'); return; }
-  const { data: status, error } = await sb.rpc('link_marriage', { husband: spouseHusband, wife });
+  const newName = $('spName').value.trim();
+  let status, error;
+  if (newName){
+    // زوج/زوجة جديد من خارج العائلة، الجنس معاكس لجنس الشخص
+    const h = byId(spouseHusband);
+    const gender = h && h.gender === 'male' ? 'female' : (h && h.gender === 'female' ? 'male' : null);
+    const payload = { name: newName, birth: $('spBirth').value || null, death: $('spDeath').value || null, gender, outsider: true };
+    ({ data: status, error } = await sb.rpc('add_spouse_person', { payload, husband: spouseHusband }));
+  } else {
+    const wife = $('spSelect').value;
+    if (!wife){ alert('اختر شخصاً من القائمة أو أدخل اسم الزوج/الزوجة الجديد'); return; }
+    ({ data: status, error } = await sb.rpc('link_marriage', { husband: spouseHusband, wife }));
+  }
   $('spouseDlg').close();
   if (error){ flash('تعذر الربط: ' + error.message); return; }
   if (status === 'approved'){

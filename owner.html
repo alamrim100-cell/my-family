@@ -168,7 +168,7 @@ function renderPending(){
       ? 'ربط زوج/زوجة: ' + nameOf(d.husband_id) + ' ← ' + nameOf(d.wife_id)
       : (d.name || '(بدون اسم)');
     const tag = document.createElement('span'); tag.className = 'tag';
-    tag.textContent = it.type === 'add' ? 'إضافة' : (it.type === 'marriage' ? 'زواج' : 'تعديل');
+    tag.textContent = it.type === 'add' ? 'إضافة' : (it.type === 'marriage' ? 'زواج' : (it.type === 'add_spouse' ? 'زوج/زوجة جديد' : 'تعديل'));
     t.appendChild(tag);
     const det = document.createElement('div'); det.className = 'sm';
     det.textContent = [
@@ -214,6 +214,20 @@ function renderPeople(){
 
 // ===== الإجراءات =====
 async function approve(it){
+  if (it.type === 'add_spouse'){
+    const d = it.data || {};
+    const ins = await sb.from('people').insert({
+      name: d.name, birth: nz(d.birth), death: nz(d.death), gender: nz(d.gender), is_outsider: true
+    }).select('id').single();
+    if (ins.error){ alert('تعذر الإضافة: ' + ins.error.message); return; }
+    const { data: ms } = await sb.from('marriages').select('position').eq('husband_id', it.person_id);
+    const pos = ms && ms.length ? Math.max(...ms.map(m => m.position || 0)) + 1 : 1;
+    const r = await sb.from('marriages').insert({ husband_id: it.person_id, wife_id: ins.data.id, position: pos });
+    if (r.error){ alert('تمت الإضافة لكن تعذر الربط: ' + r.error.message); return; }
+    await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
+    refresh();
+    return;
+  }
   if (it.type === 'marriage'){
     const h = it.data.husband_id, w = it.data.wife_id;
     const { data: ms } = await sb.from('marriages').select('position').eq('husband_id', h);
