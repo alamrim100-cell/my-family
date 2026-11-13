@@ -61,6 +61,17 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
   </div>
 </dialog>
 
+<dialog id="spouseDlg">
+  <h3 id="spouseTitle">ربط زوجة</h3>
+  <label>اختر من الشجرة</label>
+  <select id="spSelect"></select>
+  <div class="sm" style="margin-top:8px">إن لم تكن الزوجة في الشجرة، أضفها أولاً من "+ إضافة شخص" ثم اربطها هنا.</div>
+  <div class="bar" style="margin-top:16px">
+    <button id="spSave">ربط</button>
+    <button class="sec" id="spCancel">إلغاء</button>
+  </div>
+</dialog>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ===== الإعدادات =====
@@ -255,10 +266,12 @@ function card(p){
   lines.forEach(t => { const d = document.createElement('div'); d.textContent = t; m.appendChild(d); });
   const b = document.createElement('button'); b.className = 'sec'; b.textContent = 'تعديل';
   b.onclick = () => openForm(p.id);
-  const ab = document.createElement('button'); ab.className = 'sec'; ab.textContent = '+ ابن/ابنة';
+  const ab = document.createElement('button'); ab.className = 'sec'; ab.textContent = '+ ابن';
   ab.onclick = () => openChildForm(p.id);
+  const sbtn = document.createElement('button'); sbtn.className = 'sec'; sbtn.textContent = '+ زوجة';
+  sbtn.onclick = () => openSpouseForm(p.id);
   const btns = document.createElement('div'); btns.className = 'btns';
-  btns.append(b, ab);
+  btns.append(b, ab, sbtn);
   c.append(ph, n, m, btns);
   return c;
 }
@@ -345,6 +358,34 @@ $('saveBtn').onclick = async () => {
     await loadPeople();
   } else {
     flash('تم إرسال البيانات، وستظهر بعد اعتمادها.');
+  }
+};
+
+// ===== ربط زوجة/زوج إضافي بشخص موجود =====
+let spouseHusband = null;
+function openSpouseForm(personId){
+  spouseHusband = personId;
+  const me = byId(personId);
+  $('spouseTitle').textContent = 'ربط زوجة لـ ' + me.name;
+  const taken = partnersOf(personId);
+  const sel = $('spSelect'); sel.innerHTML = '';
+  people.filter(p => p.id !== personId && !taken.includes(p.id)).forEach(p => {
+    const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o);
+  });
+  $('spouseDlg').showModal();
+}
+$('spCancel').onclick = () => $('spouseDlg').close();
+$('spSave').onclick = async () => {
+  const wife = $('spSelect').value;
+  if (!wife){ alert('اختر شخصاً من القائمة'); return; }
+  const { data: status, error } = await sb.rpc('link_marriage', { husband: spouseHusband, wife });
+  $('spouseDlg').close();
+  if (error){ flash('تعذر الربط: ' + error.message); return; }
+  if (status === 'approved'){
+    flash('تم الربط وظهر في الشجرة.');
+    await loadPeople();
+  } else {
+    flash('تم إرسال طلب الربط، وسيظهر بعد اعتماده.');
   }
 };
 

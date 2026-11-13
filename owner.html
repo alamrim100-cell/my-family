@@ -163,9 +163,12 @@ function renderPending(){
   pending.forEach(it => {
     const d = it.data || {};
     const wrap = document.createElement('div'); wrap.className = 'item';
-    const t = document.createElement('div'); t.className = 't'; t.textContent = d.name || '(بدون اسم)';
+    const t = document.createElement('div'); t.className = 't';
+    t.textContent = it.type === 'marriage'
+      ? 'ربط زوج/زوجة: ' + nameOf(d.husband_id) + ' ← ' + nameOf(d.wife_id)
+      : (d.name || '(بدون اسم)');
     const tag = document.createElement('span'); tag.className = 'tag';
-    tag.textContent = it.type === 'add' ? 'إضافة' : 'تعديل';
+    tag.textContent = it.type === 'add' ? 'إضافة' : (it.type === 'marriage' ? 'زواج' : 'تعديل');
     t.appendChild(tag);
     const det = document.createElement('div'); det.className = 'sm';
     det.textContent = [
@@ -211,6 +214,16 @@ function renderPeople(){
 
 // ===== الإجراءات =====
 async function approve(it){
+  if (it.type === 'marriage'){
+    const h = it.data.husband_id, w = it.data.wife_id;
+    const { data: ms } = await sb.from('marriages').select('position').eq('husband_id', h);
+    const pos = ms && ms.length ? Math.max(...ms.map(m => m.position || 0)) + 1 : 1;
+    const r = await sb.from('marriages').insert({ husband_id: h, wife_id: w, position: pos });
+    if (r.error){ alert('تعذر الربط: ' + r.error.message); return; }
+    await sb.from('submissions').update({ status: 'approved' }).eq('id', it.id);
+    refresh();
+    return;
+  }
   const d = it.data || {};
   const fields = {
     name: d.name, birth: nz(d.birth), death: nz(d.death), gender: nz(d.gender),
