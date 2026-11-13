@@ -103,9 +103,9 @@ input,select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;f
   main{padding:16px 8px 80px}
   .roots{gap:22px}
   .card{width:128px;padding:9px 5px 8px}
-  .card.big{width:235px;padding:16px 10px 12px}
+  .card.big{width:170px;padding:12px 6px 10px}
   .ring{width:70px;height:70px;margin-bottom:4px}
-  .card.big .ring{width:124px;height:124px}
+  .card.big .ring{width:96px;height:96px}
   .n{font-size:19px}
   .card.big .n{font-size:23px}
   .meta,.cnt{font-size:13px}
@@ -121,7 +121,9 @@ input,select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;f
   #dbody .drow{font-size:17px}
   .empty{font-size:17px}
   .roots,.kidsRow,.couplehead,.choicesRow{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;width:100%;padding:6px 14px 10px;margin:0;-webkit-overflow-scrolling:touch}
-  .roots,.kidsRow,.couplehead,.choicesRow{scroll-snap-type:x proximity}
+  .roots{display:grid;grid-template-columns:repeat(2,max-content);justify-content:center;gap:14px;overflow:visible;padding:6px 8px 10px}
+  .kidsRow,.choicesRow{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,max-content));justify-content:center;justify-items:center;gap:14px;overflow:visible;padding:6px 8px 10px}
+  .couplehead{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;overflow:visible}
   .roots>*,.kidsRow>*,.couplehead>*,.choicesRow>*{flex:0 0 auto;scroll-snap-align:center}
   .roots>:first-child,.kidsRow>:first-child,.couplehead>:first-child,.choicesRow>:first-child{margin-inline-start:auto}
   .roots>:last-child,.kidsRow>:last-child,.couplehead>:last-child,.choicesRow>:last-child{margin-inline-end:auto}
