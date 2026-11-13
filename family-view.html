@@ -93,6 +93,12 @@ main{padding:24px 14px 100px}
 @keyframes drawroot{to{stroke-dashoffset:0}}
 
 /* ===== الألبوم وحاسبة القرابة ===== */
+.pickbar{position:sticky;top:0;z-index:20;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;padding:10px;background:#fffaf0;border-bottom:2px solid #b08d4c;font-size:17px;color:#6b4a2b}
+.pickbar.hide{display:none}
+.pickbar button{font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;border:1px solid #b08d4c;background:#fff;color:#6b4a2b;cursor:pointer}
+.pickbtn{font:inherit;font-size:16px;width:100%;padding:9px;border:1px solid #b08d4c;border-radius:10px;background:#fff;color:#6b4a2b;cursor:pointer}
+.card.fcard.clickable{cursor:pointer;box-shadow:0 0 0 3px #f3d9a8,0 10px 22px rgba(90,60,20,.15)}
+.card.fcard.clickable:hover{transform:translateY(-4px)}
 .album{margin-top:16px;border-top:1px dotted #d9bf85;padding-top:12px}
 .albumTitle{font-size:20px;font-weight:700;color:#7a5520;margin-bottom:8px}
 .albumGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -230,13 +236,15 @@ dialog select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;
   </div>
   <div class="crumbs" id="crumbs"></div>
 </header>
+<div id="pickBar" class="pickbar hide"><span id="pickText"></span><button id="pickCancel">إلغاء الاختيار</button></div>
 <main><div id="view"></div></main>
 
 <div id="drawerBg"></div>
 <dialog id="kinDlg">
   <h3>حاسبة القرابة</h3>
-  <label>الشخص الأول</label><select id="kinA"></select>
-  <label>الشخص الثاني</label><select id="kinB"></select>
+  <label>اختر الشخصين من الشجرة نفسها</label>
+  <button id="pickA" class="pickbtn">الشخص الأول: لم يُختر</button>
+  <button id="pickB" class="pickbtn" style="margin-top:8px">الشخص الثاني: لم يُختر</button>
   <div class="bar"><button id="kinGo">احسب القرابة</button><button class="sec" onclick="document.getElementById('kinDlg').close()">إغلاق</button></div>
   <div id="kinRes" class="kinres"></div>
 </dialog>
@@ -624,6 +632,7 @@ function renderFull(){
     const p=byId(it.id); if(!p) return;
     const c=fcard(p);
     if(it.out) c.classList.add('outsider');
+    if(pickMode){ c.classList.add('clickable'); c.onclick=()=>onPick(it.id); }
     c.style.left=(it.cx-FW/2+L)+'px'; c.style.top=(it.y+T)+'px';
     box.appendChild(c);
   });
@@ -866,6 +875,41 @@ function openKin(){
 }
 $('kinBtn').onclick=openKin;
 $('kinGo').onclick=()=>{ $('kinRes').textContent=kinship($('kinA').value,$('kinB').value); };
+
+// ===== اختيار الشخصين من الشجرة الكاملة =====
+let kinSel={A:null,B:null}, pickMode=null;
+function kinLabelUpdate(){
+  $('pickA').textContent='الشخص الأول: '+(kinSel.A?nameOf(kinSel.A):'لم يُختر');
+  $('pickB').textContent='الشخص الثاني: '+(kinSel.B?nameOf(kinSel.B):'لم يُختر');
+}
+function openKin(){ kinLabelUpdate(); $('kinRes').textContent=''; $('kinDlg').showModal(); }
+function showPickBar(){
+  const bar=$('pickBar');
+  if(pickMode){
+    $('pickText').textContent = pickMode==='A' ? 'اضغط على الشخص الأول في الشجرة' : 'اضغط على الشخص الثاني في الشجرة';
+    bar.classList.remove('hide');
+  } else bar.classList.add('hide');
+}
+function startPick(which){
+  $('kinDlg').close();
+  pickMode=which; fullMode=true; showPickBar(); render();
+}
+function onPick(id){
+  kinSel[pickMode]=id;
+  if(pickMode==='A'){ pickMode='B'; showPickBar(); render(); return; }
+  pickMode=null; showPickBar(); fullMode=false; render();
+  openKin();
+  $('kinRes').textContent=kinship(kinSel.A,kinSel.B);
+}
+function cancelPick(){ pickMode=null; showPickBar(); fullMode=false; render(); openKin(); }
+$('pickA').onclick=()=>startPick('A');
+$('pickB').onclick=()=>startPick('B');
+$('pickCancel').onclick=cancelPick;
+$('kinGo').onclick=()=>{
+  if(!kinSel.A||!kinSel.B){ $('kinRes').textContent='اختر الشخصين أولاً من الشجرة'; return; }
+  $('kinRes').textContent=kinship(kinSel.A,kinSel.B);
+};
+$('kinBtn').onclick=openKin;
 
 $('backBtn').onclick=back;
 $('homeBtn').onclick=home;
