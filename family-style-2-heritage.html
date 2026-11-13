@@ -16,6 +16,8 @@ header .orn{color:#b08d4c;font-size:20px;letter-spacing:10px}
 .toolbar button{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;cursor:pointer;transition:all .25s}
 .toolbar button:hover:not(:disabled){background:#f3e2b8}
 .toolbar button:disabled{opacity:.45;cursor:default}
+.toolbar .tlink{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;text-decoration:none;transition:all .25s}
+.toolbar .tlink:hover{background:#f3e2b8}
 main{padding:20px 14px 100px}
 .roots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px}
 .empty{text-align:center;color:#8a6b3e;padding:50px 0;font-size:20px}
@@ -77,6 +79,7 @@ main{padding:20px 14px 100px}
   <div class="toolbar">
     <button id="undoBtn" disabled>↩ تراجع</button>
     <button id="collapseAll">طيّ الكل</button>
+    <a href="family-tree.html" class="tlink">واجهة التعديل</a>
   </div>
 </header>
 <main><div id="tree"></div></main>
