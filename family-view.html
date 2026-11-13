@@ -87,6 +87,11 @@ main{padding:24px 14px 100px}
 #dbody .big img{width:100%;max-height:340px;height:auto;object-fit:contain;border-radius:16px;background:#eee3c6;display:block}
 #dbody .big .ph{width:170px;height:170px;margin:0 auto;border-radius:50%;background:#eee3c6}
 
+/* ===== رسم جذور الشجرة عند الدخول ===== */
+.rootsIntro{display:block;width:min(560px,90%);height:60px;margin:0 auto 10px;overflow:visible}
+.rootsIntro path{fill:none;stroke:#8a5a2b;stroke-width:2;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:drawroot 1.4s ease .2s forwards}
+@keyframes drawroot{to{stroke-dashoffset:0}}
+
 /* ===== شاشة الترحيب ===== */
 .welcome{max-width:560px;margin:10px auto;padding:34px 22px;text-align:center;border:6px double #b08d4c;border-radius:28px;
   background:linear-gradient(160deg,rgba(255,255,255,.9),rgba(255,247,230,.75));box-shadow:0 14px 34px rgba(90,60,20,.18);animation:up .8s both}
@@ -311,7 +316,13 @@ function render(){
     const roots=rootsList();
     if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
     const row=el('div','roots');
-    roots.forEach(r=>row.appendChild(nodeCard(r,{big:true,onClick:()=>open(r.id)})));
+    const intro=!introDone; introDone=true;
+    if(intro) v.appendChild(rootsSvg());
+    roots.forEach((r,i)=>{
+      const c=nodeCard(r,{big:true,onClick:()=>open(r.id)});
+      if(intro){ c.style.animation='up .7s both'; c.style.animationDelay=(900+i*350)+'ms'; }
+      row.appendChild(c);
+    });
     v.appendChild(row);
     return;
   }
@@ -634,7 +645,7 @@ function renderWelcome(){
   w.appendChild(el('div','wtitle','شجرة العائلة'));
   w.appendChild(el('div','wsub','من هنا تبدأ الشجرة: محمد وخلفان بن سعيد بن خلفان العامري'));
   const st=el('div','wstats');
-  st.append(statBox(generationsCount(),'جيل'), statBox(people.length,'فرد'));
+  st.append(statBox(generationsCount(),'أجيال'), statBox(people.length,'فرد'));
   w.appendChild(st);
   const sb2=el('div','wsearch');
   const inp=el('input'); inp.placeholder='ابحث عن اسم...';
@@ -642,8 +653,10 @@ function renderWelcome(){
   inp.oninput=()=>{
     const q=inp.value.trim(); res.innerHTML='';
     if(!q) return;
-    people.filter(p=>p.name.includes(q)).slice(0,8).forEach(p=>{
-      const b=el('button','wr',p.name); b.onclick=()=>goToPerson(p.id); res.appendChild(b);
+    searchPeople(q).forEach(p=>{
+      const f=p.fatherId?nameOf(p.fatherId):(p.motherId?nameOf(p.motherId):'');
+      const label=f?p.name+' (ابن '+f.split(' ')[0]+')':p.name;
+      const b=el('button','wr',label); b.onclick=()=>goToPerson(p.id); res.appendChild(b);
     });
   };
   sb2.append(inp,res);
@@ -667,6 +680,38 @@ function goToPerson(id){
   }
   stack=chain; welcomed=true; render();
 }
+// ===== الرسم التمهيدي للجذور =====
+let introDone=false;
+function rootsSvg(){
+  const ns='http://www.w3.org/2000/svg';
+  const s=document.createElementNS(ns,'svg');
+  s.setAttribute('viewBox','0 0 300 60'); s.setAttribute('class','rootsIntro'); s.setAttribute('preserveAspectRatio','none');
+  const p=document.createElementNS(ns,'path');
+  p.setAttribute('d','M150 0 V22 M60 22 H240 M60 22 V60 M240 22 V60');
+  p.setAttribute('pathLength','100');
+  p.setAttribute('vector-effect','non-scaling-stroke');
+  s.appendChild(p);
+  return s;
+}
+
+// ===== البحث: مطابقة دقيقة للحروف العربية، والأسماء التي تبدأ بالكلمة تأتي أولاً =====
+function normAr(s){
+  return (s||'').replace(/[\u064B-\u065F\u0640]/g,'').replace(/[إأآا]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+}
+function searchPeople(q){
+  const nq=normAr(q); if(!nq) return [];
+  const words=nq.split(' ');
+  return people.map(p=>{
+    const nn=normAr(p.name), parts=nn.split(' ');
+    let score=0;
+    if(nn===nq) score=100;
+    else if(nn.startsWith(nq)) score=80;
+    else if(parts.some(w=>w.startsWith(words[0]))) score=60;
+    else if(words.every(w=>parts.some(x=>x.startsWith(w)))) score=40;
+    return {p,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8).map(x=>x.p);
+}
+
 $('backBtn').onclick=back;
 $('homeBtn').onclick=home;
 load();
