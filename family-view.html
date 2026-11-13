@@ -95,6 +95,8 @@ main{padding:24px 14px 100px}
 .ftree .fbond{position:absolute;z-index:2;font-size:26px;color:#b08d4c;line-height:1}
 .flines{position:absolute;left:0;top:0;pointer-events:none;z-index:0}
 .flines path{fill:none;stroke:#8a5a2b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fband{position:absolute;z-index:0;border:1px dashed #b08d4c;border-radius:28px;background:rgba(255,250,240,.55)}
+.flabel{position:absolute;z-index:1;text-align:center;font-size:20px;font-weight:700;color:#7a5520;padding-top:6px}
 .fullTree{display:flex;flex-direction:column;align-items:center;gap:30px;padding-bottom:40px}
 .ftitle{font-size:30px;color:#7a5520}
 .froots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px;align-items:flex-start}
@@ -474,6 +476,77 @@ function renderFull(){
   all.bonds.forEach(b=>{
     const d=el('div','fbond','⚭');
     d.style.left=(b.cx+20-10)+'px'; d.style.top=(b.y+20-13)+'px';
+    box.appendChild(d);
+  });
+  wrap.appendChild(box);
+  v.appendChild(wrap);
+}
+// ===== العرض الكامل مع فصل كل عائلة في إطار مستقل (تُعرّف هذه النسخة بعد السابقة وتحل محلها) =====
+function renderFull(){
+  setModeButtons(true);
+  $('crumbs').innerHTML='';
+  const v=$('view'); v.innerHTML='';
+  const roots=rootsList();
+  if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+  const seen=new Set();
+  const multi=roots.length>1;
+  const GAP=multi?170:0;
+  const T=multi?50:20;   // مساحة أعلى الشجرة لاسم الفرع
+  const L=20;
+  let x=0;
+  const all={items:[],bonds:[],links:[]}, bands=[];
+  roots.forEach(r=>{
+    if(seen.has(r.id)) return;
+    const start=x;
+    const l=shiftF(fullLayoutF(r.id,0,seen),x);
+    all.items.push(...l.items); all.bonds.push(...l.bonds); all.links.push(...l.links);
+    bands.push({start,w:l.w,label:'فرع '+(r.name||'').split(' ')[0]});
+    x+=l.w+GAP;
+  });
+  const W=Math.max(FW,x-GAP);
+  const H=Math.max(...all.items.map(i=>i.y))+FH;
+  const TW=W+2*L, TH=H+T+L;
+  const svgNS='http://www.w3.org/2000/svg';
+  const wrap=el('div','fullWrap');
+  wrap.appendChild(el('div','ftitle','شجرة العائلة'));
+  const box=el('div','ftree');
+  box.style.width=TW+'px'; box.style.height=TH+'px';
+
+  // إطار مستقل لكل عائلة مع اسمها
+  if(multi){
+    bands.forEach(b=>{
+      const band=el('div','fband');
+      band.style.left=(b.start+L-16)+'px'; band.style.top='6px';
+      band.style.width=(b.w+32)+'px'; band.style.height=(TH-12)+'px';
+      const lb=el('div','flabel',b.label);
+      lb.style.left=(b.start+L-16)+'px'; lb.style.width=(b.w+32)+'px'; lb.style.top='10px';
+      box.append(band,lb);
+    });
+  }
+
+  const svg=document.createElementNS(svgNS,'svg');
+  svg.setAttribute('class','flines'); svg.setAttribute('width',TW); svg.setAttribute('height',TH);
+  all.links.forEach(k=>{
+    const px=k.px+L, py=k.py+T, ky=k.ky+T;
+    const midY=(py+ky)/2;
+    const xs=k.xs.map(v=>v+L);
+    const minX=Math.min(px,...xs), maxX=Math.max(px,...xs);
+    let d=`M${px} ${py} V${midY}`;
+    if(maxX>minX) d+=` M${minX} ${midY} H${maxX}`;
+    xs.forEach(v=>{ d+=` M${v} ${midY} V${ky}`; });
+    const path=document.createElementNS(svgNS,'path'); path.setAttribute('d',d); svg.appendChild(path);
+  });
+  box.appendChild(svg);
+
+  all.items.forEach(it=>{
+    const p=byId(it.id); if(!p) return;
+    const c=fcard(p);
+    c.style.left=(it.cx-FW/2+L)+'px'; c.style.top=(it.y+T)+'px';
+    box.appendChild(c);
+  });
+  all.bonds.forEach(b=>{
+    const d=el('div','fbond','⚭');
+    d.style.left=(b.cx+L-10)+'px'; d.style.top=(b.y+T-13)+'px';
     box.appendChild(d);
   });
   wrap.appendChild(box);
