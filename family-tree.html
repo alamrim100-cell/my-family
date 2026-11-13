@@ -102,9 +102,9 @@ input,select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;f
   .crumbs{font-size:14px;margin-top:10px;gap:4px}
   main{padding:16px 8px 80px}
   .roots{gap:22px}
-  .card{width:175px;padding:12px 8px 10px}
+  .card{width:128px;padding:9px 5px 8px}
   .card.big{width:235px;padding:16px 10px 12px}
-  .ring{width:98px;height:98px;margin-bottom:6px}
+  .ring{width:70px;height:70px;margin-bottom:4px}
   .card.big .ring{width:124px;height:124px}
   .n{font-size:19px}
   .card.big .n{font-size:23px}
@@ -121,7 +121,8 @@ input,select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;f
   #dbody .drow{font-size:17px}
   .empty{font-size:17px}
   .roots,.kidsRow,.couplehead,.choicesRow{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;width:100%;padding:6px 14px 10px;margin:0;-webkit-overflow-scrolling:touch}
-  .roots>*,.kidsRow>*,.couplehead>*,.choicesRow>*{flex:0 0 auto}
+  .roots,.kidsRow,.couplehead,.choicesRow{scroll-snap-type:x proximity}
+  .roots>*,.kidsRow>*,.couplehead>*,.choicesRow>*{flex:0 0 auto;scroll-snap-align:center}
   .roots>:first-child,.kidsRow>:first-child,.couplehead>:first-child,.choicesRow>:first-child{margin-inline-start:auto}
   .roots>:last-child,.kidsRow>:last-child,.couplehead>:last-child,.choicesRow>:last-child{margin-inline-end:auto}
   .card::after{transform:translateX(-120%);animation:sheen 4s ease-in-out infinite}

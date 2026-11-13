@@ -133,9 +133,9 @@ main{padding:24px 14px 100px}
   .crumbs{font-size:14px;margin-top:10px;gap:4px}
   main{padding:16px 8px 80px}
   .roots{gap:22px}
-  .card{width:150px;padding:10px 6px 8px}
+  .card{width:128px;padding:9px 5px 8px}
   .card.big{width:200px;padding:14px 8px 10px}
-  .ring{width:84px;height:84px;margin-bottom:5px}
+  .ring{width:70px;height:70px;margin-bottom:4px}
   .card.big .ring{width:106px;height:106px}
   .n{font-size:19px}
   .card.big .n{font-size:23px}
@@ -152,7 +152,8 @@ main{padding:24px 14px 100px}
   .empty{font-size:17px}
   /* البطاقات بجانب بعضها على الهاتف، وإن ضاقت الشاشة تُسحب أفقياً */
   .roots,.kidsRow,.couplehead,.choicesRow{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;width:100%;padding:6px 14px 10px;margin:0;-webkit-overflow-scrolling:touch}
-  .roots>*,.kidsRow>*,.couplehead>*,.choicesRow>*{flex:0 0 auto}
+  .roots,.kidsRow,.couplehead,.choicesRow{scroll-snap-type:x proximity}
+  .roots>*,.kidsRow>*,.couplehead>*,.choicesRow>*{flex:0 0 auto;scroll-snap-align:center}
   /* هوامش تلقائية تُبقي الصف قابلاً للتمرير من الطرفين دون قص */
   .roots>:first-child,.kidsRow>:first-child,.couplehead>:first-child,.choicesRow>:first-child{margin-inline-start:auto}
   .roots>:last-child,.kidsRow>:last-child,.couplehead>:last-child,.choicesRow>:last-child{margin-inline-end:auto}
