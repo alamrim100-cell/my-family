@@ -147,6 +147,8 @@ function partnersOf(id){
     .map(m => m.h === id ? m.w : m.h);
   const me = byId(id);
   if (me && me.spouseId && byId(me.spouseId) && !list.includes(me.spouseId)) list.push(me.spouseId);
+  // الربط في الاتجاه المعاكس: إذا اختار الشخص الجديد زوجه من القائمة
+  people.forEach(p => { if (p.spouseId === id && !list.includes(p.id)) list.push(p.id); });
   return [...new Set(list)].filter(x => byId(x));
 }
 
