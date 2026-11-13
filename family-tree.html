@@ -19,6 +19,12 @@ main{padding:12px;max-width:100%;overflow:auto}
 .unit{position:absolute;display:flex;height:270px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06);z-index:1}
 .panel{width:190px;height:268px;flex:0 0 190px;padding:10px 8px;text-align:center;overflow:hidden}
 .panel+.panel{border-right:1px solid var(--line)}
+/* الزوج/الزوجة من خارج العائلة: بطاقة أصغر لتتميز عن أفراد العائلة */
+.panel.small{width:150px;flex:0 0 150px;padding:8px 6px}
+.panel.small img,.panel.small .ph{width:56px;height:56px;margin-bottom:4px}
+.panel.small .n{font-size:12px}
+.panel.small .meta{font-size:11px}
+.panel.small button{font-size:11px;padding:2px 5px}
 .panel img,.ph{width:80px;height:80px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 6px}
 .panel .n{font-weight:bold;font-size:14px;line-height:1.4}
 .panel .meta{font-size:12px;color:#666;margin-top:3px;line-height:1.45}
@@ -84,7 +90,7 @@ const SUPABASE_KEY = 'sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ===== ثوابت التخطيط =====
-const CW = 190, CH = 270, ROWH = 340, GAPX = 30, PAD = 20;
+const CW = 190, SW = 150, CH = 270, ROWH = 340, GAPX = 30, PAD = 20;
 const PALETTE = ['#e6194b','#3cb44b','#4363d8','#f58231','#911eb4','#0097a7','#f032e6','#7cb342','#9a6324','#c2185b','#1565c0','#ef6c00','#6a1b9a','#2e7d32'];
 const svgNS = 'http://www.w3.org/2000/svg';
 
@@ -157,7 +163,7 @@ function layout(id, row, depth = 0){
   const items = [], links = [];
   let x = 0, anchor = null;
   groups.forEach(g => {
-    const unitW = g.pid ? 2 * CW : CW;
+    const unitW = g.pid ? CW + SW : CW;
     const kidRow = row + 1;
     const kl = g.kids.map(k => layout(k.id, kidRow, depth + 1));
     const kidsW = kl.reduce((s, l) => s + l.w, 0) + GAPX * Math.max(0, kl.length - 1);
@@ -234,14 +240,17 @@ function render(){
 
   t.items.forEach(it => {
     const a = byId(it.a); if (!a) return;
-    const W = it.type === 'couple' ? 2 * CW : CW;
+    const W = it.type === 'couple' ? CW + SW : CW;
     const unit = document.createElement('div'); unit.className = 'unit';
     unit.style.width = W + 'px';
     unit.style.left = (it.cx - W / 2 + PAD) + 'px';
     unit.style.top = (it.row * ROWH + PAD) + 'px';
     if (it.type === 'couple'){
       const b = byId(it.b);
-      if (b) unit.append(panel(a, it.b), panel(b, it.a));
+      if (b){
+        const outsider = marriedInId(a, b);
+        unit.append(panel(a, it.b, outsider === a.id), panel(b, it.a, outsider === b.id));
+      }
       else unit.append(panel(a, null));
     } else {
       unit.append(panel(a, null));
@@ -250,9 +259,22 @@ function render(){
   });
 }
 
+// من هو الزوج/الزوجة من خارج العائلة؟ (ليس له أب ولا أم في الشجرة)
+function marriedInId(a, b){
+  const aHasParents = !!(a.fatherId || a.motherId);
+  const bHasParents = !!(b.fatherId || b.motherId);
+  if (!aHasParents && bHasParents) return a.id;
+  if (aHasParents && !bHasParents) return b.id;
+  if (!aHasParents && !bHasParents){
+    if (a.gender === 'female') return a.id;
+    if (b.gender === 'female') return b.id;
+  }
+  return null;
+}
+
 // بطاقة شخص داخل الوحدة
-function panel(p, partnerId){
-  const c = document.createElement('div'); c.className = 'panel';
+function panel(p, partnerId, small){
+  const c = document.createElement('div'); c.className = 'panel' + (small ? ' small' : '');
   let ph;
   if (p.photo){ ph = document.createElement('img'); ph.src = p.photo; ph.alt = ''; }
   else { ph = document.createElement('div'); ph.className = 'ph'; }
