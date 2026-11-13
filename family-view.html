@@ -9,48 +9,48 @@
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;font-family:Amiri,serif;color:#4a3420;overflow-x:hidden;
   background:radial-gradient(ellipse at center,#fbf4e2 0,#efe2c4 70%,#e2cfa4 100%)}
-header{text-align:center;padding:22px 16px 4px}
-header h1{margin:0;font-size:36px;color:#7a5520;letter-spacing:1px}
-header .orn{color:#b08d4c;font-size:20px;letter-spacing:10px}
-.toolbar{display:flex;justify-content:center;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
+header{padding:16px 18px 6px;text-align:center}
+header h1{margin:0 0 10px;font-size:34px;color:#7a5520;letter-spacing:1px}
+.toolbar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
 .toolbar button,.toolbar .tlink{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;cursor:pointer;text-decoration:none;transition:all .25s}
 .toolbar button:hover:not(:disabled),.toolbar .tlink:hover{background:#f3e2b8}
-.toolbar button:disabled{opacity:.45;cursor:default}
-main{padding:20px 14px 100px}
-.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px}
+.toolbar button:disabled{opacity:.4;cursor:default}
+.crumbs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:14px 0 0;font-size:16px;color:#8a6b3e}
+.crumbs button{font:inherit;font-size:16px;color:#6b4a2b;background:transparent;border:0;cursor:pointer;padding:2px 6px;border-bottom:1px dashed #b08d4c}
+.crumbs button:hover{color:#3b2a1a}
+.crumbs .sep{color:#b08d4c}
+main{padding:24px 14px 100px}
+.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:50px;animation:fade .5s both}
 .empty{text-align:center;color:#8a6b3e;padding:50px 0;font-size:20px}
 
-/* الوحدة */
-.unit{position:relative;display:flex;flex-direction:column;align-items:center}
-.unit.anim{animation:up .7s both}
-.unit.child::before{content:'';position:absolute;top:-30px;left:50%;height:30px;border-left:1px dashed #b08d4c}
-
-/* البطاقة وفيها الأزواج */
-.card{position:relative;width:225px;padding:18px 12px 14px;background:#fffaf0;text-align:center;cursor:pointer;
+/* البطاقة */
+.card{position:relative;width:215px;padding:18px 12px 14px;background:#fffaf0;text-align:center;
   border:6px double #b08d4c;border-radius:50% 50% 16px 16px / 22% 22% 16px 16px;
-  box-shadow:inset 0 0 0 2px #fffaf0,inset 0 0 0 3px #d9bf85,0 10px 22px rgba(90,60,20,.15);transition:transform .35s,background .35s}
-.card:hover{transform:translateY(-4px)}
-.card.open{background:#fff3d6}
+  box-shadow:inset 0 0 0 2px #fffaf0,inset 0 0 0 3px #d9bf85,0 10px 22px rgba(90,60,20,.15);transition:transform .35s}
+.card.clickable{cursor:pointer}
+.card.clickable:hover{transform:translateY(-5px)}
+.card.big{width:270px;padding:22px 16px 16px}
 .ring{width:124px;height:124px;margin:0 auto 10px;border-radius:50%;padding:5px;background:linear-gradient(135deg,#d9bf85,#8a6b3e,#d9bf85)}
+.card.big .ring{width:156px;height:156px}
 .ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee3c6}
 .n{font-size:25px;font-weight:700;color:#5a3d1a;line-height:1.3}
+.card.big .n{font-size:30px}
 .meta{font-size:16px;color:#8a6b3e;margin-top:4px}
 .cnt{margin-top:8px;font-size:16px;color:#7a5520;font-style:italic}
-.pchips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:12px;animation:fade .4s both}
-.pchip{font:inherit;font-size:15px;color:#6b4a2b;background:#fffaf0;border:1px dashed #b08d4c;border-radius:999px;padding:3px 12px;cursor:pointer;transition:all .25s}
+.pchips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:10px}
+.pchip{font:inherit;font-size:14px;color:#6b4a2b;background:#fffaf0;border:1px dashed #b08d4c;border-radius:999px;padding:2px 11px;cursor:pointer}
 .pchip:hover{background:#f3e2b8}
-.pchip.on{background:#6b4a2b;color:#fff;border-style:solid}
 .dbtn{margin-top:10px;font:inherit;font-size:15px;color:#7a5520;background:transparent;border:1px solid #b08d4c;border-radius:999px;padding:2px 14px;cursor:pointer}
 .dbtn:hover{background:#f3e2b8}
 
-/* الأبناء */
-.kids{position:relative;margin-top:34px;padding-top:34px;display:flex;flex-wrap:wrap;justify-content:center;gap:34px;animation:fade .6s both}
-.kids::before{content:'';position:absolute;top:0;left:50%;height:34px;border-left:1px dashed #b08d4c}
-.group{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:26px}
-.group::before{content:'';position:absolute;top:0;left:12%;right:12%;border-top:1px dashed #b08d4c}
-.group.labeled::before{display:none}
-.glabel{width:100%;text-align:center;margin-bottom:14px;font-size:17px;color:#7a5520}
+/* الأبناء: تظهر وحدهم تحت الأب المفتوح */
+.kidsWrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;padding-top:44px;margin-top:6px;animation:fade .5s both}
+.kidsWrap::before{content:'';position:absolute;top:0;left:50%;height:44px;border-left:1px dashed #b08d4c}
+.pgroup{display:flex;flex-direction:column;align-items:center;gap:14px}
+.glabel{font-size:17px;color:#7a5520}
 .glabel span{padding:2px 16px;border:1px solid #b08d4c;border-radius:999px;background:#fffaf0}
+.kidsRow{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.focus{display:flex;justify-content:center;animation:up .5s both}
 
 /* لوحة التفاصيل */
 #drawer{position:fixed;top:0;right:0;height:100%;width:360px;max-width:92vw;overflow:auto;padding:26px 22px;z-index:30;
@@ -71,15 +71,15 @@ main{padding:20px 14px 100px}
 </head>
 <body>
 <header>
-  <div class="orn">❖ ❖ ❖</div>
   <h1>شجرة العائلة</h1>
   <div class="toolbar">
-    <button id="undoBtn" disabled>↩ تراجع</button>
-    <button id="collapseAll">طيّ الكل</button>
+    <button id="backBtn" disabled>→ رجوع إلى الأب</button>
+    <button id="homeBtn">الجيل الأول</button>
     <a href="family-tree.html" class="tlink">واجهة التعديل</a>
   </div>
+  <div class="crumbs" id="crumbs"></div>
 </header>
-<main><div id="tree"></div></main>
+<main><div id="view"></div></main>
 
 <aside id="drawer">
   <button id="closeDrawer" title="إغلاق">✕</button>
@@ -90,20 +90,17 @@ main{padding:20px 14px 100px}
 <script>
 const sb = window.supabase.createClient('https://nrddblppxdiklixjxsni.supabase.co','sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT');
 let people=[], marriages=[];
-let expandedSet=new Set();
-let undoStack=[];
-let prevVisible=new Set(), visible=new Set();
+let stack=[];                      // مسار التنقل: كل عنصر هو شخص مفتوح
 const $=id=>document.getElementById(id);
 const byId=id=>people.find(p=>p.id===id);
 const nameOf=id=>(byId(id)||{}).name||'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
 const dispName=p=>(p.death?'المرحوم ':'')+p.name;
 const lifeText=p=>p.death?'الحياة: '+(p.birth||'؟')+' – '+p.death:(p.birth?'الميلاد: '+p.birth:'');
-const pairKey=(id,pid)=>'pair:'+id+'|'+pid;
 
 async function load(){
   const [p,m]=await Promise.all([sb.from('people').select('*').order('created_at'),sb.from('marriages').select('*')]);
-  if(p.error){ $('tree').innerHTML='<div class="empty">تعذر تحميل الشجرة، حاول لاحقاً</div>'; return; }
+  if(p.error){ $('view').innerHTML='<div class="empty">تعذر تحميل الشجرة، حاول لاحقاً</div>'; return; }
   people=(p.data||[]).map(r=>({id:r.id,name:r.name,birth:r.birth||'',death:r.death||'',gender:r.gender||'',fatherId:r.father_id||'',motherId:r.mother_id||'',spouseId:r.spouse_id||'',bio:r.bio||'',photo:r.photo_url||'',outsider:!!r.is_outsider}));
   marriages=(m.data||[]).map(x=>({h:x.husband_id,w:x.wife_id,pos:x.position||0}));
   render();
@@ -115,142 +112,87 @@ function partnersOf(id){
   return [...new Set(list)].filter(x=>byId(x));
 }
 function primaryParent(c){const f=byId(c.fatherId),m=byId(c.motherId);if(f&&!f.outsider)return f.id;if(m&&!m.outsider)return m.id;if(f)return f.id;if(m)return m.id;return null;}
-function kidsOfPair(id,pid){
-  return people.filter(c=>!c.outsider && ((c.fatherId===id&&c.motherId===pid)||(c.fatherId===pid&&c.motherId===id)) && primaryParent(c)===id);
-}
 function childrenGroups(id){
   const partners=partnersOf(id), map=new Map(); partners.forEach(p=>map.set(p,[])); map.set(null,[]);
   people.forEach(c=>{if(c.outsider)return;if(c.fatherId!==id&&c.motherId!==id)return;if(primaryParent(c)!==id)return;const o=c.fatherId===id?c.motherId:c.fatherId;map.get(partners.includes(o)?o:null).push(c);});
-  const out=[]; partners.forEach(p=>{const k=map.get(p);if(k.length)out.push({label:'مع '+nameOf(p),kids:k});}); if(map.get(null).length)out.push({label:partners.length?'من غير الزوج/الزوجة المسجّل':'',kids:map.get(null)});
+  const out=[]; partners.forEach(p=>{const k=map.get(p);if(k.length)out.push({label:'مع '+nameOf(p),kids:k});});
+  if(map.get(null).length)out.push({label:partners.length?'من غير الزوج/الزوجة المسجّل':'',kids:map.get(null)});
   return out;
 }
 const countKids=id=>childrenGroups(id).reduce((s,g)=>s+g.kids.length,0);
 const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
 
-// مسار الأجداد مع مفاتيح الأزواج، حتى تبقى الأغصان المفتوحة ظاهرة عند فتح حفيد
-function pathToRoot(id){
-  const keys=[]; let cur=id; const seen=new Set();
-  while(cur&&!seen.has(cur)){
-    seen.add(cur);
-    const p=byId(cur); if(!p) break;
-    const par=primaryParent(p); if(!par) break;
-    keys.push(par);
-    const other=p.fatherId===par?p.motherId:p.fatherId;
-    if(other&&byId(other)) keys.push(pairKey(par,other));
-    cur=par;
-  }
-  return keys;
-}
+// ===== التنقل: الأبناء وحدهم، ومعهم زر الرجوع =====
+function open(id){ stack.push(id); render(); }
+function back(){ stack.pop(); render(); }
+function jump(i){ stack=stack.slice(0,i); render(); }
+function home(){ stack=[]; render(); }
 
-// ===== التنقل: فتح فرع يطوي ما سواه، والتراجع يعيد الحالة السابقة =====
-function go(next){ undoStack.push(new Set(expandedSet)); expandedSet=next; render(); }
-function clickCard(id){
-  if(expandedSet.has(id)){ const n=new Set(expandedSet); n.delete(id); go(n); }
-  else { const n=new Set(pathToRoot(id)); n.add(id); go(n); }
-}
-function togglePair(id,pid){
-  const key=pairKey(id,pid);
-  const n=new Set(expandedSet);
-  if(n.has(key)){ n.delete(key); }
-  else {
-    partnersOf(id).forEach(o=>n.delete(pairKey(id,o)));
-    pathToRoot(id).forEach(k=>n.add(k));
-    n.add(id); n.add(key);
-  }
-  go(n);
-}
-function undo(){ if(!undoStack.length) return; expandedSet=undoStack.pop(); render(); }
-function collapseAll(){ go(new Set()); }
-
-// ===== بطاقة (مع الأزواج داخلها عند الفتح) =====
-function makeCard(p,o){
-  const c=el('div','card'+(o.open?' open':''));
+// ===== بطاقة شخص =====
+function nodeCard(p,o){
+  const c=el('div','card'+(o.big?' big':'')+(o.onClick?' clickable':''));
   const r=el('div','ring');
   if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
   c.appendChild(r);
   c.appendChild(el('div','n',dispName(p)));
   const life=lifeText(p); if(life)c.appendChild(el('div','meta',life));
-  if(o.count)c.appendChild(el('div','cnt',(o.open?'طيّ ':'عرض ')+o.count+' '+(o.count===1?'ابن':'أبناء')));
-  if(o.partners&&o.partners.length){
+  const n=countKids(p.id);
+  if(n) c.appendChild(el('div','cnt',n+' '+(n===1?'ابن':'أبناء')));
+  const pts=partnersOf(p.id);
+  if(pts.length){
     const pc=el('div','pchips');
-    o.partners.forEach(pid=>{
-      const b=el('button',o.isActive(pid)?'pchip on':'pchip',nameOf(pid));
-      b.onclick=ev=>{ev.stopPropagation();o.onPartner(pid);};
-      pc.appendChild(b);
-    });
+    pts.forEach(pid=>{const b=el('button','pchip',nameOf(pid)); b.onclick=ev=>{ev.stopPropagation();openDrawer(pid);}; pc.appendChild(b);});
     c.appendChild(pc);
   }
   const d=el('button','dbtn','التفاصيل');
   d.onclick=ev=>{ev.stopPropagation();openDrawer(p.id);};
   c.appendChild(d);
+  if(o.onClick) c.onclick=o.onClick;
   return c;
 }
 
-// ===== الوحدة: الشخص بزوجه أو أزواجه داخل بطاقته، ثم الأبناء تحتها =====
-function unitFor(id,depth,isChild,index){
-  visible.add(id);
-  const p=byId(id);
-  const box=el('div','unit'+(isChild?' child':''));
-  if(!prevVisible.has(id)){ box.classList.add('anim'); box.style.animationDelay=(index*90)+'ms'; }
-  const open=expandedSet.has(id);
-  const partners=partnersOf(id);
-  const card=makeCard(p,{
-    open,
-    count:countKids(id),
-    partners: open ? partners : [],
-    isActive: pid=>expandedSet.has(pairKey(id,pid)),
-    onPartner: pid=> partners.length>=2 ? togglePair(id,pid) : openDrawer(pid)
-  });
-  card.onclick=()=>clickCard(id);
-  box.appendChild(card);
-
-  if(open){
-    if(partners.length<=1){
-      box.appendChild(kidsEl(id,depth));
-    } else {
-      partners.forEach(pid=>{
-        if(!expandedSet.has(pairKey(id,pid))) return;
-        const kids=kidsOfPair(id,pid);
-        if(kids.length) box.appendChild(pairKidsEl(kids,depth));
-      });
-    }
-  }
-  return box;
-}
-
-function pairKidsEl(kids,depth){
-  const h=el('div','kids');
-  const gr=el('div','group');
-  kids.forEach((k,j)=>gr.appendChild(unitFor(k.id,depth+1,true,j)));
-  h.appendChild(gr);
-  return h;
-}
-
-function kidsEl(id,depth){
-  const groups=childrenGroups(id);
-  const h=el('div','kids');
-  let k=0;
-  groups.forEach(g=>{
-    const gr=el('div','group'+(groups.length>1&&g.label?' labeled':''));
-    if(groups.length>1&&g.label){ const lb=el('div','glabel'); lb.appendChild(el('span','',g.label)); gr.appendChild(lb); }
-    g.kids.forEach(child=>{ gr.appendChild(unitFor(child.id,depth+1,true,k)); k++; });
-    h.appendChild(gr);
-  });
-  return h;
-}
-
 function render(){
-  visible=new Set();
-  const t=$('tree'); t.innerHTML='';
-  const roots=rootsList();
-  if(!roots.length){ t.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; }
-  else {
-    const wrap=el('div','roots');
-    roots.forEach((r,i)=>wrap.appendChild(unitFor(r.id,0,false,i)));
-    t.appendChild(wrap);
+  // شريط المسار
+  const cr=$('crumbs'); cr.innerHTML='';
+  if(stack.length){
+    const h=el('button','','الجيل الأول'); h.onclick=home; cr.appendChild(h);
+    stack.forEach((id,i)=>{
+      cr.appendChild(el('span','sep','‹'));
+      const b=el('button','',nameOf(id)); b.onclick=()=>jump(i+1); cr.appendChild(b);
+    });
   }
-  prevVisible=new Set(visible);
-  $('undoBtn').disabled=!undoStack.length;
+  $('backBtn').disabled=!stack.length;
+  $('homeBtn').disabled=!stack.length;
+
+  const v=$('view'); v.innerHTML='';
+  // الجيل الأول: الجذور فقط
+  if(!stack.length){
+    const roots=rootsList();
+    if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+    const row=el('div','roots');
+    roots.forEach(r=>row.appendChild(nodeCard(r,{onClick:()=>open(r.id)})));
+    v.appendChild(row);
+    return;
+  }
+
+  // الشخص المفتوح بالأعلى، وأبناؤه وحدهم تحته
+  const cur=stack[stack.length-1];
+  const top=el('div','focus');
+  top.appendChild(nodeCard(byId(cur),{big:true}));
+  v.appendChild(top);
+
+  const groups=childrenGroups(cur);
+  if(!groups.length){ v.appendChild(el('div','empty','لا يوجد أبناء مسجّلون لهذا الشخص')); return; }
+  const wrap=el('div','kidsWrap');
+  groups.forEach(g=>{
+    const pg=el('div','pgroup');
+    if(groups.length>1&&g.label){ const lb=el('div','glabel'); lb.appendChild(el('span','',g.label)); pg.appendChild(lb); }
+    const row=el('div','kidsRow');
+    g.kids.forEach(k=>row.appendChild(nodeCard(k,{onClick:()=>open(k.id)})));
+    pg.appendChild(row);
+    wrap.appendChild(pg);
+  });
+  v.appendChild(wrap);
 }
 
 // ===== لوحة التفاصيل =====
@@ -274,8 +216,8 @@ function openDrawer(id){
 }
 $('closeDrawer').onclick=()=>$('drawer').classList.remove('open');
 
-$('undoBtn').onclick=undo;
-$('collapseAll').onclick=collapseAll;
+$('backBtn').onclick=back;
+$('homeBtn').onclick=home;
 load();
 </script>
 </body>
