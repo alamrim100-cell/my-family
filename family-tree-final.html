@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#173d35">
+<meta name="description" content="مساحة عائلية تفاعلية لحفظ الأسماء والأنساب والذكريات عبر الأجيال.">
+<title>شجرة العائلة | سجلّ الأجيال</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Amiri,serif;color:#4a3420;overflow-x:hidden;
+  background:radial-gradient(ellipse at center,#fbf4e2 0,#efe2c4 70%,#e2cfa4 100%)}
+header{padding:16px 18px 6px;text-align:center}
+header h1{margin:0 0 10px;font-size:34px;color:#7a5520;letter-spacing:1px}
+.toolbar{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar button,.toolbar .tlink{font:inherit;font-size:17px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 18px;cursor:pointer;text-decoration:none;transition:all .25s}
+.toolbar button:hover:not(:disabled),.toolbar .tlink:hover{background:#f3e2b8}
+.toolbar button:disabled{opacity:.4;cursor:default}
+.crumbs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:14px 0 0;font-size:16px;color:#8a6b3e}
+.crumbs button{font:inherit;font-size:16px;color:#6b4a2b;background:transparent;border:0;cursor:pointer;padding:2px 6px;border-bottom:1px dashed #b08d4c}
+.crumbs button:hover{color:#3b2a1a}
+.crumbs .sep{color:#b08d4c}
+main{padding:24px 14px 100px}
+.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:50px;animation:fade .5s both}
+.empty{text-align:center;color:#8a6b3e;padding:50px 0;font-size:20px}
+
+/* الشخص المفتوح والزوجان */
+.focus{display:flex;justify-content:center;animation:up .5s both}
+.couplehead{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;animation:up .5s both}
+.bond{font-size:30px;color:#b08d4c;line-height:1}
+
+/* خيارات الزوجات: بطاقات تظهر تحت الشخص */
+.choicesRow{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:34px;padding-top:44px;animation:fade .5s both}
+.choicesRow::before{content:'';position:absolute;top:0;left:50%;height:44px;border-left:1px dashed #b08d4c}
+
+/* البطاقة */
+.card{position:relative;overflow:hidden;width:215px;padding:18px 12px 14px;background:linear-gradient(160deg,rgba(255,255,255,.92),rgba(255,247,230,.7));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;
+  border:6px double #b08d4c;border-radius:50% 50% 16px 16px / 22% 22% 16px 16px;
+  box-shadow:inset 0 0 0 2px #fffaf0,inset 0 0 0 3px #d9bf85,0 10px 22px rgba(90,60,20,.15);transition:transform .35s}
+.card.clickable{cursor:pointer}
+.card.clickable:hover{transform:translateY(-5px)}
+.card.big{width:270px;padding:22px 16px 16px}
+.ring{width:124px;height:124px;margin:0 auto 10px;border-radius:50%;padding:5px;background:linear-gradient(135deg,#d9bf85,#8a6b3e,#d9bf85)}
+.card.big .ring{width:156px;height:156px}
+.ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee3c6}
+.n{font-size:25px;font-weight:700;color:#5a3d1a;line-height:1.3}
+.card.big .n{font-size:30px}
+.meta{font-size:16px;color:#8a6b3e;margin-top:4px}
+.cnt{margin-top:8px;font-size:16px;color:#7a5520;font-style:italic}
+.dbtn{margin-top:10px;font:inherit;font-size:15px;color:#7a5520;background:transparent;border:1px solid #b08d4c;border-radius:999px;padding:2px 14px;cursor:pointer}
+.dbtn:hover{background:#f3e2b8}
+/* لمعة زجاجية تمر على البطاقة عند المرور بالمؤشر */
+.card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);
+  transform:translateX(-120%);transition:transform .9s ease}
+.card.clickable:hover::after{transform:translateX(120%)}
+/* اسم متلألئ عند المرور */
+.card.clickable:hover .n{background:linear-gradient(100deg,#5a3d1a 35%,#d4a94f 50%,#5a3d1a 65%);background-size:250% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 1.8s linear infinite}
+
+/* الأبناء وحدهم */
+.kidsWrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:26px;padding-top:44px;margin-top:6px;animation:fade .5s both}
+.kidsWrap::before{content:'';position:absolute;top:0;left:50%;height:44px;border-left:1px dashed #b08d4c}
+.pgroup{display:flex;flex-direction:column;align-items:center;gap:14px}
+.glabel span{padding:2px 16px;border:1px solid #b08d4c;border-radius:999px;background:#fffaf0;font-size:17px;color:#7a5520}
+.kidsRow{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+
+/* لوحة التفاصيل */
+#drawer{position:fixed;top:0;right:0;height:100%;width:360px;max-width:92vw;overflow:auto;padding:26px 22px;z-index:30;
+  background:#fffaf0;border-left:6px double #b08d4c;box-shadow:-12px 0 30px rgba(60,35,10,.2);
+  transform:translateX(105%);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+#drawer.open{transform:translateX(0)}
+#closeDrawer{position:absolute;top:12px;left:12px;font:inherit;font-size:18px;background:transparent;border:1px solid #b08d4c;border-radius:50%;width:36px;height:36px;cursor:pointer;color:#7a5520}
+#dbody{text-align:center;padding-top:20px}
+#dbody .big{width:150px;height:150px;margin:0 auto 14px;border-radius:50%;padding:6px;background:linear-gradient(135deg,#d9bf85,#8a6b3e,#d9bf85)}
+#dbody .big img,#dbody .big .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee3c6}
+#dbody h2{margin:0 0 12px;font-size:28px;color:#5a3d1a}
+#dbody .drow{font-size:19px;line-height:1.7;color:#5a4128;border-bottom:1px dotted #d9bf85;padding:6px 0}
+#dbody .bio{font-size:18px;color:#6b5030;margin-top:12px;font-style:italic;line-height:1.8}
+
+/* ===== بطاقة التفاصيل المكبّرة ===== */
+#drawer{top:50%;right:auto;left:50%;height:auto;width:min(540px,94vw);max-height:88vh;padding:26px 24px;border-radius:26px;border:6px double #b08d4c;
+  transform:translate(-50%,-50%) scale(.55);opacity:0;pointer-events:none;transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .35s ease}
+#drawer.open{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+#drawerBg{position:fixed;inset:0;background:rgba(40,25,10,.55);z-index:29;opacity:0;pointer-events:none;transition:opacity .35s ease}
+#drawerBg.open{opacity:1;pointer-events:auto}
+#dbody .big{width:auto;height:auto;padding:0;background:none;border-radius:16px;margin:0 auto 16px}
+#dbody .big img{width:100%;max-height:340px;height:auto;object-fit:contain;border-radius:16px;background:#eee3c6;display:block}
+#dbody .big .ph{width:170px;height:170px;margin:0 auto;border-radius:50%;background:#eee3c6}
+
+/* ===== رسم جذور الشجرة عند الدخول ===== */
+.rootsIntro{display:block;width:min(560px,90%);height:60px;margin:0 auto 10px;overflow:visible}
+.rootsIntro path{fill:none;stroke:#8a5a2b;stroke-width:2;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:drawroot 1.4s ease .2s forwards}
+@keyframes drawroot{to{stroke-dashoffset:0}}
+
+/* ===== الألبوم وحاسبة القرابة ===== */
+.pickbar{position:sticky;top:0;z-index:20;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;padding:10px;background:#fffaf0;border-bottom:2px solid #b08d4c;font-size:17px;color:#6b4a2b}
+.pickbar.hide{display:none}
+.pickbar button{font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;border:1px solid #b08d4c;background:#fff;color:#6b4a2b;cursor:pointer}
+.pickbtn{font:inherit;font-size:16px;width:100%;padding:9px;border:1px solid #b08d4c;border-radius:10px;background:#fff;color:#6b4a2b;cursor:pointer}
+.card.fcard.clickable{cursor:pointer;box-shadow:0 0 0 3px #f3d9a8,0 10px 22px rgba(90,60,20,.15)}
+.card.fcard.clickable:hover{transform:translateY(-4px)}
+.album{margin-top:16px;border-top:1px dotted #d9bf85;padding-top:12px}
+.albumTitle{font-size:20px;font-weight:700;color:#7a5520;margin-bottom:8px}
+.albumGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.afig{margin:0;background:#fff;border:1px solid #d9bf85;border-radius:12px;padding:6px;text-align:center}
+.afig img{width:100%;height:110px;object-fit:cover;border-radius:8px;display:block}
+.afig figcaption{font-size:13px;color:#7a5520;margin-top:4px}
+.afrm{display:grid;gap:6px;margin-top:10px}
+.afrm input{font:inherit;font-size:14px;padding:6px;border-radius:8px;border:1px solid #d9bf85;width:100%}
+.afrm button{font:inherit;font-size:14px;padding:8px;border-radius:8px;border:0;background:#6b4a2b;color:#fff;cursor:pointer}
+dialog{border:none;border-radius:18px;padding:22px;width:min(480px,94vw);background:#fffaf0;color:#3b2a1a;font-family:Cairo,Tahoma,sans-serif;box-shadow:0 20px 50px rgba(60,35,10,.3)}
+dialog::backdrop{background:rgba(40,25,10,.45)}
+dialog h3{margin:0 0 8px;color:#7a5520}
+dialog label{display:block;margin:10px 0 4px;font-size:14px}
+dialog select{width:100%;padding:8px;border:1px solid #d9bf85;border-radius:8px;font:inherit;background:#fff}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+.bar button{font:inherit;font-size:15px;color:#fff;background:#6b4a2b;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+.bar button.sec{background:#fff;color:#6b4a2b;border:1px solid #6b4a2b}
+.kinres{margin-top:14px;font-size:20px;color:#5a3d1a;text-align:center;line-height:1.7;min-height:30px}
+
+/* ===== شجرة النسب الأحادية ===== */
+.lineBtn{font:inherit;font-size:15px;color:#6b4a2b;background:#fffaf0;border:1px solid #b08d4c;border-radius:999px;padding:6px 16px;cursor:pointer;margin-top:12px}
+.lineBtn:hover{background:#f3e2b8}
+.lineStep{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #d9bf85;border-radius:16px;padding:10px 14px;max-width:440px;margin:0 auto}
+.lineImg{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#eee3c6;flex:0 0 56px;border:2px solid #d9bf85}
+.lineLbl{font-size:13px;color:#8a5a2b;font-weight:700}
+.lineSub{font-size:13px;color:#6b5030}
+.lineConn{width:0;height:24px;margin:0 auto;border-left:2px dashed #b08d4c}
+
+/* ===== شاشة الترحيب ===== */
+.welcome{max-width:560px;margin:10px auto;padding:34px 22px;text-align:center;border:6px double #b08d4c;border-radius:28px;
+  background:linear-gradient(160deg,rgba(255,255,255,.9),rgba(255,247,230,.75));box-shadow:0 14px 34px rgba(90,60,20,.18);animation:up .8s both}
+.wtitle{font-size:42px;font-weight:700;color:#7a5520;letter-spacing:1px}
+.wsub{margin:12px 0 22px;font-size:19px;color:#6b5030;line-height:1.7}
+.wstats{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.wstat{min-width:130px;padding:14px 10px;border:1px solid #d9bf85;border-radius:18px;background:#fffaf0}
+.wstat b{display:block;font-size:34px;color:#7a5520}
+.wstat span{font-size:16px;color:#8a6b3e}
+.wsearch{margin-bottom:22px}
+.wsearch input{width:100%;padding:10px 16px;font:inherit;font-size:17px;border:1px solid #b08d4c;border-radius:999px;background:#fff;outline:none}
+.wres{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.wr{font:inherit;font-size:15px;color:#6b4a2b;background:#fffaf0;border:1px dashed #b08d4c;border-radius:999px;padding:4px 12px;cursor:pointer}
+.wr:hover{background:#f3e2b8}
+.wstart{font:inherit;font-size:20px;color:#fff;background:#6b4a2b;border:0;border-radius:999px;padding:12px 40px;cursor:pointer;box-shadow:0 8px 20px rgba(60,35,10,.25);transition:transform .25s}
+.wstart:hover{transform:translateY(-2px)}
+@media (max-width:600px){ .wtitle{font-size:32px} .welcome{padding:26px 14px} .wsub{font-size:17px} }
+
+/* ===== العرض الكامل ===== */
+.fullWrap{overflow:auto;padding-bottom:24px}
+.ftitle{text-align:center;margin-bottom:12px}
+.ftree{position:relative;margin:0 auto}
+.ftree .card.fcard{position:absolute;z-index:1;width:180px;height:230px;padding:14px 8px 10px;overflow:hidden}
+.ftree .fbond{position:absolute;z-index:2;font-size:26px;color:#b08d4c;line-height:1}
+.flines{position:absolute;left:0;top:0;pointer-events:none;z-index:0}
+.flines path{fill:none;stroke:#8a5a2b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fband{position:absolute;z-index:0;border:1px dashed #b08d4c;border-radius:28px;background:rgba(255,250,240,.55)}
+.flabel{position:absolute;z-index:1;text-align:center;font-size:20px;font-weight:700;color:#7a5520;padding-top:6px}
+/* الزوج/الزوجة من خارج العائلة: بطاقة متقطّعة مع عبارة توضيحية */
+.card.fcard.outsider{border-style:dashed;background:#f6efe2}
+.card.fcard.outsider .n::after{content:'من خارج العائلة';display:block;font-size:12px;font-weight:400;color:#8a6b3e;margin-top:4px}
+.fullTree{display:flex;flex-direction:column;align-items:center;gap:30px;padding-bottom:40px}
+.ftitle{font-size:30px;color:#7a5520}
+.froots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px;align-items:flex-start}
+.fnode{display:flex;flex-direction:column;align-items:center;break-inside:avoid}
+.fcouple{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.card.fcard{width:190px;padding:14px 10px 12px;cursor:default}
+.card.fcard:hover{transform:none}
+.card.fcard .ring{width:96px;height:96px}
+.card.fcard .n{font-size:18px}
+.card.fcard .meta{font-size:13px}
+.fkids{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px;padding-top:40px}
+.fkids::before{content:'';position:absolute;top:0;left:50%;height:40px;border-left:1px dashed #b08d4c}
+.fgroup{display:flex;flex-direction:column;align-items:center;gap:12px}
+.frow{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+@media print{
+  @page{size:A3 landscape;margin:10mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff}
+  .toolbar,.crumbs,#drawer,.note{display:none !important}
+  header{padding:0}
+  main{padding:0}
+  .card.fcard{box-shadow:none}
+}
+
+/* ===== الهاتف ===== */
+@media (max-width:600px){
+  header{padding:12px 10px 4px}
+  header h1{font-size:26px;margin-bottom:8px}
+  .toolbar{gap:6px}
+  .toolbar button,.toolbar .tlink{font-size:14px;padding:5px 12px}
+  .crumbs{font-size:14px;margin-top:10px;gap:4px}
+  main{padding:16px 8px 80px}
+  .roots{gap:22px}
+  .card{width:128px;padding:9px 5px 8px}
+  .card.big{width:170px;padding:12px 6px 10px}
+  .ring{width:70px;height:70px;margin-bottom:4px}
+  .card.big .ring{width:96px;height:96px}
+  .n{font-size:19px}
+  .card.big .n{font-size:23px}
+  .meta,.cnt{font-size:13px}
+  .kidsRow{gap:14px}
+  .kidsWrap{padding-top:34px}
+  .kidsWrap::before{height:34px}
+  .choicesRow{gap:18px}
+  .couplehead{gap:8px}
+  .bond{font-size:24px}
+  #drawer{width:94vw;padding:20px 16px}
+  #dbody h2{font-size:23px}
+  #dbody .drow{font-size:17px}
+  .empty{font-size:17px}
+  /* البطاقات بجانب بعضها على الهاتف، وإن ضاقت الشاشة تُسحب أفقياً */
+  .roots,.kidsRow,.couplehead,.choicesRow{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;width:100%;padding:6px 14px 10px;margin:0;-webkit-overflow-scrolling:touch}
+  .roots{display:grid;grid-template-columns:repeat(2,max-content);justify-content:center;gap:14px;overflow:visible;padding:6px 8px 10px}
+  .kidsRow,.choicesRow{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,max-content));justify-content:center;justify-items:center;gap:14px;overflow:visible;padding:6px 8px 10px}
+  .couplehead{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;overflow:visible}
+  .roots>*,.kidsRow>*,.couplehead>*,.choicesRow>*{flex:0 0 auto;scroll-snap-align:center}
+  /* هوامش تلقائية تُبقي الصف قابلاً للتمرير من الطرفين دون قص */
+  .roots>:first-child,.kidsRow>:first-child,.couplehead>:first-child,.choicesRow>:first-child{margin-inline-start:auto}
+  .roots>:last-child,.kidsRow>:last-child,.couplehead>:last-child,.choicesRow>:last-child{margin-inline-end:auto}
+  /* اللمعة الزجاجية تتحرك تلقائياً على الهاتف لأن المؤشر غير متاح */
+  .card::after{transform:translateX(-120%);animation:sheen 4s ease-in-out infinite}
+  .card:active::after{animation:none;transform:translateX(120%);transition:transform .6s}
+  .card.clickable .n{background:linear-gradient(100deg,#5a3d1a 35%,#d4a94f 50%,#5a3d1a 65%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+  @keyframes sheen{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+  /* العرض الكامل على الهاتف: تصغير الشجرة كلها لتناسب الشاشة */
+  .ftree{zoom:.6}
+}
+
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
+.credit{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-family:Amiri,serif;font-size:14px;color:#8a6b3e;opacity:.85;pointer-events:none;z-index:5}
+.credit::before{content:'❖ ';color:#b08d4c}
+.credit::after{content:' ❖';color:#b08d4c}
+
+/* =========================================================
+   FINAL EDITION — Heritage / Modern Luxury UI
+   Visual layer only: preserves the existing family data model
+   and Supabase integration.
+   ========================================================= */
+:root{
+  --ink:#182c29;--ink-soft:#49615b;--forest:#173d35;--forest-2:#24564a;
+  --gold:#c5a568;--gold-light:#ead9ad;--paper:#f7f5ef;--paper-2:#fffdf8;
+  --line:rgba(31,68,58,.13);--shadow:0 22px 60px rgba(24,48,41,.12);
+  --radius:24px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;color:var(--ink);font-family:"Amiri",serif;overflow-x:hidden;
+  background:
+    radial-gradient(ellipse at 12% 8%,rgba(197,165,104,.16),transparent 30%),
+    radial-gradient(ellipse at 90% 28%,rgba(36,86,74,.10),transparent 34%),
+    linear-gradient(145deg,#f7f5ef 0%,#f1eee5 48%,#faf8f2 100%);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.24;
+  background-image:radial-gradient(rgba(23,61,53,.18) .65px,transparent .65px);
+  background-size:19px 19px;mask-image:linear-gradient(to bottom,black,transparent 75%);
+}
+header{
+  position:relative;padding:30px 20px 18px;text-align:center;
+  background:linear-gradient(135deg,rgba(19,55,47,.98),rgba(35,81,69,.96));
+  color:#fff;box-shadow:0 14px 38px rgba(19,55,47,.18);overflow:hidden;
+}
+header:before,header:after{
+  content:"";position:absolute;border:1px solid rgba(234,217,173,.2);
+  width:290px;height:290px;border-radius:50%;pointer-events:none;
+}
+header:before{top:-205px;right:-65px}
+header:after{bottom:-245px;left:-55px;width:360px;height:360px}
+header h1{
+  position:relative;margin:0;font-size:clamp(30px,4vw,48px);font-weight:700;
+  color:#f5e7c4;letter-spacing:.3px;text-shadow:0 3px 20px rgba(0,0,0,.16)
+}
+header h1:before{content:"✦";display:block;font-size:15px;color:var(--gold);margin-bottom:2px}
+header h1:after{
+  content:"سجلّ يجمع الأجيال ويحفظ الحكاية";display:block;margin:2px 0 16px;
+  color:rgba(255,255,255,.72);font-size:16px;font-weight:400;letter-spacing:.2px
+}
+.toolbar{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap}
+.toolbar button,.toolbar .tlink{
+  font:inherit;font-size:16px;color:#f8f3e8;background:rgba(255,255,255,.08);
+  border:1px solid rgba(234,217,173,.38);border-radius:999px;padding:7px 18px;
+  cursor:pointer;text-decoration:none;transition:all .22s ease;backdrop-filter:blur(8px)
+}
+.toolbar button:hover:not(:disabled),.toolbar .tlink:hover{
+  color:var(--forest);background:#f1dfb6;border-color:#f1dfb6;transform:translateY(-2px)
+}
+.toolbar button:disabled{opacity:.35;cursor:default}
+.crumbs{position:relative;z-index:1;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:15px 0 0;font-size:15px;color:#f0dfb9}
+.crumbs button{font:inherit;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:999px;cursor:pointer;padding:3px 12px}
+.crumbs button:hover{background:rgba(255,255,255,.18)}
+.crumbs .sep{color:var(--gold-light)}
+main{width:min(1500px,100%);margin:0 auto;padding:34px 22px 110px;min-height:55vh}
+.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:34px;animation:fade .5s both}
+.empty{color:var(--ink-soft);padding:56px 20px;font-size:20px;text-align:center}
+.empty:before{content:"✧";display:block;font-size:34px;color:var(--gold);margin-bottom:8px}
+.focus{display:flex;justify-content:center;animation:up .5s both}
+.couplehead{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;animation:up .5s both}
+.bond{font-size:28px;color:#b28d4e;line-height:1}
+.choicesRow{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:28px;padding-top:38px;animation:fade .5s both}
+.choicesRow:before{content:"";position:absolute;top:0;left:50%;height:38px;border-left:1px solid var(--gold)}
+.card{
+  position:relative;overflow:hidden;width:218px;padding:18px 14px 16px;text-align:center;
+  background:linear-gradient(155deg,rgba(255,255,255,.98),rgba(250,248,241,.96));
+  border:1px solid rgba(197,165,104,.65);border-radius:25px;
+  box-shadow:0 12px 32px rgba(24,48,41,.09),inset 0 1px 0 #fff;
+  transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;
+}
+.card:before{content:"";position:absolute;inset:7px;border:1px solid rgba(197,165,104,.18);border-radius:19px;pointer-events:none}
+.card.clickable{cursor:pointer}
+.card.clickable:hover{transform:translateY(-7px);border-color:var(--gold);box-shadow:0 20px 42px rgba(24,48,41,.15)}
+.card.big{width:270px;padding:23px 18px 18px;border-radius:30px;background:linear-gradient(150deg,#fffefa,#f4f0e5)}
+.ring{
+  width:116px;height:116px;margin:0 auto 12px;padding:4px;border-radius:50%;
+  background:linear-gradient(145deg,#e8d5a6,#a98242 48%,#e8d5a6);
+  box-shadow:0 5px 16px rgba(118,88,39,.16)
+}
+.card.big .ring{width:148px;height:148px}
+.ring img,.ring .ph{
+  width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;
+  background:linear-gradient(135deg,#e9e4d7,#d9d1bd)
+}
+.ring .ph:after{content:"";display:block;width:100%;height:100%;background:
+  radial-gradient(circle at 50% 39%,#b7b09f 0 16%,transparent 17%),
+  radial-gradient(ellipse at 50% 105%,#b7b09f 0 36%,transparent 37%)}
+.n{font-size:23px;font-weight:700;color:var(--forest);line-height:1.4;position:relative}
+.card.big .n{font-size:29px}
+.meta{font-family:Tahoma,Arial,sans-serif;font-size:12px;color:#718078;margin-top:6px;line-height:1.7}
+.cnt{margin-top:9px;font-size:15px;color:#9b793e;font-style:normal}
+.dbtn,.lineBtn{
+  margin-top:12px;font:inherit;font-size:14px;color:var(--forest);
+  background:#f7f2e6;border:1px solid rgba(197,165,104,.7);border-radius:999px;
+  padding:5px 17px;cursor:pointer;transition:.2s
+}
+.dbtn:hover,.lineBtn:hover{background:var(--forest);color:#fff;border-color:var(--forest)}
+.card:after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.72) 50%,transparent 65%);transform:translateX(-120%);transition:transform .8s}
+.card.clickable:hover:after{transform:translateX(120%)}
+.card.clickable:hover .n{color:#a17b3e}
+.kidsWrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:25px;padding-top:38px;margin-top:8px;animation:fade .5s both}
+.kidsWrap:before{content:"";position:absolute;top:0;left:50%;height:38px;border-left:1px solid var(--gold)}
+.pgroup{display:flex;flex-direction:column;align-items:center;gap:13px}
+.glabel span{padding:4px 16px;border:1px solid rgba(197,165,104,.7);border-radius:999px;background:#fffdf8;font-size:15px;color:#806333}
+.kidsRow{display:flex;flex-wrap:wrap;justify-content:center;gap:22px}
+#drawer{
+  top:50%;right:auto;left:50%;height:auto;width:min(570px,94vw);max-height:88vh;overflow:auto;
+  padding:30px 26px;border-radius:28px;border:1px solid rgba(197,165,104,.8);
+  background:linear-gradient(145deg,#fffefa,#f4f0e5);box-shadow:0 30px 100px rgba(7,25,20,.3);
+  transform:translate(-50%,-47%) scale(.96);opacity:0;pointer-events:none;
+  transition:transform .3s ease,opacity .3s ease
+}
+#drawer.open{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+#closeDrawer{position:absolute;top:13px;left:13px;width:38px;height:38px;border-radius:50%;border:1px solid #d6c49d;background:#fff;color:var(--forest);font-size:17px;cursor:pointer}
+#dbody{text-align:center;padding-top:16px}
+#dbody .big{width:auto;height:auto;padding:0;background:none;border-radius:16px;margin:0 auto 18px}
+#dbody .big img{width:100%;max-height:350px;height:auto;object-fit:contain;border-radius:18px;background:#eee9dd;display:block}
+#dbody .big .ph{width:150px;height:150px;margin:0 auto;border-radius:50%;background:#e8e1d1}
+#dbody h2{margin:0 0 16px;font-size:30px;color:var(--forest)}
+#dbody .drow{font-family:Tahoma,Arial,sans-serif;font-size:14px;line-height:1.8;color:#465a52;border-bottom:1px solid rgba(197,165,104,.28);padding:9px 4px}
+#dbody .bio{font-size:18px;color:#63736b;margin-top:15px;line-height:1.9}
+#drawerBg{background:rgba(12,32,27,.62);backdrop-filter:blur(5px)}
+.pickbar{position:sticky;top:0;z-index:20;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;padding:12px;background:#173d35;color:#fff;border-bottom:2px solid var(--gold);font-size:16px}
+.pickbar.hide{display:none}
+.pickbar button,.pickbtn{font:inherit;font-size:14px;padding:7px 15px;border-radius:999px;border:1px solid #c5a568;background:#fff;color:#24483e;cursor:pointer}
+.card.fcard.clickable{cursor:pointer;box-shadow:0 0 0 3px rgba(197,165,104,.25),0 10px 25px rgba(24,48,41,.1)}
+.album{margin-top:20px;border-top:1px solid rgba(197,165,104,.35);padding-top:16px}
+.albumTitle{font-size:21px;font-weight:700;color:var(--forest);margin-bottom:10px}
+.albumGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.afig{margin:0;background:#fff;border:1px solid #e1d5b9;border-radius:15px;padding:7px;text-align:center;box-shadow:0 5px 15px rgba(24,48,41,.06)}
+.afig img{width:100%;height:125px;object-fit:cover;border-radius:10px;display:block}
+.afig figcaption{font-size:13px;color:#806333;margin-top:6px}
+.afrm{display:grid;gap:8px;margin-top:12px}
+.afrm input{font:inherit;font-size:14px;padding:9px 12px;border-radius:10px;border:1px solid #d8c9a8;width:100%;background:#fff}
+.afrm button,.bar button{font:inherit;font-size:15px;color:#fff;background:var(--forest);border:0;border-radius:999px;padding:9px 18px;cursor:pointer}
+.afrm button:hover,.bar button:hover{background:#2c6556}
+dialog{border:1px solid #d5c39b;border-radius:24px;padding:25px;width:min(500px,94vw);background:#fffdf8;color:var(--ink);font-family:Tahoma,Arial,sans-serif;box-shadow:0 25px 70px rgba(12,32,27,.28)}
+dialog::backdrop{background:rgba(12,32,27,.6);backdrop-filter:blur(4px)}
+dialog h3{margin:0 0 14px;color:var(--forest);font-family:Amiri,serif;font-size:25px}
+dialog label{display:block;margin:12px 0 5px;font-size:13px;color:#63736b}
+dialog select{width:100%;padding:11px;border:1px solid #d8c9a8;border-radius:10px;font:inherit;background:#fff}
+.bar{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px;justify-content:center}
+.bar button.sec{background:#fff;color:var(--forest);border:1px solid #bba36f}
+.kinres{margin-top:16px;font-size:18px;color:var(--forest);text-align:center;line-height:1.9;min-height:30px;background:#f5f1e7;border-radius:14px;padding:10px}
+.lineBtn{font-size:14px}
+.lineStep{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e2d7bf;border-radius:16px;padding:12px 14px;max-width:440px;margin:0 auto;box-shadow:0 5px 16px rgba(24,48,41,.05)}
+.lineImg{width:58px;height:58px;border-radius:50%;object-fit:cover;background:#eee3c6;flex:0 0 58px;border:2px solid #d9bf85}
+.lineLbl{font-size:12px;color:#9b793e;font-weight:700}
+.lineSub{font-size:12px;color:#718078}
+.lineConn{width:0;height:22px;margin:0 auto;border-left:1px dashed #b08d4c}
+.welcome{
+  position:relative;max-width:680px;margin:18px auto;padding:42px 32px;text-align:center;
+  border:1px solid rgba(197,165,104,.7);border-radius:32px;
+  background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(247,244,235,.97));
+  box-shadow:var(--shadow);animation:up .7s both
+}
+.welcome:before{content:"✦";display:grid;place-items:center;width:48px;height:48px;margin:0 auto 12px;border-radius:50%;background:#f3ead4;color:#a78346;font-size:22px}
+.wtitle{font-size:clamp(34px,5vw,48px);font-weight:700;color:var(--forest);letter-spacing:0}
+.wsub{margin:10px 0 25px;font-size:19px;color:#63736b;line-height:1.9}
+.wstats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:25px}
+.wstat{min-width:145px;padding:15px 18px;border:1px solid rgba(197,165,104,.5);border-radius:20px;background:#fffdf8}
+.wstat b{display:block;font-size:38px;color:var(--forest);font-family:Tahoma,Arial,sans-serif;font-weight:600}
+.wstat span{font-size:15px;color:#8b754e}
+.wsearch{margin-bottom:23px;position:relative}
+.wsearch input{width:100%;padding:13px 20px;font:inherit;font-size:17px;border:1px solid #d7c69f;border-radius:999px;background:#fff;outline:none;box-shadow:0 4px 16px rgba(24,48,41,.04)}
+.wsearch input:focus{border-color:#9d7b43;box-shadow:0 0 0 4px rgba(197,165,104,.15)}
+.wres{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px}
+.wr{font:inherit;font-size:14px;color:var(--forest);background:#f5f1e7;border:1px solid #e0d2b3;border-radius:999px;padding:6px 14px;cursor:pointer}
+.wr:hover{background:#e9dfc8}
+.wstart{font:inherit;font-size:19px;color:#fff;background:linear-gradient(135deg,#173d35,#2c6556);border:0;border-radius:999px;padding:12px 42px;cursor:pointer;box-shadow:0 9px 22px rgba(23,61,53,.2);transition:.25s}
+.wstart:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(23,61,53,.25)}
+.fullWrap{overflow:auto;padding:8px 4px 30px;border-radius:22px}
+.ftitle{text-align:center;margin:0 0 22px;font-size:30px;color:var(--forest)}
+.ftree{position:relative;margin:0 auto}
+.ftree .card.fcard{position:absolute;z-index:1;width:180px;height:230px;padding:14px 8px 10px;overflow:hidden}
+.ftree .fbond{position:absolute;z-index:2;font-size:25px;color:#a78346;line-height:1}
+.flines{position:absolute;left:0;top:0;pointer-events:none;z-index:0}
+.flines path{fill:none;stroke:#ad925d;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fband{position:absolute;z-index:0;border:1px solid rgba(197,165,104,.5);border-radius:24px;background:rgba(255,253,248,.58)}
+.flabel{position:absolute;z-index:1;text-align:center;font-size:19px;font-weight:700;color:#806333;padding-top:8px}
+.card.fcard.outsider{border-style:dashed;background:#f5f0e5}
+.card.fcard.outsider .n:after{content:"من خارج العائلة";display:block;font-size:11px;font-weight:400;color:#8b754e;margin-top:4px}
+.fullTree{display:flex;flex-direction:column;align-items:center;gap:30px;padding-bottom:40px}
+.froots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px;align-items:flex-start}
+.fnode{display:flex;flex-direction:column;align-items:center;break-inside:avoid}
+.fcouple{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.card.fcard{width:190px;padding:14px 10px 12px;cursor:default}
+.card.fcard:hover{transform:none}
+.card.fcard .ring{width:96px;height:96px}
+.card.fcard .n{font-size:18px}
+.card.fcard .meta{font-size:12px}
+.fkids{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px;padding-top:38px}
+.fkids:before{content:"";position:absolute;top:0;left:50%;height:38px;border-left:1px solid var(--gold)}
+.fgroup{display:flex;flex-direction:column;align-items:center;gap:12px}
+.frow{display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
+.credit{
+  position:fixed;bottom:0;left:0;right:0;text-align:center;padding:7px 12px;
+  font-family:Amiri,serif;font-size:13px;color:#f0dfb9;background:rgba(23,61,53,.96);
+  opacity:1;pointer-events:none;z-index:25;backdrop-filter:blur(8px)
+}
+.credit:before{content:"✦ ";color:var(--gold)}
+.credit:after{content:" ✦";color:var(--gold)}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(197,165,104,.65);outline-offset:3px}
+@media(max-width:700px){
+  header{padding:23px 12px 15px}
+  header h1{font-size:30px}
+  header h1:after{font-size:13px;margin-bottom:13px}
+  .toolbar{gap:6px}
+  .toolbar button,.toolbar .tlink{font-size:13px;padding:6px 11px}
+  .crumbs{font-size:13px}
+  main{padding:22px 10px 90px}
+  .roots{gap:15px}
+  .card{width:155px;padding:12px 8px 11px;border-radius:20px}
+  .card.big{width:190px;padding:15px 10px 13px}
+  .ring{width:82px;height:82px;margin-bottom:8px}
+  .card.big .ring{width:108px;height:108px}
+  .n{font-size:17px}
+  .card.big .n{font-size:21px}
+  .meta,.cnt{font-size:11px}
+  .kidsRow{gap:12px}
+  .kidsWrap{padding-top:30px}
+  .kidsWrap:before{height:30px}
+  .choicesRow{gap:12px;padding-top:30px}
+  .choicesRow:before{height:30px}
+  .couplehead{gap:7px}
+  #drawer{padding:25px 16px 20px}
+  #dbody h2{font-size:24px}
+  #dbody .drow{font-size:13px}
+  .welcome{margin:8px auto;padding:29px 15px;border-radius:24px}
+  .wsub{font-size:16px}
+  .wstat{min-width:115px;padding:12px 10px}
+  .wstat b{font-size:30px}
+  .ftree{zoom:.58}
+  .fullWrap{margin-inline:-8px}
+  .ftitle{font-size:24px}
+}
+@media(max-width:380px){
+  .card{width:139px}
+  .card.big{width:174px}
+  .toolbar button,.toolbar .tlink{padding:5px 9px;font-size:12px}
+  .ftree{zoom:.48}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+@media print{
+  @page{size:A3 landscape;margin:10mm}
+  body{background:#fff!important}
+  body:before,.toolbar,.crumbs,#drawer,.note,.credit,.pickbar{display:none!important}
+  header{padding:8px;background:#fff!important;color:#173d35;box-shadow:none}
+  header h1,header h1:after{color:#173d35}
+  header h1:before{display:none}
+  main{padding:0}
+  .card.fcard{box-shadow:none}
+  .fullWrap{overflow:visible}
+}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>شجرة العائلة</h1>
+  <div class="toolbar">
+    <button id="backBtn" disabled>→ رجوع</button>
+    <button id="homeBtn" disabled>الجيل الأول</button>
+    <button id="fullBtn">العرض الكامل</button>
+    <button id="kinBtn">حاسبة القرابة</button>
+    <button id="printBtn" hidden>طباعة / PDF</button>
+    <button id="interBtn" hidden>العودة للعرض التفاعلي</button>
+    <a href="family-tree.html" class="tlink">واجهة التعديل</a>
+  </div>
+  <div class="crumbs" id="crumbs"></div>
+</header>
+<div id="pickBar" class="pickbar hide"><span id="pickText"></span><button id="pickCancel">إلغاء الاختيار</button></div>
+<main><div id="view"></div></main>
+
+<div id="drawerBg"></div>
+<dialog id="kinDlg">
+  <h3>حاسبة القرابة</h3>
+  <label>اختر الشخصين من الشجرة نفسها</label>
+  <button id="pickA" class="pickbtn">الشخص الأول: لم يُختر</button>
+  <button id="pickB" class="pickbtn" style="margin-top:8px">الشخص الثاني: لم يُختر</button>
+  <div class="bar"><button id="kinGo">احسب القرابة</button><button class="sec" onclick="document.getElementById('kinDlg').close()">إغلاق</button></div>
+  <div id="kinRes" class="kinres"></div>
+</dialog>
+<dialog id="lineDlg">
+  <h3 id="lineTitle">شجرة النسب</h3>
+  <div id="lineBody"></div>
+  <div class="bar"><button class="sec" onclick="document.getElementById('lineDlg').close()">إغلاق</button></div>
+</dialog>
+<aside id="drawer">
+  <button id="closeDrawer" title="إغلاق">✕</button>
+  <div id="dbody"></div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = window.supabase.createClient('https://nrddblppxdiklixjxsni.supabase.co','sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT');
+let people=[], marriages=[];
+// مسار التنقل: {id} لشخص، أو {id, pid} لزوجين محددين
+let stack=[];
+const $=id=>document.getElementById(id);
+const byId=id=>people.find(p=>p.id===id);
+const nameOf=id=>(byId(id)||{}).name||'';
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const dispName=p=>(p.death?'المرحوم ':'')+p.name;
+const lifeText=p=>p.death?'الحياة: '+(p.birth||'؟')+' – '+p.death:(p.birth?'الميلاد: '+p.birth:'');
+
+async function load(){
+  const [p,m]=await Promise.all([sb.from('people').select('*').order('created_at'),sb.from('marriages').select('*')]);
+  if(p.error){ $('view').innerHTML='<div class="empty">تعذر تحميل الشجرة، حاول لاحقاً</div>'; return; }
+  people=(p.data||[]).map(r=>({id:r.id,name:r.name,birth:r.birth||'',death:r.death||'',gender:r.gender||'',fatherId:r.father_id||'',motherId:r.mother_id||'',spouseId:r.spouse_id||'',bio:r.bio||'',photo:r.photo_url||'',outsider:!!r.is_outsider}));
+  marriages=(m.data||[]).map(x=>({h:x.husband_id,w:x.wife_id,pos:x.position||0}));
+  render();
+}
+function partnersOf(id){
+  const list=marriages.filter(m=>m.h===id||m.w===id).sort((a,b)=>a.pos-b.pos).map(m=>m.h===id?m.w:m.h);
+  const me=byId(id); if(me&&me.spouseId&&byId(me.spouseId)&&!list.includes(me.spouseId))list.push(me.spouseId);
+  people.forEach(p=>{if(p.spouseId===id&&!list.includes(p.id))list.push(p.id);});
+  return [...new Set(list)].filter(x=>byId(x));
+}
+function primaryParent(c){const f=byId(c.fatherId),m=byId(c.motherId);if(f&&!f.outsider)return f.id;if(m&&!m.outsider)return m.id;if(f)return f.id;if(m)return m.id;return null;}
+function kidsOfPair(id,pid){
+  return people.filter(c=>!c.outsider && ((c.fatherId===id&&c.motherId===pid)||(c.fatherId===pid&&c.motherId===id)) && primaryParent(c)===id);
+}
+function childrenGroups(id){
+  const partners=partnersOf(id), map=new Map(); partners.forEach(p=>map.set(p,[])); map.set(null,[]);
+  people.forEach(c=>{if(c.outsider)return;if(c.fatherId!==id&&c.motherId!==id)return;if(primaryParent(c)!==id)return;const o=c.fatherId===id?c.motherId:c.fatherId;map.get(partners.includes(o)?o:null).push(c);});
+  const out=[]; partners.forEach(p=>{const k=map.get(p);if(k.length)out.push({label:'مع '+nameOf(p),kids:k});});
+  if(map.get(null).length)out.push({label:partners.length?'من غير الزوج/الزوجة المسجّل':'',kids:map.get(null)});
+  return out;
+}
+// عدد أبناء الشخص: كل من يكون أباً أو أماً لهم (حتى لو كان الزوج/الزوجة من خارج العائلة)
+const countKids=id=>people.filter(c=>!c.outsider && (c.fatherId===id || c.motherId===id)).length;
+const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
+
+// ===== التنقل =====
+function open(id){ stack.push({id}); render(); }
+function openPair(id,pid){ stack.push({id,pid}); render(); }
+function back(){ stack.pop(); render(); }
+function jump(i){ stack=stack.slice(0,i+1); render(); }
+function home(){ stack=[]; render(); }
+
+// ===== بطاقة شخص =====
+function nodeCard(p,o){
+  const c=el('div','card'+(o.big?' big':'')+(o.onClick?' clickable':''));
+  const r=el('div','ring');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
+  c.appendChild(r);
+  c.appendChild(el('div','n',dispName(p)));
+  const life=lifeText(p); if(life)c.appendChild(el('div','meta',life));
+  const n=o.count!==undefined?o.count:countKids(p.id);
+  if(n) c.appendChild(el('div','cnt',n+' '+(n===1?'ابن':'أبناء')));
+  const d=el('button','dbtn','التفاصيل');
+  d.onclick=ev=>{ev.stopPropagation();openDrawer(p.id);};
+  c.appendChild(d);
+  if(o.onClick) c.onclick=o.onClick;
+  return c;
+}
+
+function kidsSection(kids){
+  if(!kids.length) return el('div','empty','لا يوجد أبناء مسجّلون');
+  const wrap=el('div','kidsWrap');
+  const row=el('div','kidsRow');
+  kids.forEach(k=>row.appendChild(nodeCard(k,{onClick:()=>open(k.id)})));
+  wrap.appendChild(row);
+  return wrap;
+}
+
+let fullMode=false;
+function render(){
+  if(fullMode){ renderFull(); return; }
+  if(!welcomed){ renderWelcome(); return; }
+  setModeButtons(false);
+  // شريط المسار
+  const cr=$('crumbs'); cr.innerHTML='';
+  if(stack.length){
+    const h=el('button','','الجيل الأول'); h.onclick=home; cr.appendChild(h);
+    stack.forEach((e,i)=>{
+      cr.appendChild(el('span','sep','‹'));
+      const label=e.pid?nameOf(e.id)+' و'+nameOf(e.pid):nameOf(e.id);
+      const b=el('button','',label); b.onclick=()=>jump(i); cr.appendChild(b);
+    });
+  }
+  $('backBtn').disabled=!stack.length;
+  $('homeBtn').disabled=!stack.length;
+
+  const v=$('view'); v.innerHTML='';
+
+  // الجيل الأول
+  if(!stack.length){
+    const roots=rootsList();
+    if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+    const row=el('div','roots');
+    const intro=!introDone; introDone=true;
+    if(intro) v.appendChild(rootsSvg());
+    roots.forEach((r,i)=>{
+      const c=nodeCard(r,{big:true,onClick:()=>open(r.id)});
+      if(intro){ c.style.animation='up .7s both'; c.style.animationDelay=(900+i*350)+'ms'; }
+      row.appendChild(c);
+    });
+    v.appendChild(row);
+    return;
+  }
+
+  const top=stack[stack.length-1];
+  const cur=top.id;
+  const partners=partnersOf(cur);
+
+  // زوجان محددان: الاثنان بالأعلى، وأبناؤهما تحتهما
+  if(top.pid){
+    const head=el('div','couplehead');
+    head.appendChild(nodeCard(byId(cur),{big:true,count:kidsOfPair(cur,top.pid).length}));
+    head.appendChild(el('div','bond','⚭'));
+    head.appendChild(nodeCard(byId(top.pid),{big:true,count:kidsOfPair(cur,top.pid).length}));
+    v.appendChild(head);
+    v.appendChild(kidsSection(kidsOfPair(cur,top.pid)));
+    return;
+  }
+
+  // أكثر من زوج/زوجة: تظهر بطاقاتهم تحت الشخص لاختيار أحدهم
+  if(partners.length>=2){
+    v.appendChild(el('div','focus'));
+    v.lastChild.appendChild(nodeCard(byId(cur),{big:true}));
+    const row=el('div','choicesRow');
+    partners.forEach(pid=>{
+      row.appendChild(nodeCard(byId(pid),{count:kidsOfPair(cur,pid).length,onClick:()=>openPair(cur,pid)}));
+    });
+    v.appendChild(row);
+    return;
+  }
+
+  // زوج/زوجة واحدة أو بلا زوج: الأبناء مباشرة
+  v.appendChild(el('div','focus'));
+  v.lastChild.appendChild(nodeCard(byId(cur),{big:true}));
+  const groups=childrenGroups(cur);
+  if(!groups.length){ v.appendChild(el('div','empty','لا يوجد أبناء مسجّلون لهذا الشخص')); return; }
+  const wrap=el('div','kidsWrap');
+  groups.forEach(g=>{
+    const pg=el('div','pgroup');
+    if(groups.length>1&&g.label){ const lb=el('div','glabel'); lb.appendChild(el('span','',g.label)); pg.appendChild(lb); }
+    const row=el('div','kidsRow');
+    g.kids.forEach(k=>row.appendChild(nodeCard(k,{onClick:()=>open(k.id)})));
+    pg.appendChild(row);
+    wrap.appendChild(pg);
+  });
+  v.appendChild(wrap);
+}
+
+// ===== العرض الكامل: كل الأجيال ظاهرة دفعة واحدة =====
+function setModeButtons(full){
+  $('fullBtn').hidden=full; $('printBtn').hidden=!full; $('interBtn').hidden=!full;
+  $('backBtn').hidden=full; $('homeBtn').hidden=full;
+}
+function fcard(p){
+  const c=el('div','card fcard');
+  const r=el('div','ring');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
+  c.appendChild(r);
+  c.appendChild(el('div','n',dispName(p)));
+  const life=lifeText(p); if(life)c.appendChild(el('div','meta',life));
+  return c;
+}
+function fullNode(id,seen){
+  seen.add(id);
+  const box=el('div','fnode');
+  const couple=el('div','fcouple');
+  couple.appendChild(fcard(byId(id)));
+  partnersOf(id).forEach(pid=>{ couple.appendChild(el('div','bond','⚭')); couple.appendChild(fcard(byId(pid))); });
+  box.appendChild(couple);
+  const groups=childrenGroups(id);
+  const kb=el('div','fkids');
+  let any=false;
+  groups.forEach(g=>{
+    const todo=g.kids.filter(k=>!seen.has(k.id));
+    if(!todo.length) return;
+    any=true;
+    const gr=el('div','fgroup');
+    if(groups.length>1&&g.label){ const lb=el('div','glabel'); lb.appendChild(el('span','',g.label)); gr.appendChild(lb); }
+    const row=el('div','frow');
+    todo.forEach(k=>{ if(!seen.has(k.id)) row.appendChild(fullNode(k.id,seen)); });
+    gr.appendChild(row);
+    kb.appendChild(gr);
+  });
+  if(any) box.appendChild(kb);
+  return box;
+}
+function renderFull(){
+  setModeButtons(true);
+  $('crumbs').innerHTML='';
+  const v=$('view'); v.innerHTML='';
+  const roots=rootsList();
+  if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+  const seen=new Set();
+  const wrap=el('div','fullTree');
+  wrap.appendChild(el('div','ftitle','شجرة العائلة'));
+  const row=el('div','froots');
+  roots.forEach(r=>{ if(!seen.has(r.id)) row.appendChild(fullNode(r.id,seen)); });
+  wrap.appendChild(row);
+  v.appendChild(wrap);
+}
+$('fullBtn').onclick=()=>{ fullMode=true; render(); };
+$('interBtn').onclick=()=>{ fullMode=false; render(); };
+$('printBtn').onclick=()=>window.print();
+
+// ===== لوحة التفاصيل =====
+function openDrawer(id){
+  const p=byId(id); if(!p) return;
+  const b=$('dbody'); b.innerHTML='';
+  const big=el('div','big');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';big.appendChild(i);} else big.appendChild(el('div','ph'));
+  b.append(big, el('h2','',dispName(p)));
+  const rows=[];
+  if(p.gender) rows.push('الجنس: '+(p.gender==='male'?'ذكر':'أنثى'));
+  if(p.death) rows.push('فترة الحياة: من '+(p.birth||'؟')+' إلى '+p.death);
+  else if(p.birth) rows.push('تاريخ الميلاد: '+p.birth);
+  if(p.fatherId) rows.push('الأب: '+nameOf(p.fatherId));
+  if(p.motherId) rows.push('الأم: '+nameOf(p.motherId));
+  const pts=partnersOf(id); if(pts.length) rows.push('الزوج / الزوجة: '+pts.map(nameOf).join('، '));
+  rows.push('عدد الأبناء: '+countKids(id));
+  rows.forEach(t=>b.appendChild(el('div','drow',t)));
+  if(p.bio) b.appendChild(el('div','bio',p.bio));
+  const lineBtn=el('button','lineBtn','شجرة النسب');
+  lineBtn.onclick=()=>openLineage(id);
+  b.appendChild(lineBtn);
+  albumSection(id,b,false);
+  $('drawer').classList.add('open'); $('drawerBg').classList.add('open');
+}
+function closeDrawer(){ $('drawer').classList.remove('open'); $('drawerBg').classList.remove('open'); }
+$('closeDrawer').onclick=closeDrawer;
+$('drawerBg').onclick=closeDrawer;
+
+// ===== تخطيط العرض الكامل: خطوط واضحة وبلا تداخل =====
+const FW=180, FH=230, FROW=320, FBOND=44, FKG=34, FGAP=90;
+function shiftF(l,dx){
+  l.items.forEach(i=>i.cx+=dx);
+  l.bonds.forEach(b=>b.cx+=dx);
+  l.links.forEach(k=>{ k.px+=dx; k.xs=k.xs.map(v=>v+dx); });
+  return l;
+}
+function fullLayoutF(id,depth,seen){
+  seen.add(id);
+  const members=[id,...partnersOf(id)];
+  const uw=members.length*FW+(members.length-1)*FBOND;
+  const kids=[];
+  childrenGroups(id).forEach(g=>g.kids.forEach(k=>{ if(!seen.has(k.id)) kids.push(k); }));
+  const kl=kids.map(k=>fullLayoutF(k.id,depth+1,seen));
+  const kidsW=kl.reduce((s,l)=>s+l.w,0)+Math.max(0,kl.length-1)*FKG;
+  const w=Math.max(uw,kidsW,FW);
+  const y=depth*FROW;
+  const items=[], bonds=[], links=[];
+  const left=(w-uw)/2;
+  members.forEach((m,i)=>{
+    const out = i===0 ? members.slice(1).some(pid=>isOutPair(id,pid)===id) : isOutPair(id,m)===m;
+    items.push({id:m,cx:left+FW/2+i*(FW+FBOND),y,out});
+  });
+  for(let i=1;i<members.length;i++) bonds.push({cx:left+FW+(i-1)*(FW+FBOND)+FBOND/2,y:y+FH/2});
+  let x=(w-kidsW)/2;
+  const xs=[];
+  kl.forEach(l=>{
+    shiftF(l,x);
+    items.push(...l.items); bonds.push(...l.bonds); links.push(...l.links);
+    xs.push(x+l.w/2);
+    x+=l.w+FKG;
+  });
+  if(kl.length) links.push({px:w/2,py:y+FH,ky:(depth+1)*FROW,xs});
+  return {w,items,bonds,links};
+}
+function renderFull(){
+  setModeButtons(true);
+  $('crumbs').innerHTML='';
+  const v=$('view'); v.innerHTML='';
+  const roots=rootsList();
+  if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+  const seen=new Set();
+  let x=0; const all={items:[],bonds:[],links:[]};
+  roots.forEach(r=>{
+    if(seen.has(r.id)) return;
+    const l=shiftF(fullLayoutF(r.id,0,seen),x);
+    all.items.push(...l.items); all.bonds.push(...l.bonds); all.links.push(...l.links);
+    x+=l.w+FGAP;
+  });
+  const W=Math.max(FW,x-FGAP);
+  const H=Math.max(...all.items.map(i=>i.y))+FH;
+  const svgNS='http://www.w3.org/2000/svg';
+  const wrap=el('div','fullWrap');
+  wrap.appendChild(el('div','ftitle','شجرة العائلة'));
+  const box=el('div','ftree');
+  box.style.width=(W+40)+'px'; box.style.height=(H+40)+'px';
+  const svg=document.createElementNS(svgNS,'svg');
+  svg.setAttribute('class','flines'); svg.setAttribute('width',W+40); svg.setAttribute('height',H+40);
+  all.links.forEach(k=>{
+    const px=k.px+20, py=k.py+20, ky=k.ky+20;
+    const midY=(py+ky)/2;
+    const xs=k.xs.map(v=>v+20);
+    const minX=Math.min(px,...xs), maxX=Math.max(px,...xs);
+    let d=`M${px} ${py} V${midY}`;
+    if(maxX>minX) d+=` M${minX} ${midY} H${maxX}`;
+    xs.forEach(v=>{ d+=` M${v} ${midY} V${ky}`; });
+    const path=document.createElementNS(svgNS,'path'); path.setAttribute('d',d); svg.appendChild(path);
+  });
+  box.appendChild(svg);
+  all.items.forEach(it=>{
+    const p=byId(it.id); if(!p) return;
+    const c=fcard(p);
+    c.style.left=(it.cx-FW/2+20)+'px'; c.style.top=(it.y+20)+'px';
+    box.appendChild(c);
+  });
+  all.bonds.forEach(b=>{
+    const d=el('div','fbond','⚭');
+    d.style.left=(b.cx+20-10)+'px'; d.style.top=(b.y+20-13)+'px';
+    box.appendChild(d);
+  });
+  wrap.appendChild(box);
+  v.appendChild(wrap);
+}
+// ===== العرض الكامل مع فصل كل عائلة في إطار مستقل (تُعرّف هذه النسخة بعد السابقة وتحل محلها) =====
+function renderFull(){
+  setModeButtons(true);
+  $('crumbs').innerHTML='';
+  const v=$('view'); v.innerHTML='';
+  const roots=rootsList();
+  if(!roots.length){ v.innerHTML='<div class="empty">لا توجد بيانات بعد.</div>'; return; }
+  const seen=new Set();
+  const multi=roots.length>1;
+  const GAP=multi?170:0;
+  const T=multi?50:20;   // مساحة أعلى الشجرة لاسم الفرع
+  const L=20;
+  let x=0;
+  const all={items:[],bonds:[],links:[]}, bands=[];
+  roots.forEach(r=>{
+    if(seen.has(r.id)) return;
+    const start=x;
+    const l=shiftF(fullLayoutF(r.id,0,seen),x);
+    all.items.push(...l.items); all.bonds.push(...l.bonds); all.links.push(...l.links);
+    bands.push({start,w:l.w,label:'فرع '+(r.name||'').split(' ')[0]});
+    x+=l.w+GAP;
+  });
+  const W=Math.max(FW,x-GAP);
+  const H=Math.max(...all.items.map(i=>i.y))+FH;
+  const TW=W+2*L, TH=H+T+L;
+  const svgNS='http://www.w3.org/2000/svg';
+  const wrap=el('div','fullWrap');
+  wrap.appendChild(el('div','ftitle','شجرة العائلة'));
+  const box=el('div','ftree');
+  box.style.width=TW+'px'; box.style.height=TH+'px';
+
+  // إطار مستقل لكل عائلة مع اسمها
+  if(multi){
+    bands.forEach(b=>{
+      const band=el('div','fband');
+      band.style.left=(b.start+L-16)+'px'; band.style.top='6px';
+      band.style.width=(b.w+32)+'px'; band.style.height=(TH-12)+'px';
+      const lb=el('div','flabel',b.label);
+      lb.style.left=(b.start+L-16)+'px'; lb.style.width=(b.w+32)+'px'; lb.style.top='10px';
+      box.append(band,lb);
+    });
+  }
+
+  const svg=document.createElementNS(svgNS,'svg');
+  svg.setAttribute('class','flines'); svg.setAttribute('width',TW); svg.setAttribute('height',TH);
+  all.links.forEach(k=>{
+    const px=k.px+L, py=k.py+T, ky=k.ky+T;
+    const midY=(py+ky)/2;
+    const xs=k.xs.map(v=>v+L);
+    const minX=Math.min(px,...xs), maxX=Math.max(px,...xs);
+    let d=`M${px} ${py} V${midY}`;
+    if(maxX>minX) d+=` M${minX} ${midY} H${maxX}`;
+    xs.forEach(v=>{ d+=` M${v} ${midY} V${ky}`; });
+    const path=document.createElementNS(svgNS,'path'); path.setAttribute('d',d); svg.appendChild(path);
+  });
+  box.appendChild(svg);
+
+  all.items.forEach(it=>{
+    const p=byId(it.id); if(!p) return;
+    const c=fcard(p);
+    if(it.out) c.classList.add('outsider');
+    if(pickMode){ c.classList.add('clickable'); c.onclick=()=>onPick(it.id); }
+    c.style.left=(it.cx-FW/2+L)+'px'; c.style.top=(it.y+T)+'px';
+    box.appendChild(c);
+  });
+  all.bonds.forEach(b=>{
+    const d=el('div','fbond','⚭');
+    d.style.left=(b.cx+L-10)+'px'; d.style.top=(b.y+T-13)+'px';
+    box.appendChild(d);
+  });
+  wrap.appendChild(box);
+  v.appendChild(wrap);
+}
+// تحديد الزوج/الزوجة من خارج العائلة: من ليس له أب ولا أم في الشجرة، أو المعلَّم يدوياً
+function isOutPair(a,b){
+  const A=byId(a), B=byId(b); if(!A||!B) return null;
+  if(A.outsider&&!B.outsider) return a;
+  if(B.outsider&&!A.outsider) return b;
+  const aP=!!(A.fatherId||A.motherId), bP=!!(B.fatherId||B.motherId);
+  if(!aP&&bP) return a;
+  if(aP&&!bP) return b;
+  if(!aP&&!bP){ if(A.gender==='female') return a; if(B.gender==='female') return b; }
+  return null;
+}
+// ===== شاشة الترحيب =====
+let welcomed=false;
+function generationsCount(){
+  const lv={}; people.forEach(p=>lv[p.id]=0);
+  for(let i=0;i<people.length+1;i++){
+    people.forEach(p=>{ [p.fatherId,p.motherId].forEach(pid=>{ if(byId(pid)) lv[p.id]=Math.max(lv[p.id],lv[pid]+1); }); });
+  }
+  return people.length ? Math.max(...Object.values(lv))+1 : 0;
+}
+function statBox(n,label){
+  const d=el('div','wstat'); const b=el('b','',0); b.dataset.target=n;
+  d.append(b, el('span','',label)); return d;
+}
+function animateCounts(root){
+  root.querySelectorAll('b[data-target]').forEach(b=>{
+    const t=Number(b.dataset.target), start=performance.now(), dur=1200;
+    const step=now=>{ const k=Math.min(1,(now-start)/dur); b.textContent=Math.round(t*k); if(k<1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+function renderWelcome(){
+  setModeButtons(false);
+  $('crumbs').innerHTML='';
+  const v=$('view'); v.innerHTML='';
+  const w=el('section','welcome');
+  w.appendChild(el('div','wtitle','شجرة العائلة'));
+  w.appendChild(el('div','wsub','من هنا تبدأ الشجرة: محمد وخلفان بن سعيد بن خلفان العامري'));
+  const st=el('div','wstats');
+  st.append(statBox(generationsCount(),'أجيال'), statBox(people.length,'فرد'));
+  w.appendChild(st);
+  const sb2=el('div','wsearch');
+  const inp=el('input'); inp.placeholder='ابحث عن اسم...';
+  const res=el('div','wres');
+  inp.oninput=()=>{
+    const q=inp.value.trim(); res.innerHTML='';
+    if(!q) return;
+    searchPeople(q).forEach(p=>{
+      const f=p.fatherId?nameOf(p.fatherId):(p.motherId?nameOf(p.motherId):'');
+      const label=f?p.name+' (ابن '+f.split(' ')[0]+')':p.name;
+      const b=el('button','wr',label); b.onclick=()=>goToPerson(p.id); res.appendChild(b);
+    });
+  };
+  sb2.append(inp,res);
+  w.appendChild(sb2);
+  const start=el('button','wstart','ابدأ الرحلة');
+  start.onclick=()=>{ welcomed=true; render(); };
+  w.appendChild(start);
+  v.appendChild(w);
+  animateCounts(w);
+}
+// الانتقال مباشرة إلى شخص: يُفتح مسار أجداده حتى يظهر داخل الشجرة
+function goToPerson(id){
+  const chain=[]; let cur=id; const seen=new Set();
+  while(true){
+    const p=byId(cur); if(!p||seen.has(cur)) break;
+    seen.add(cur);
+    const par=primaryParent(p); if(!par) break;
+    const other=p.fatherId===par?p.motherId:p.fatherId;
+    chain.unshift((other&&byId(other)&&partnersOf(par).length>=2)?{id:par,pid:other}:{id:par});
+    cur=par;
+  }
+  stack=chain; welcomed=true; render();
+}
+// ===== الرسم التمهيدي للجذور =====
+let introDone=false;
+function rootsSvg(){
+  const ns='http://www.w3.org/2000/svg';
+  const s=document.createElementNS(ns,'svg');
+  s.setAttribute('viewBox','0 0 300 60'); s.setAttribute('class','rootsIntro'); s.setAttribute('preserveAspectRatio','none');
+  const p=document.createElementNS(ns,'path');
+  p.setAttribute('d','M150 0 V22 M60 22 H240 M60 22 V60 M240 22 V60');
+  p.setAttribute('pathLength','100');
+  p.setAttribute('vector-effect','non-scaling-stroke');
+  s.appendChild(p);
+  return s;
+}
+
+// ===== البحث: مطابقة دقيقة للحروف العربية، والأسماء التي تبدأ بالكلمة تأتي أولاً =====
+function normAr(s){
+  return (s||'').replace(/[\u064B-\u065F\u0640]/g,'').replace(/[إأآا]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+}
+function searchPeople(q){
+  const nq=normAr(q); if(!nq) return [];
+  const words=nq.split(' ');
+  return people.map(p=>{
+    const nn=normAr(p.name), parts=nn.split(' ');
+    let score=0;
+    if(nn===nq) score=100;
+    else if(nn.startsWith(nq)) score=80;
+    else if(parts.some(w=>w.startsWith(words[0]))) score=60;
+    else if(words.every(w=>parts.some(x=>x.startsWith(w)))) score=40;
+    return {p,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8).map(x=>x.p);
+}
+
+// ===== الألبوم =====
+function shrinkImage(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const s=Math.min(1,900/Math.max(img.width,img.height));
+        const cv=document.createElement('canvas');
+        cv.width=Math.round(img.width*s); cv.height=Math.round(img.height*s);
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        cv.toBlob(b=>b?res(b):rej(new Error('تعذر معالجة الصورة')),'image/jpeg',0.85);
+      };
+      img.onerror=()=>rej(new Error('ملف الصورة غير صالح'));
+      img.src=r.result;
+    };
+    r.onerror=()=>rej(new Error('تعذر قراءة الملف'));
+    r.readAsDataURL(file);
+  });
+}
+async function albumSection(id,box,editable){
+  const wrap=el('div','album');
+  wrap.appendChild(el('div','albumTitle','ألبوم الصور'));
+  const grid=el('div','albumGrid');
+  wrap.appendChild(grid);
+  box.appendChild(wrap);
+  const {data,error}=await sb.from('album_photos').select('*').eq('person_id',id).order('created_at');
+  if(error) grid.appendChild(el('div','sm','تعذر تحميل الألبوم'));
+  else if(!data||!data.length) grid.appendChild(el('div','sm','لا توجد صور بعد'));
+  else data.forEach(ph=>{
+    const f=el('figure','afig');
+    const i=el('img'); i.src=ph.photo_url; i.alt=ph.caption||''; i.loading='lazy';
+    f.appendChild(i);
+    const cap=[ph.caption,ph.taken_on].filter(Boolean).join(' · ');
+    if(cap) f.appendChild(el('figcaption','',cap));
+    grid.appendChild(f);
+  });
+  if(editable && typeof openDrawer==='function'){
+    const form=el('div','afrm');
+    const fi=el('input'); fi.type='file'; fi.accept='image/*';
+    const cap=el('input'); cap.placeholder='تعليق على الصورة';
+    const dt=el('input'); dt.type='date';
+    const btn=el('button','','إضافة صورة للألبوم');
+    btn.onclick=async()=>{
+      if(!fi.files[0]){ alert('اختر صورة أولاً'); return; }
+      btn.disabled=true;
+      try{
+        const blob=await shrinkImage(fi.files[0]);
+        const path='album-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+'.jpg';
+        const up=await sb.storage.from('photos').upload(path,blob,{contentType:'image/jpeg'});
+        if(up.error) throw up.error;
+        const url=sb.storage.from('photos').getPublicUrl(path).data.publicUrl;
+        const {data:status,error:err}=await sb.rpc('add_album_photo',{payload:{photo_url:url,caption:cap.value.trim()||null,taken_on:dt.value||null},target:id});
+        if(err) throw err;
+        alert(status==='approved'?'تمت إضافة الصورة للألبوم':'أُرسلت الصورة وتنتظر اعتمادك');
+        openDrawer(id);
+      }catch(e){ alert('تعذر الرفع: '+(e.message||e)); btn.disabled=false; }
+    };
+    form.append(fi,cap,dt,btn);
+    wrap.appendChild(form);
+  }
+}
+
+// ===== حاسبة القرابة =====
+function ancestorsMap(id){
+  const m=new Map(); const q=[{id,d:0,side:null}];
+  while(q.length){
+    const cur=q.shift(); const p=byId(cur.id); if(!p) continue;
+    [['father',p.fatherId],['mother',p.motherId]].forEach(([s,pid])=>{
+      if(!pid||!byId(pid)||m.has(pid)||pid===id) return;
+      const side=cur.side||s;
+      m.set(pid,{d:cur.d+1,side});
+      q.push({id:pid,d:cur.d+1,side});
+    });
+  }
+  return m;
+}
+function kinship(a,b){
+  const A=byId(a), B=byId(b);
+  if(!A||!B) return '';
+  if(a===b) return 'اختر شخصين مختلفين';
+  const mA=ancestorsMap(a), mB=ancestorsMap(b);
+  const male=p=>p.gender!=='female';
+  const he=p=>male(p)?'هو':'هي';
+  if(mB.has(a)){
+    const d=mB.get(a).d;
+    const lab=d===1?(male(B)?'ابن':'ابنة'):d===2?(male(B)?'حفيد':'حفيدة'):(male(B)?'من أحفاد':'من حفيدات')+' (الدرجة '+d+')';
+    return B.name+' '+he(B)+' '+lab+' لـ '+A.name;
+  }
+  if(mA.has(b)){
+    const d=mA.get(b).d;
+    const lab=d===1?(male(B)?'أب':'أم'):d===2?(male(B)?'جد':'جدة'):(male(B)?'جدّ أعلى':'جدّة عليا')+' (الدرجة '+d+')';
+    return B.name+' '+he(B)+' '+lab+' لـ '+A.name;
+  }
+  const sameF=A.fatherId&&A.fatherId===B.fatherId, sameM=A.motherId&&A.motherId===B.motherId;
+  if(sameF||sameM){
+    const lab=(sameF&&sameM)?(male(B)?'أخ شقيق':'أخت شقيقة'):sameF?(male(B)?'أخ لأب':'أخت لأب'):(male(B)?'أخ لأم':'أخت لأم');
+    return B.name+' '+he(B)+' '+lab+' لـ '+A.name;
+  }
+  let best=null;
+  mA.forEach((va,anc)=>{
+    const vb=mB.get(anc); if(!vb) return;
+    const tot=va.d+vb.d;
+    if(!best||tot<best.tot) best={dA:va.d,dB:vb.d,side:va.side,tot};
+  });
+  if(!best) return 'لا توجد صلة قرابة مسجّلة بين الشخصين';
+  const {dA,dB,side}=best;
+  if(dA===1&&dB===2) return B.name+' '+he(B)+' '+(male(B)?'ابن الأخ/الأخت':'ابنة الأخ/الأخت')+' لـ '+A.name;
+  if(dA===2&&dB===1) return B.name+' '+he(B)+' '+(side==='father'?(male(B)?'عمّ':'عمة'):(male(B)?'خال':'خالة'))+' لـ '+A.name;
+  if(dA===2&&dB===2) return B.name+' '+he(B)+' '+(side==='father'?(male(B)?'ابن عمّ':'ابنة عمّ'):(male(B)?'ابن خال':'ابنة خال'))+' لـ '+A.name;
+  return B.name+' '+he(B)+' من الأقارب (الدرجة '+dA+' و'+dB+') لـ '+A.name;
+}
+function openKin(){
+  ['kinA','kinB'].forEach(sid=>{
+    const s=$(sid); s.innerHTML='';
+    people.slice().sort((x,y)=>x.name.localeCompare(y.name,'ar')).forEach(p=>{
+      const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; s.appendChild(o);
+    });
+  });
+  if(people.length>1) $('kinB').selectedIndex=1;
+  $('kinRes').textContent='';
+  $('kinDlg').showModal();
+}
+$('kinBtn').onclick=openKin;
+$('kinGo').onclick=()=>{ $('kinRes').textContent=kinship($('kinA').value,$('kinB').value); };
+
+// ===== اختيار الشخصين من الشجرة الكاملة =====
+let kinSel={A:null,B:null}, pickMode=null;
+function kinLabelUpdate(){
+  $('pickA').textContent='الشخص الأول: '+(kinSel.A?nameOf(kinSel.A):'لم يُختر');
+  $('pickB').textContent='الشخص الثاني: '+(kinSel.B?nameOf(kinSel.B):'لم يُختر');
+}
+function openKin(){ kinLabelUpdate(); $('kinRes').textContent=''; $('kinDlg').showModal(); }
+function showPickBar(){
+  const bar=$('pickBar');
+  if(pickMode){
+    $('pickText').textContent = pickMode==='A' ? 'اضغط على الشخص الأول في الشجرة' : 'اضغط على الشخص الثاني في الشجرة';
+    bar.classList.remove('hide');
+  } else bar.classList.add('hide');
+}
+function startPick(which){
+  $('kinDlg').close();
+  pickMode=which; fullMode=true; showPickBar(); render();
+}
+function onPick(id){
+  kinSel[pickMode]=id;
+  if(pickMode==='A'){ pickMode='B'; showPickBar(); render(); return; }
+  pickMode=null; showPickBar(); fullMode=false; render();
+  openKin();
+  $('kinRes').textContent=kinship(kinSel.A,kinSel.B);
+}
+function cancelPick(){ pickMode=null; showPickBar(); fullMode=false; render(); openKin(); }
+$('pickA').onclick=()=>startPick('A');
+$('pickB').onclick=()=>startPick('B');
+$('pickCancel').onclick=cancelPick;
+$('kinGo').onclick=()=>{
+  if(!kinSel.A||!kinSel.B){ $('kinRes').textContent='اختر الشخصين أولاً من الشجرة'; return; }
+  $('kinRes').textContent=kinship(kinSel.A,kinSel.B);
+};
+$('kinBtn').onclick=openKin;
+
+// ===== حاسبة القرابة (نسخة محسّنة): تفرّق بين المذكر والمؤنث، وإن لم يُحدَّد الجنس تُعرض الصيغتان =====
+function kinship(a,b){
+  const A=byId(a), B=byId(b);
+  if(!A||!B) return '';
+  if(a===b) return 'اختر شخصين مختلفين';
+  const mA=ancestorsMap(a), mB=ancestorsMap(b);
+  const gl=(p,m,f,u)=>p.gender==='male'?m:(p.gender==='female'?f:u);
+  const be=p=>gl(p,'هو','هي','هو/هي');
+  if(mB.has(a)){
+    const d=mB.get(a).d;
+    const lab=d===1?gl(B,'ابن','ابنة','ابن/ابنة'):d===2?gl(B,'حفيد','حفيدة','حفيد/حفيدة'):gl(B,'من أحفاده','من حفيداته','من الأحفاد')+' (الدرجة '+d+')';
+    return B.name+' '+be(B)+' '+lab+' لـ '+A.name;
+  }
+  if(mA.has(b)){
+    const d=mA.get(b).d;
+    const lab=d===1?gl(B,'أب','أم','أب/أم'):d===2?gl(B,'جد','جدة','جد/جدة'):gl(B,'جدّ أعلى','جدّة عليا','جدّ/جدّة عليا')+' (الدرجة '+d+')';
+    return B.name+' '+be(B)+' '+lab+' لـ '+A.name;
+  }
+  const sameF=A.fatherId&&A.fatherId===B.fatherId, sameM=A.motherId&&A.motherId===B.motherId;
+  if(sameF||sameM){
+    const lab=(sameF&&sameM)?gl(B,'أخ شقيق','أخت شقيقة','أخ/أخت شقيق'):sameF?gl(B,'أخ لأب','أخت لأب','أخ/أخت لأب'):gl(B,'أخ لأم','أخت لأم','أخ/أخت لأم');
+    return B.name+' '+be(B)+' '+lab+' لـ '+A.name;
+  }
+  let best=null;
+  mA.forEach((va,anc)=>{
+    const vb=mB.get(anc); if(!vb) return;
+    const tot=va.d+vb.d;
+    if(!best||tot<best.tot) best={dA:va.d,dB:vb.d,side:va.side,tot};
+  });
+  if(!best) return 'لا توجد صلة قرابة مسجّلة بين الشخصين';
+  const {dA,dB,side}=best;
+  const paternal=side==='father';
+  if(dA===1&&dB===2) return B.name+' '+be(B)+' '+gl(B,'ابن الأخ/الأخت','ابنة الأخ/الأخت','ابن/ابنة الأخ أو الأخت')+' لـ '+A.name;
+  if(dA===2&&dB===1) return B.name+' '+be(B)+' '+(paternal?gl(B,'عمّ','عمّة','عمّ/عمّة'):gl(B,'خال','خالة','خال/خالة'))+' لـ '+A.name;
+  if(dA===2&&dB===2) return B.name+' '+be(B)+' '+(paternal?gl(B,'ابن عمّ','ابنة عمّ','ابن/ابنة عمّ'):gl(B,'ابن خال','ابنة خال','ابن/ابنة خال'))+' لـ '+A.name;
+  return B.name+' '+be(B)+' من الأقارب (الدرجة '+dA+' و'+dB+') لـ '+A.name;
+}
+
+// ===== شجرة النسب الأحادية: الشخص ← الأب ← الجد ← ... =====
+function lineageLabel(p,depth){
+  const m=p.gender!=='female';
+  if(depth===0) return 'الشخص';
+  if(depth===1) return m?'الأب':'الأم';
+  if(depth===2) return m?'الجد':'الجدة';
+  if(depth===3) return m?'جدّ الجدّ':'جدّة الجدّة';
+  return (m?'الجدّ الأعلى':'الجدّة العليا')+' (الدرجة '+depth+')';
+}
+function openLineage(id){
+  const chain=[]; let cur=byId(id); const seen=new Set(); let depth=0;
+  while(cur && !seen.has(cur.id)){
+    seen.add(cur.id);
+    chain.push({p:cur,depth});
+    const next=(cur.fatherId&&byId(cur.fatherId))?byId(cur.fatherId):((cur.motherId&&byId(cur.motherId))?byId(cur.motherId):null);
+    if(!next) break;
+    cur=next; depth++;
+  }
+  const body=$('lineBody'); body.innerHTML='';
+  chain.forEach((s,i)=>{
+    const row=el('div','lineStep');
+    const img=el(s.p.photo?'img':'div','lineImg');
+    if(s.p.photo) img.src=s.p.photo;
+    const txt=el('div','');
+    txt.appendChild(el('div','lineLbl',lineageLabel(s.p,s.depth)));
+    txt.appendChild(el('div','',dispName(s.p)));
+    const life=lifeText(s.p); if(life) txt.appendChild(el('div','lineSub',life));
+    if(s.p.motherId && i<chain.length-1) txt.appendChild(el('div','lineSub','الأم: '+nameOf(s.p.motherId)));
+    row.append(img,txt);
+    body.appendChild(row);
+    if(i<chain.length-1) body.appendChild(el('div','lineConn'));
+  });
+  $('lineTitle').textContent='شجرة النسب: '+(byId(id)||{}).name;
+  $('lineDlg').showModal();
+}
+
+$('backBtn').onclick=back;
+$('homeBtn').onclick=home;
+load();
+</script>
+<div class="credit">تم تصميم هذا الموقع من قبل محمد بن أحمد العامري</div>
+</body>
+</html>
