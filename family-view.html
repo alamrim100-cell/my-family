@@ -153,6 +153,14 @@ main{padding:24px 14px 100px}
   /* البطاقات بجانب بعضها على الهاتف، وإن ضاقت الشاشة تُسحب أفقياً */
   .roots,.kidsRow,.couplehead,.choicesRow{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;width:100%;padding:6px 14px 10px;margin:0;-webkit-overflow-scrolling:touch}
   .roots>*,.kidsRow>*,.couplehead>*,.choicesRow>*{flex:0 0 auto}
+  /* هوامش تلقائية تُبقي الصف قابلاً للتمرير من الطرفين دون قص */
+  .roots>:first-child,.kidsRow>:first-child,.couplehead>:first-child,.choicesRow>:first-child{margin-inline-start:auto}
+  .roots>:last-child,.kidsRow>:last-child,.couplehead>:last-child,.choicesRow>:last-child{margin-inline-end:auto}
+  /* اللمعة الزجاجية تتحرك تلقائياً على الهاتف لأن المؤشر غير متاح */
+  .card::after{transform:translateX(-120%);animation:sheen 4s ease-in-out infinite}
+  .card:active::after{animation:none;transform:translateX(120%);transition:transform .6s}
+  .card.clickable .n{background:linear-gradient(100deg,#5a3d1a 35%,#d4a94f 50%,#5a3d1a 65%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+  @keyframes sheen{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
   /* العرض الكامل على الهاتف: تصغير الشجرة كلها لتناسب الشاشة */
   .ftree{zoom:.6}
 }
