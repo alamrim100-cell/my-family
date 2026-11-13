@@ -15,11 +15,14 @@ button:disabled{opacity:.6;cursor:wait}
 button.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
 main{padding:12px;max-width:100%;overflow:auto}
 #tree{position:relative}
-.card{position:absolute;width:190px;height:270px;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.06);z-index:1}
-.card img,.ph{width:80px;height:80px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 6px}
-.card .n{font-weight:bold;font-size:14px;line-height:1.4}
-.card .meta{font-size:12px;color:#666;margin-top:3px;line-height:1.45}
-.card button{margin-top:4px;padding:3px 8px;font-size:12px}
+/* بطاقة الزوجين: شخصان في بطاقة واحدة */
+.unit{position:absolute;display:flex;height:270px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06);z-index:1}
+.panel{width:190px;height:268px;flex:0 0 190px;padding:10px 8px;text-align:center;overflow:hidden}
+.panel+.panel{border-right:1px solid var(--line)}
+.panel img,.ph{width:80px;height:80px;border-radius:50%;object-fit:cover;background:var(--line);display:block;margin:0 auto 6px}
+.panel .n{font-weight:bold;font-size:14px;line-height:1.4}
+.panel .meta{font-size:12px;color:#666;margin-top:3px;line-height:1.45}
+.panel button{margin-top:4px;padding:3px 7px;font-size:12px}
 .btns{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:4px}
 #lines{position:absolute;top:0;left:0;pointer-events:none;z-index:0}
 #lines path{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
@@ -29,6 +32,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 label{display:block;margin:10px 0 4px;font-size:14px}
 input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit}
 .note{background:#fff8e1;border:1px solid #e8d48a;padding:10px;border-radius:8px;margin:10px 0}
+.sm{font-size:13px;color:#666}
 .hide{display:none}
 </style>
 </head>
@@ -102,15 +106,15 @@ async function loadPeople(){
   ]);
   if (p.error){ flash('تعذر تحميل الشجرة، حاول لاحقاً'); return; }
   people = p.data.map(r => ({
-    id: r.id, name: r.name, birth: r.birth || '', gender: r.gender || '',
+    id: r.id, name: r.name, birth: r.birth || '', death: r.death || '', gender: r.gender || '',
     fatherId: r.father_id || '', motherId: r.mother_id || '', spouseId: r.spouse_id || '',
-    bio: r.bio || '', photo: r.photo_url || '', death: r.death || ''
+    bio: r.bio || '', photo: r.photo_url || ''
   }));
   marriages = (m.data || []).map(x => ({ h: x.husband_id, w: x.wife_id, pos: x.position || 0 }));
   render();
 }
 
-// ===== الزوجات/الأزواج لكل شخص، بالترتيب المحدد =====
+// ===== الزوج/الزوجة لكل شخص بالترتيب المحدد =====
 function partnersOf(id){
   const list = marriages
     .filter(m => m.h === id || m.w === id)
@@ -121,10 +125,13 @@ function partnersOf(id){
   return [...new Set(list)].filter(x => byId(x));
 }
 
-// ===== التخطيط: كل شخص فوق شريكه، والأبناء تحت كل شريك =====
+// ===== التخطيط =====
+// كل "وحدة" إما زوجان في بطاقة واحدة (couple)، أو شخص وحيد (single)
+// والأبناء تحت الوحدة مباشرة
 function shiftLayout(l, dx){
   l.items.forEach(i => i.cx += dx);
-  l.links.forEach(k => { k.from && (k.from.cx += dx); k.a && (k.a.cx += dx); k.b && (k.b.cx += dx); k.to && k.to.forEach(t => t.cx += dx); });
+  l.links.forEach(k => { k.from.cx += dx; k.to.forEach(t => t.cx += dx); });
+  l.anchor += dx;
   return l;
 }
 
@@ -134,7 +141,7 @@ function colorFor(key){
 }
 
 function layout(id, row, depth = 0){
-  if (depth > 15) return { w: CW, items: [{ id, cx: CW / 2, row }], links: [] };
+  if (depth > 15) return { w: CW, anchor: CW / 2, items: [{ type: 'single', a: id, cx: CW / 2, row }], links: [] };
   const partners = partnersOf(id);
   const kb = new Map();
   partners.forEach(p => kb.set(p, []));
@@ -147,56 +154,46 @@ function layout(id, row, depth = 0){
   const groups = partners.map(pid => ({ pid, kids: kb.get(pid) }));
   if (kb.get(null).length || !groups.length) groups.push({ pid: null, kids: kb.get(null) });
 
-  const items = [], links = [], blocks = [];
-  let x = 0;
+  const items = [], links = [];
+  let x = 0, anchor = null;
   groups.forEach(g => {
-    const kidRow = g.pid ? row + 2 : row + 1;
+    const unitW = g.pid ? 2 * CW : CW;
+    const kidRow = row + 1;
     const kl = g.kids.map(k => layout(k.id, kidRow, depth + 1));
     const kidsW = kl.reduce((s, l) => s + l.w, 0) + GAPX * Math.max(0, kl.length - 1);
-    const bw = Math.max(CW, kidsW);
+    const bw = Math.max(unitW, kidsW);
     let kx = x + (bw - kidsW) / 2;
     const kidCenters = [];
     kl.forEach(l => {
       const start = kx;
       shiftLayout(l, start);
       items.push(...l.items); links.push(...l.links);
-      kidCenters.push(start + l.w / 2);
+      kidCenters.push(l.anchor);
       kx = start + l.w + GAPX;
     });
     const bcx = x + bw / 2;
-    if (g.pid) items.push({ id: g.pid, cx: bcx, row: row + 1 });
-    blocks.push({ pid: g.pid, bcx, kidCenters, kidRow, hasKids: kl.length > 0 });
+    if (anchor === null) anchor = bcx;
+    items.push(g.pid ? { type: 'couple', a: id, b: g.pid, cx: bcx, row } : { type: 'single', a: id, cx: bcx, row });
+    if (kl.length) links.push({ color: colorFor(id + '|' + (g.pid || '')), from: { cx: bcx, row }, to: kidCenters.map(c => ({ cx: c, row: kidRow })) });
     x += bw + GAPX;
   });
 
   const W = Math.max(CW, x - GAPX);
-  const mcx = W / 2;
-  items.push({ id, cx: mcx, row });
-  blocks.forEach(b => {
-    if (b.pid) links.push({ kind: 'spouse', a: { cx: mcx, row }, b: { cx: b.bcx, row: row + 1 } });
-    if (b.hasKids){
-      const from = b.pid ? { cx: b.bcx, row: row + 1 } : { cx: mcx, row };
-      links.push({ kind: 'kids', color: colorFor(id + '|' + (b.pid || '')), from, to: b.kidCenters.map(c => ({ cx: c, row: b.kidRow })) });
-    }
-  });
-  return { w: W, items, links };
+  return { w: W, anchor: anchor === null ? W / 2 : anchor, items, links };
 }
 
-// الجذور: من ليس له أب/أم، ولا يُعرض كزوجة تحت زوجها
 function buildTree(){
-  const isPartnerFemale = p => p.gender === 'female' && partnersOf(p.id).length > 0;
-  const roots = people.filter(p => !p.fatherId && !p.motherId && !isPartnerFemale(p));
-  let x = 0, items = [], links = [];
-  const placed = new Set();
+  const isFemalePartner = p => p.gender === 'female' && partnersOf(p.id).length > 0;
+  const roots = people.filter(p => !p.fatherId && !p.motherId && !isFemalePartner(p));
+  let x = 0; const items = [], links = [], placed = new Set();
   const addRoot = id => {
     const l = layout(id, 0);
-    shiftLayout(l, x);
+    shiftLayout(l, x + l.w / 2 - l.anchor + l.anchor - l.w / 2 + (l.w / 2 - l.anchor) * 0);
     items.push(...l.items); links.push(...l.links);
-    l.items.forEach(i => placed.add(i.id));
+    l.items.forEach(i => { placed.add(i.a); if (i.b) placed.add(i.b); });
     x += l.w + GAPX * 3;
   };
   roots.forEach(r => addRoot(r.id));
-  // أي شخص لم يظهر بعد يُعرض كجذر منفصل
   people.forEach(p => { if (!placed.has(p.id)) addRoot(p.id); });
   const maxRow = items.reduce((m, i) => Math.max(m, i.row), 0);
   return { items, links, w: Math.max(CW, x - GAPX * 3), h: (maxRow + 1) * ROWH };
@@ -225,33 +222,37 @@ function render(){
   };
 
   t.links.forEach(l => {
-    if (l.kind === 'spouse'){
-      const ay = Y(l.a.row) + CH, by = Y(l.b.row);
-      const midY = (ay + by) / 2;
-      path(`M${X(l.a.cx)} ${ay} V${midY} H${X(l.b.cx)} V${by}`, '#8a8a8a');
-    } else {
-      const fy = Y(l.from.row) + CH, ky = Y(l.to[0].row);
-      const midY = (fy + ky) / 2;
-      const xs = [X(l.from.cx), ...l.to.map(c => X(c.cx))];
-      const minX = Math.min(...xs), maxX = Math.max(...xs);
-      let d = `M${X(l.from.cx)} ${fy} V${midY}`;
-      if (maxX > minX) d += ` M${minX} ${midY} H${maxX}`;
-      l.to.forEach(c => { d += ` M${X(c.cx)} ${midY} V${Y(c.row)}`; });
-      path(d, l.color);
-    }
+    const fy = Y(l.from.row) + CH, ky = Y(l.to[0].row);
+    const midY = (fy + ky) / 2;
+    const xs = [X(l.from.cx), ...l.to.map(c => X(c.cx))];
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    let d = `M${X(l.from.cx)} ${fy} V${midY}`;
+    if (maxX > minX) d += ` M${minX} ${midY} H${maxX}`;
+    l.to.forEach(c => { d += ` M${X(c.cx)} ${midY} V${Y(c.row)}`; });
+    path(d, l.color);
   });
 
   t.items.forEach(it => {
-    const p = byId(it.id); if (!p) return;
-    const c = card(p);
-    c.style.left = (it.cx - CW / 2 + PAD) + 'px';
-    c.style.top = (it.row * ROWH + PAD) + 'px';
-    tree.appendChild(c);
+    const a = byId(it.a); if (!a) return;
+    const W = it.type === 'couple' ? 2 * CW : CW;
+    const unit = document.createElement('div'); unit.className = 'unit';
+    unit.style.width = W + 'px';
+    unit.style.left = (it.cx - W / 2 + PAD) + 'px';
+    unit.style.top = (it.row * ROWH + PAD) + 'px';
+    if (it.type === 'couple'){
+      const b = byId(it.b);
+      if (b) unit.append(panel(a, it.b), panel(b, it.a));
+      else unit.append(panel(a, null));
+    } else {
+      unit.append(panel(a, null));
+    }
+    tree.appendChild(unit);
   });
 }
 
-function card(p){
-  const c = document.createElement('div'); c.className = 'card'; c.dataset.id = p.id;
+// بطاقة شخص داخل الوحدة
+function panel(p, partnerId){
+  const c = document.createElement('div'); c.className = 'panel';
   let ph;
   if (p.photo){ ph = document.createElement('img'); ph.src = p.photo; ph.alt = ''; }
   else { ph = document.createElement('div'); ph.className = 'ph'; }
@@ -264,14 +265,16 @@ function card(p){
   if (p.motherId) lines.push('الأم: ' + nameOf(p.motherId));
   if (p.bio) lines.push(p.bio);
   lines.forEach(t => { const d = document.createElement('div'); d.textContent = t; m.appendChild(d); });
-  const b = document.createElement('button'); b.className = 'sec'; b.textContent = 'تعديل';
-  b.onclick = () => openForm(p.id);
-  const ab = document.createElement('button'); ab.className = 'sec'; ab.textContent = '+ ابن';
-  ab.onclick = () => openChildForm(p.id);
-  const sbtn = document.createElement('button'); sbtn.className = 'sec'; sbtn.textContent = '+ زوجة';
-  sbtn.onclick = () => openSpouseForm(p.id);
+
+  const edit = document.createElement('button'); edit.className = 'sec'; edit.textContent = 'تعديل';
+  edit.onclick = () => openForm(p.id);
+  const child = document.createElement('button'); child.className = 'sec'; child.textContent = '+ ابن';
+  child.onclick = () => openChildForm(p.id, partnerId);
+  const spouse = document.createElement('button'); spouse.className = 'sec'; spouse.textContent = '+ زوجة';
+  spouse.onclick = () => openSpouseForm(p.id);
   const btns = document.createElement('div'); btns.className = 'btns';
-  btns.append(b, ab, sbtn);
+  btns.append(edit, child, spouse);
+
   c.append(ph, n, m, btns);
   return c;
 }
@@ -297,11 +300,11 @@ function openForm(id = null){
   $('formDlg').showModal();
 }
 
-// نموذج إضافة ابن/ابنة مباشرة من بطاقة الأب أو الأم، والزوج/الزوجة يُملأ تلقائياً
-function openChildForm(parentId){
+// نموذج ابن/ابنة: الأب والأم يُملآن تلقائياً (الزوج المختار أو الأول)
+function openChildForm(parentId, partnerId){
   editingId = null; photoBlob = null;
   const par = byId(parentId);
-  const partner = partnersOf(parentId)[0] || '';
+  const partner = partnerId || partnersOf(parentId)[0] || '';
   $('formTitle').textContent = 'إضافة ابن/ابنة لـ ' + par.name;
   $('fName').value = ''; $('fBirth').value = ''; $('fDeath').value = ''; $('fGender').value = '';
   fillSelect($('fFather'), '', null); fillSelect($('fMother'), '', null); fillSelect($('fSpouse'), '', null);
@@ -345,7 +348,8 @@ $('saveBtn').onclick = async () => {
   }
 
   const data = {
-    name: $('fName').value.trim(), birth: $('fBirth').value || null, death: $('fDeath').value || null, gender: $('fGender').value || null,
+    name: $('fName').value.trim(), birth: $('fBirth').value || null, death: $('fDeath').value || null,
+    gender: $('fGender').value || null,
     fatherId: $('fFather').value || null, motherId: $('fMother').value || null, spouseId: $('fSpouse').value || null,
     bio: $('fBio').value.trim(), photo_url
   };
@@ -361,7 +365,7 @@ $('saveBtn').onclick = async () => {
   }
 };
 
-// ===== ربط زوجة/زوج إضافي بشخص موجود =====
+// ===== ربط زوجة/زوج إضافي =====
 let spouseHusband = null;
 function openSpouseForm(personId){
   spouseHusband = personId;
