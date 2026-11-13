@@ -97,6 +97,9 @@ main{padding:24px 14px 100px}
 .flines path{fill:none;stroke:#8a5a2b;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .fband{position:absolute;z-index:0;border:1px dashed #b08d4c;border-radius:28px;background:rgba(255,250,240,.55)}
 .flabel{position:absolute;z-index:1;text-align:center;font-size:20px;font-weight:700;color:#7a5520;padding-top:6px}
+/* الزوج/الزوجة من خارج العائلة: بطاقة متقطّعة مع عبارة توضيحية */
+.card.fcard.outsider{border-style:dashed;background:#f6efe2}
+.card.fcard.outsider .n::after{content:'من خارج العائلة';display:block;font-size:12px;font-weight:400;color:#8a6b3e;margin-top:4px}
 .fullTree{display:flex;flex-direction:column;align-items:center;gap:30px;padding-bottom:40px}
 .ftitle{font-size:30px;color:#7a5520}
 .froots{display:flex;flex-wrap:wrap;justify-content:center;gap:60px;align-items:flex-start}
@@ -425,7 +428,10 @@ function fullLayoutF(id,depth,seen){
   const y=depth*FROW;
   const items=[], bonds=[], links=[];
   const left=(w-uw)/2;
-  members.forEach((m,i)=>items.push({id:m,cx:left+FW/2+i*(FW+FBOND),y}));
+  members.forEach((m,i)=>{
+    const out = i===0 ? members.slice(1).some(pid=>isOutPair(id,pid)===id) : isOutPair(id,m)===m;
+    items.push({id:m,cx:left+FW/2+i*(FW+FBOND),y,out});
+  });
   for(let i=1;i<members.length;i++) bonds.push({cx:left+FW+(i-1)*(FW+FBOND)+FBOND/2,y:y+FH/2});
   let x=(w-kidsW)/2;
   const xs=[];
@@ -546,6 +552,7 @@ function renderFull(){
   all.items.forEach(it=>{
     const p=byId(it.id); if(!p) return;
     const c=fcard(p);
+    if(it.out) c.classList.add('outsider');
     c.style.left=(it.cx-FW/2+L)+'px'; c.style.top=(it.y+T)+'px';
     box.appendChild(c);
   });
@@ -556,6 +563,17 @@ function renderFull(){
   });
   wrap.appendChild(box);
   v.appendChild(wrap);
+}
+// تحديد الزوج/الزوجة من خارج العائلة: من ليس له أب ولا أم في الشجرة، أو المعلَّم يدوياً
+function isOutPair(a,b){
+  const A=byId(a), B=byId(b); if(!A||!B) return null;
+  if(A.outsider&&!B.outsider) return a;
+  if(B.outsider&&!A.outsider) return b;
+  const aP=!!(A.fatherId||A.motherId), bP=!!(B.fatherId||B.motherId);
+  if(!aP&&bP) return a;
+  if(aP&&!bP) return b;
+  if(!aP&&!bP){ if(A.gender==='female') return a; if(B.gender==='female') return b; }
+  return null;
 }
 $('backBtn').onclick=back;
 $('homeBtn').onclick=home;
