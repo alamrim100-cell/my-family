@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الاتجاه 4: الوضع الليلي المتوهّج</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#e9e4ff}
+body{margin:0;min-height:100vh;font-family:Cairo,Tahoma,sans-serif;color:var(--ink);overflow-x:hidden;
+  background:radial-gradient(ellipse at top,#1d1640 0,#0b0a1f 60%,#05040f 100%)}
+/* نجوم متلألئة في الخلفية */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.7;
+  background-image:radial-gradient(1.5px 1.5px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 20%,#ffe9a8aa,transparent),radial-gradient(1.5px 1.5px at 40% 80%,#c9b6ff99,transparent),radial-gradient(1px 1px at 85% 65%,#fff8,transparent),radial-gradient(1.5px 1.5px at 10% 90%,#ffe9a8aa,transparent);
+  background-size:300px 300px;animation:twinkle 6s ease-in-out infinite alternate}
+header{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 22px}
+header h1{margin:0;font-size:22px;background:linear-gradient(90deg,#ffd27a,#c9a8ff,#7ee8ff);-webkit-background-clip:text;color:transparent;font-weight:800}
+header button,header a{font:inherit;color:#e9e4ff;border:1px solid #6d5fb3;background:rgba(255,255,255,.04);border-radius:999px;padding:7px 16px;text-decoration:none;cursor:pointer;transition:all .25s}
+header button:hover,header a:hover{box-shadow:0 0 16px #8f7bff;border-color:#b9a9ff}
+main{position:relative;z-index:1;padding:26px 14px 90px}
+.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:50px}
+.unit{position:relative;display:flex;flex-direction:column;align-items:center;animation:rise .7s both}
+.unit.child::before{content:'';position:absolute;top:-28px;left:50%;height:28px;width:2px;transform:translateX(-50%);
+  background:linear-gradient(hsl(var(--h) 90% 70%),hsl(var(--h) 90% 70%));box-shadow:0 0 10px hsl(var(--h) 90% 70%);animation:grow .45s both;transform-origin:top}
+.card{width:200px;padding:16px 12px 14px;border-radius:22px;text-align:center;cursor:pointer;
+  background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 0 0 0 hsl(var(--h) 90% 60%),0 10px 30px rgba(0,0,0,.4);transition:box-shadow .5s,transform .4s,border-color .5s}
+.card:hover{transform:translateY(-5px);box-shadow:0 0 22px hsl(var(--h) 90% 60%/.45),0 14px 30px rgba(0,0,0,.5)}
+.card.open{border-color:hsl(var(--h) 90% 65%);box-shadow:0 0 28px hsl(var(--h) 90% 60%/.6)}
+.ring{width:92px;height:92px;margin:0 auto 10px;border-radius:50%;padding:3px;background:conic-gradient(hsl(var(--h) 90% 65%),transparent,hsl(var(--h) 90% 65%));animation:spin 9s linear infinite}
+.ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#1a1640}
+.n{font-weight:800;font-size:16px}
+.meta,.sp{font-size:12px;color:#b8b0e0;margin-top:4px;line-height:1.5}
+.cnt{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;
+  background:hsl(var(--h) 90% 60%/.18);color:hsl(var(--h) 90% 80%);box-shadow:0 0 12px hsl(var(--h) 90% 60%/.35)}
+.kids{position:relative;margin-top:28px;padding-top:28px;display:flex;flex-wrap:wrap;justify-content:center;gap:30px;animation:rise .6s both}
+.kids::before{content:'';position:absolute;top:0;left:50%;height:28px;width:2px;transform:translateX(-50%);
+  background:hsl(var(--h) 90% 70%);box-shadow:0 0 10px hsl(var(--h) 90% 70%);animation:grow .4s both;transform-origin:top}
+.group{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
+.group::before{content:'';position:absolute;top:0;left:12%;right:12%;height:2px;background:hsl(var(--h) 90% 70%);box-shadow:0 0 10px hsl(var(--h) 90% 70%);animation:growx .6s .2s both}
+.kids.closing{animation:rise .3s reverse forwards}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:translateX(-50%) scaleY(0)}to{transform:translateX(-50%) scaleY(1)}}
+@keyframes growx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes twinkle{from{opacity:.4}to{opacity:.9}}
+</style>
+</head>
+<body>
+<header>
+  <h1>شجرة العائلة</h1>
+  <div><button id="collapseAll">طيّ الكل</button></div>
+</header>
+<main><div id="tree"></div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = window.supabase.createClient('https://nrddblppxdiklixjxsni.supabase.co','sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT');
+let people=[], marriages=[];
+const expandedSet=new Set();
+const $=id=>document.getElementById(id);
+const byId=id=>people.find(p=>p.id===id);
+const nameOf=id=>(byId(id)||{}).name||'';
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+
+async function load(){
+  const [p,m]=await Promise.all([sb.from('people').select('*').order('created_at'),sb.from('marriages').select('*')]);
+  people=(p.data||[]).map(r=>({id:r.id,name:r.name,birth:r.birth||'',death:r.death||'',gender:r.gender||'',fatherId:r.father_id||'',motherId:r.mother_id||'',spouseId:r.spouse_id||'',photo:r.photo_url||'',outsider:!!r.is_outsider}));
+  marriages=(m.data||[]).map(x=>({h:x.husband_id,w:x.wife_id,pos:x.position||0}));
+  start();
+}
+function partnersOf(id){
+  const list=marriages.filter(m=>m.h===id||m.w===id).sort((a,b)=>a.pos-b.pos).map(m=>m.h===id?m.w:m.h);
+  const me=byId(id); if(me&&me.spouseId&&byId(me.spouseId)&&!list.includes(me.spouseId))list.push(me.spouseId);
+  people.forEach(p=>{if(p.spouseId===id&&!list.includes(p.id))list.push(p.id);});
+  return [...new Set(list)].filter(x=>byId(x));
+}
+function primaryParent(c){const f=byId(c.fatherId),m=byId(c.motherId);if(f&&!f.outsider)return f.id;if(m&&!m.outsider)return m.id;if(f)return f.id;if(m)return m.id;return null;}
+function childrenGroups(id){
+  const partners=partnersOf(id), map=new Map(); partners.forEach(p=>map.set(p,[])); map.set(null,[]);
+  people.forEach(c=>{if(c.outsider)return;if(c.fatherId!==id&&c.motherId!==id)return;if(primaryParent(c)!==id)return;const o=c.fatherId===id?c.motherId:c.fatherId;map.get(partners.includes(o)?o:null).push(c);});
+  const out=[]; partners.forEach(p=>{const k=map.get(p);if(k.length)out.push({kids:k});}); if(map.get(null).length)out.push({kids:map.get(null)});
+  return out;
+}
+const countKids=id=>childrenGroups(id).reduce((s,g)=>s+g.kids.length,0);
+const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
+
+function makeCard(p,open,n){
+  const c=el('div','card'+(open?' open':''));
+  const r=el('div','ring');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
+  c.append(r,el('div','n',p.name));
+  const life=p.death?'الحياة: '+(p.birth||'؟')+' – '+p.death:(p.birth?'الميلاد: '+p.birth:'');
+  if(life)c.appendChild(el('div','meta',life));
+  const pts=partnersOf(p.id); if(pts.length)c.appendChild(el('div','sp','الزوج / الزوجة: '+pts.map(nameOf).join('، ')));
+  if(n)c.appendChild(el('div','cnt',(open?'▲ طيّ ':'▼ توهّج ')+n+' '+(n===1?'ابن/ابنة':'أبناء')));
+  return c;
+}
+function unit(id,depth,isChild){
+  const p=byId(id), box=el('div','unit'+(isChild?' child':''));
+  box.style.setProperty('--h',(200+depth*38)%360);
+  const open=expandedSet.has(id);
+  const card=makeCard(p,open,countKids(id));
+  card.onclick=()=>toggle(id,box,card,depth);
+  box.appendChild(card);
+  if(open)box.appendChild(kidsEl(id,depth));
+  return box;
+}
+function kidsEl(id,depth){
+  const h=el('div','kids'); h.style.setProperty('--h',(200+depth*38)%360);
+  childrenGroups(id).forEach(g=>{
+    const gr=el('div','group');
+    g.kids.forEach((k,i)=>{const u=unit(k.id,depth+1,true);u.style.animationDelay=(i*110)+'ms';gr.appendChild(u);});
+    h.appendChild(gr);
+  });
+  return h;
+}
+function toggle(id,box,card,depth){
+  const ex=box.querySelector(':scope > .kids'), c=card.querySelector('.cnt');
+  if(ex){expandedSet.delete(id);card.classList.remove('open');ex.classList.add('closing');setTimeout(()=>ex.remove(),300);}
+  else{expandedSet.add(id);card.classList.add('open');box.appendChild(kidsEl(id,depth));}
+  const n=countKids(id); if(c)c.textContent=(expandedSet.has(id)?'▲ طيّ ':'▼ توهّج ')+n+' '+(n===1?'ابن/ابنة':'أبناء');
+}
+function start(){
+  const w=$('tree'); w.innerHTML=''; const r=el('div','roots');
+  rootsList().forEach((p,i)=>{const u=unit(p.id,0,false);u.style.animationDelay=(i*150)+'ms';r.appendChild(u);});
+  w.appendChild(r);
+}
+$('collapseAll').onclick=()=>{expandedSet.clear();start();};
+load();
+</script>
+</body>
+</html>

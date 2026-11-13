@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الاتجاه 1: الفروع النامية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f3eee4;font-family:Cairo,Tahoma,sans-serif;color:#3b2a1a;min-height:100vh}
+header{padding:16px 22px;background:#6b4a2b;color:#fff;font-weight:800;font-size:20px}
+main{padding:30px 14px 80px}
+.roots{display:flex;flex-wrap:wrap;justify-content:center;gap:50px}
+.unit{position:relative;display:flex;flex-direction:column;align-items:center;animation:up .6s both}
+.unit.child::before{content:'';position:absolute;top:-28px;left:50%;height:28px;border-left:2px solid hsl(var(--h) 55% 45%);transform-origin:top;animation:growy .45s ease both}
+.card{width:190px;padding:14px 10px;border-radius:18px;background:#fff;text-align:center;cursor:pointer;box-shadow:0 6px 16px rgba(80,50,20,.12);transition:transform .3s}
+.card:hover{transform:translateY(-4px)}
+.card.open{outline:3px solid hsl(var(--h) 60% 80%)}
+.ring{width:84px;height:84px;margin:0 auto 8px;border-radius:50%;padding:3px;background:hsl(var(--h) 60% 60%)}
+.ring img,.ring .ph{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;background:#eee}
+.n{font-weight:800}
+.meta,.sp{font-size:12px;color:#7a6146;margin-top:4px}
+.cnt{margin-top:8px;font-size:12px;color:hsl(var(--h) 55% 35%);font-weight:700}
+.kids{position:relative;margin-top:28px;padding-top:28px;display:flex;flex-wrap:wrap;justify-content:center;gap:30px;animation:fade .5s both}
+.kids::before{content:'';position:absolute;top:0;left:50%;height:28px;border-left:2px solid hsl(var(--h) 55% 45%);transform-origin:top;animation:growy .4s both}
+.group{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
+.group::before{content:'';position:absolute;top:0;left:12%;right:12%;height:18px;border:2px solid hsl(var(--h) 55% 45%);border-bottom:0;border-radius:18px 18px 0 0;transform-origin:center;animation:growx .6s .2s both}
+.kids.closing{animation:fade .35s reverse forwards}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes growy{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes growx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+</style>
+</head>
+<body>
+<header>الاتجاه 1: الفروع النامية، اضغط على الشخص لتنمو أغصانه</header>
+<main><div id="tree"></div></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = window.supabase.createClient('https://nrddblppxdiklixjxsni.supabase.co','sb_publishable_6tZX-B_42nqRIIe-GIo2xA_oQMVejGT');
+let people=[], marriages=[];
+const expandedSet=new Set();
+const $=id=>document.getElementById(id);
+const byId=id=>people.find(p=>p.id===id);
+const nameOf=id=>(byId(id)||{}).name||'';
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+
+async function load(){
+  const [p,m]=await Promise.all([sb.from('people').select('*').order('created_at'),sb.from('marriages').select('*')]);
+  people=(p.data||[]).map(r=>({id:r.id,name:r.name,birth:r.birth||'',death:r.death||'',gender:r.gender||'',fatherId:r.father_id||'',motherId:r.mother_id||'',spouseId:r.spouse_id||'',photo:r.photo_url||'',outsider:!!r.is_outsider}));
+  marriages=(m.data||[]).map(x=>({h:x.husband_id,w:x.wife_id,pos:x.position||0}));
+  start();
+}
+function partnersOf(id){
+  const list=marriages.filter(m=>m.h===id||m.w===id).sort((a,b)=>a.pos-b.pos).map(m=>m.h===id?m.w:m.h);
+  const me=byId(id); if(me&&me.spouseId&&byId(me.spouseId)&&!list.includes(me.spouseId))list.push(me.spouseId);
+  people.forEach(p=>{if(p.spouseId===id&&!list.includes(p.id))list.push(p.id);});
+  return [...new Set(list)].filter(x=>byId(x));
+}
+function primaryParent(c){const f=byId(c.fatherId),m=byId(c.motherId);if(f&&!f.outsider)return f.id;if(m&&!m.outsider)return m.id;if(f)return f.id;if(m)return m.id;return null;}
+function childrenGroups(id){
+  const partners=partnersOf(id), map=new Map(); partners.forEach(p=>map.set(p,[])); map.set(null,[]);
+  people.forEach(c=>{if(c.outsider)return;if(c.fatherId!==id&&c.motherId!==id)return;if(primaryParent(c)!==id)return;const o=c.fatherId===id?c.motherId:c.fatherId;map.get(partners.includes(o)?o:null).push(c);});
+  const out=[]; partners.forEach(p=>{const k=map.get(p);if(k.length)out.push({kids:k});}); if(map.get(null).length)out.push({kids:map.get(null)});
+  return out;
+}
+const countKids=id=>childrenGroups(id).reduce((s,g)=>s+g.kids.length,0);
+const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
+
+function makeCard(p,open,n){
+  const c=el('div','card'+(open?' open':''));
+  const r=el('div','ring');
+  if(p.photo){const i=el('img');i.src=p.photo;i.alt='';r.appendChild(i);} else r.appendChild(el('div','ph'));
+  c.append(r,el('div','n',p.name));
+  const life=p.death?'الحياة: '+(p.birth||'؟')+' – '+p.death:(p.birth?'الميلاد: '+p.birth:'');
+  if(life)c.appendChild(el('div','meta',life));
+  const pts=partnersOf(p.id); if(pts.length)c.appendChild(el('div','sp','الزوج / الزوجة: '+pts.map(nameOf).join('، ')));
+  if(n)c.appendChild(el('div','cnt',(open?'▲ طيّ ':'▼ عرض ')+n+' '+(n===1?'ابن/ابنة':'أبناء')));
+  return c;
+}
+function unit(id,depth,isChild){
+  const p=byId(id), box=el('div','unit'+(isChild?' child':''));
+  box.style.setProperty('--h',(24+depth*42)%360);
+  const open=expandedSet.has(id);
+  const card=makeCard(p,open,countKids(id));
+  card.onclick=()=>toggle(id,box,card,depth);
+  box.appendChild(card);
+  if(open)box.appendChild(kidsEl(id,depth));
+  return box;
+}
+function kidsEl(id,depth){
+  const h=el('div','kids'); h.style.setProperty('--h',(24+depth*42)%360);
+  childrenGroups(id).forEach(g=>{
+    const gr=el('div','group');
+    g.kids.forEach((k,i)=>{const u=unit(k.id,depth+1,true);u.style.animationDelay=(i*120)+'ms';gr.appendChild(u);});
+    h.appendChild(gr);
+  });
+  return h;
+}
+function toggle(id,box,card,depth){
+  const ex=box.querySelector(':scope > .kids'), c=card.querySelector('.cnt');
+  if(ex){expandedSet.delete(id);card.classList.remove('open');ex.classList.add('closing');setTimeout(()=>ex.remove(),350);}
+  else{expandedSet.add(id);card.classList.add('open');box.appendChild(kidsEl(id,depth));}
+  const n=countKids(id); if(c)c.textContent=(expandedSet.has(id)?'▲ طيّ ':'▼ عرض ')+n+' '+(n===1?'ابن/ابنة':'أبناء');
+}
+function start(){
+  const w=$('tree'); w.innerHTML=''; const r=el('div','roots');
+  rootsList().forEach((p,i)=>{const u=unit(p.id,0,false);u.style.animationDelay=(i*150)+'ms';r.appendChild(u);});
+  w.appendChild(r);
+}
+load();
+</script>
+</body>
+</html>
