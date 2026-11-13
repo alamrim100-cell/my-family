@@ -47,6 +47,7 @@ input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8
   <h3 id="formTitle">إضافة شخص جديد</h3>
   <label>الاسم الكامل *</label><input id="fName">
   <label>تاريخ الميلاد</label><input id="fBirth" type="date">
+  <label>تاريخ الوفاة (إن وُجد)</label><input id="fDeath" type="date">
   <label>الجنس</label>
   <select id="fGender"><option value="">--</option><option value="male">ذكر</option><option value="female">أنثى</option></select>
   <label>الأب</label><select id="fFather"></select>
@@ -92,7 +93,7 @@ async function loadPeople(){
   people = p.data.map(r => ({
     id: r.id, name: r.name, birth: r.birth || '', gender: r.gender || '',
     fatherId: r.father_id || '', motherId: r.mother_id || '', spouseId: r.spouse_id || '',
-    bio: r.bio || '', photo: r.photo_url || ''
+    bio: r.bio || '', photo: r.photo_url || '', death: r.death || ''
   }));
   marriages = (m.data || []).map(x => ({ h: x.husband_id, w: x.wife_id, pos: x.position || 0 }));
   render();
@@ -246,7 +247,8 @@ function card(p){
   const n = document.createElement('div'); n.className = 'n'; n.textContent = p.name;
   const m = document.createElement('div'); m.className = 'meta';
   const lines = [];
-  if (p.birth) lines.push('الميلاد: ' + p.birth);
+  if (p.death) lines.push('الحياة: ' + (p.birth || '؟') + ' – ' + p.death);
+  else if (p.birth) lines.push('الميلاد: ' + p.birth);
   if (p.fatherId) lines.push('الأب: ' + nameOf(p.fatherId));
   if (p.motherId) lines.push('الأم: ' + nameOf(p.motherId));
   if (p.bio) lines.push(p.bio);
@@ -277,6 +279,7 @@ function openForm(id = null){
   $('formTitle').textContent = id ? 'تعديل: ' + p.name : 'إضافة شخص جديد';
   $('fName').value = p.name || ''; $('fBirth').value = p.birth || ''; $('fGender').value = p.gender || '';
   fillSelect($('fFather'), p.fatherId, id); fillSelect($('fMother'), p.motherId, id); fillSelect($('fSpouse'), p.spouseId, id);
+  $('fDeath').value = p.death || '';
   $('fBio').value = p.bio || ''; $('fPhoto').value = '';
   $('formDlg').showModal();
 }
@@ -287,7 +290,7 @@ function openChildForm(parentId){
   const par = byId(parentId);
   const partner = partnersOf(parentId)[0] || '';
   $('formTitle').textContent = 'إضافة ابن/ابنة لـ ' + par.name;
-  $('fName').value = ''; $('fBirth').value = ''; $('fGender').value = '';
+  $('fName').value = ''; $('fBirth').value = ''; $('fDeath').value = ''; $('fGender').value = '';
   fillSelect($('fFather'), '', null); fillSelect($('fMother'), '', null); fillSelect($('fSpouse'), '', null);
   if (par.gender === 'female'){
     $('fMother').value = parentId; $('fFather').value = partner;
@@ -329,7 +332,7 @@ $('saveBtn').onclick = async () => {
   }
 
   const data = {
-    name: $('fName').value.trim(), birth: $('fBirth').value || null, gender: $('fGender').value || null,
+    name: $('fName').value.trim(), birth: $('fBirth').value || null, death: $('fDeath').value || null, gender: $('fGender').value || null,
     fatherId: $('fFather').value || null, motherId: $('fMother').value || null, spouseId: $('fSpouse').value || null,
     bio: $('fBio').value.trim(), photo_url
   };
