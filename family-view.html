@@ -699,7 +699,8 @@ let people=[], marriages=[];
 // مسار التنقل: {id} لشخص، أو {id, pid} لزوجين محددين
 let stack=[];
 const $=id=>document.getElementById(id);
-const byId=id=>people.find(p=>p.id===id);
+let peopleIndex=new Map();
+const byId=id=>peopleIndex.get(id);
 const nameOf=id=>(byId(id)||{}).name||'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
 const dispName=p=>(p.death?'المرحوم ':'')+p.name;
@@ -709,6 +710,7 @@ async function load(){
   const [p,m]=await Promise.all([sb.from('people').select('*').order('created_at'),sb.from('marriages').select('*')]);
   if(p.error){ $('view').innerHTML='<div class="empty">تعذر تحميل الشجرة، حاول لاحقاً</div>'; return; }
   people=(p.data||[]).map(r=>({id:r.id,name:r.name,birth:r.birth||'',death:r.death||'',gender:r.gender||'',fatherId:r.father_id||'',motherId:r.mother_id||'',spouseId:r.spouse_id||'',bio:r.bio||'',photo:r.photo_url||'',outsider:!!r.is_outsider}));
+  peopleIndex=new Map(people.map(person=>[person.id,person]));
   marriages=(m.data||[]).map(x=>({h:x.husband_id,w:x.wife_id,pos:x.position||0}));
   render();
 }
@@ -731,7 +733,12 @@ function childrenGroups(id){
 }
 // عدد أبناء الشخص: كل من يكون أباً أو أماً لهم (حتى لو كان الزوج/الزوجة من خارج العائلة)
 const countKids=id=>people.filter(c=>!c.outsider && (c.fatherId===id || c.motherId===id)).length;
-const rootsList=()=>people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnersOf(p.id).length));
+const rootsList=()=>{
+  const partnered=new Set();
+  marriages.forEach(m=>{if(m.h)partnered.add(m.h);if(m.w)partnered.add(m.w);});
+  people.forEach(p=>{if(p.spouseId){partnered.add(p.id);partnered.add(p.spouseId);}});
+  return people.filter(p=>!p.fatherId&&!p.motherId&&!p.outsider&&!(p.gender==='female'&&partnered.has(p.id)));
+};
 
 // ===== التنقل =====
 function open(id){ stack.push({id}); render(); }
@@ -1113,11 +1120,19 @@ function isOutPair(a,b){
 // ===== شاشة الترحيب =====
 let welcomed=false;
 function generationsCount(){
-  const lv={}; people.forEach(p=>lv[p.id]=0);
-  for(let i=0;i<people.length+1;i++){
-    people.forEach(p=>{ [p.fatherId,p.motherId].forEach(pid=>{ if(byId(pid)) lv[p.id]=Math.max(lv[p.id],lv[pid]+1); }); });
+  // Memoized depth calculation: linear in the number of people, and safe from cycles.
+  const memo=new Map(), visiting=new Set();
+  function depth(id){
+    if(memo.has(id)) return memo.get(id);
+    if(visiting.has(id)) return 0;
+    const p=byId(id); if(!p) return 0;
+    visiting.add(id);
+    const d=Math.max(0, p.fatherId?depth(p.fatherId)+1:0, p.motherId?depth(p.motherId)+1:0);
+    visiting.delete(id); memo.set(id,d); return d;
   }
-  return people.length ? Math.max(...Object.values(lv))+1 : 0;
+  let max=0;
+  people.forEach(p=>{max=Math.max(max,depth(p.id));});
+  return people.length ? max+1 : 0;
 }
 function statBox(n,label){
   const d=el('div','wstat'); const b=el('b','',0); b.dataset.target=n;
