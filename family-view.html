@@ -836,6 +836,14 @@ function render(){
       row.appendChild(nodeCard(byId(pid),{count:kidsOfPair(cur,pid).length,onClick:()=>openPair(cur,pid)}));
     });
     v.appendChild(row);
+    // أبناء لم يُسجَّل معهم الزوج/الزوجة (حقل الأم أو الأب فارغ): يظهرون هنا حتى لا يضيعوا
+    const orphan=people.filter(c=>!c.outsider && primaryParent(c)===cur && (c.fatherId===cur||c.motherId===cur) && !partners.includes(c.fatherId===cur?c.motherId:c.fatherId));
+    if(orphan.length){
+      const ot=el('div','dkidsTitle','الأبناء (بدون زوجة مسجّلة معهم)');
+      ot.style.textAlign='center'; ot.style.marginTop='18px';
+      v.appendChild(ot);
+      v.appendChild(kidsSection(orphan));
+    }
     return;
   }
 
@@ -941,6 +949,16 @@ function openDrawer(id){
   const pts=partnersOf(id); if(pts.length) rows.push('الزوج / الزوجة: '+pts.map(nameOf).join('، '));
   rows.push('عدد الأبناء: '+countKids(id));
   rows.forEach(t=>b.appendChild(el('div','drow',t)));
+  // قائمة أبناء الشخص داخل بطاقة التفاصيل، والنقر على الاسم يفتح تفاصيل ابنه
+  const kidsList=people.filter(c=>!c.outsider&&(c.fatherId===id||c.motherId===id));
+  if(kidsList.length){
+    const kl=el('div','dkids');
+    kl.appendChild(el('div','dkidsTitle','الأبناء'));
+    const chips=el('div','dkidsList');
+    kidsList.forEach(k=>{ const kb=el('button','dkid',dispName(k)); kb.onclick=()=>openDrawer(k.id); chips.appendChild(kb); });
+    kl.appendChild(chips);
+    b.appendChild(kl);
+  }
   if(p.bio) b.appendChild(el('div','bio',p.bio));
   const lineBtn=el('button','lineBtn','شجرة النسب');
   lineBtn.onclick=()=>openLineage(id);
@@ -1529,6 +1547,41 @@ load();
 
 
 <style id="branch-children-layout">
-/* الأبناء كأغصان متجاورة: صورة واسم فقط، والنقر يفتح بطاقة التفاصيل */\n.kidsWrap{width:100%;min-width:0;overflow-x:auto;overflow-y:visible;padding-top:30px!important;gap:16px!important;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}\n.kidsWrap:before{height:30px!important}\n.pgroup{width:100%;min-width:0;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}\n.kidsRow{position:relative;display:flex!important;flex-wrap:nowrap!important;align-items:flex-start;justify-content:center;gap:12px!important;\n  width:max-content;min-width:100%;max-width:none;overflow:visible!important;\n  padding:22px 12px 10px!important;box-sizing:border-box;-webkit-overflow-scrolling:touch;scrollbar-width:thin;\n  overscroll-behavior-x:contain}\n.kidsRow:before{content:"";position:absolute;top:10px;left:0;right:0;border-top:1px solid #b08d4c;pointer-events:none}\n.kidsRow>.compactCard{position:relative;flex:0 0 86px!important;width:86px!important;min-width:86px!important;\n  max-width:86px!important;min-height:0;padding:8px 5px 9px!important;margin:0!important;\n  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;\n  border:1px solid rgba(176,141,76,.55)!important;border-radius:16px!important;\n  background:linear-gradient(160deg,#fffefa,#f5efdf)!important;box-shadow:0 4px 12px rgba(24,48,41,.09)!important}\n.kidsRow>.compactCard:before{content:"";position:absolute;top:-13px;left:50%;height:13px;border-left:1px solid #b08d4c;pointer-events:none}\n.kidsRow>.compactCard:after{display:none}\n.kidsRow>.compactCard .ring{width:48px!important;height:48px!important;min-width:48px;margin:0!important;padding:2px!important}\n.kidsRow>.compactCard .n{font-size:12px!important;line-height:1.4!important;font-weight:700;max-width:100%;\n  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}\n.kidsRow>.compactCard:active{transform:scale(.96);box-shadow:0 2px 8px rgba(24,48,41,.13)!important}\n/* إذا كان عدد الأبناء قليلاً، يبقى الفرع في المنتصف؛ وإذا زاد يمكن تمريره أفقياً */\n@media(max-width:600px){\n  .kidsRow{justify-content:flex-start!important;gap:10px!important;padding-inline:10px!important}\n  .kidsRow>.compactCard{flex-basis:78px!important;width:78px!important;min-width:78px!important;max-width:78px!important}\n  .kidsRow>.compactCard .ring{width:44px!important;height:44px!important;min-width:44px}\n  .kidsRow>.compactCard .n{font-size:11px!important}\n}\n@media(min-width:601px){\n  .kidsRow{justify-content:center!important}\n}\n</style>
+/* الأبناء كأغصان متجاورة: صورة واسم فقط، والنقر يفتح بطاقة التفاصيل */
+.kidsWrap{width:100%;min-width:0;overflow-x:auto;overflow-y:visible;padding-top:30px!important;gap:16px!important;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.kidsWrap:before{height:30px!important}
+.pgroup{width:100%;min-width:0;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.kidsRow{position:relative;display:flex!important;flex-wrap:nowrap!important;align-items:flex-start;justify-content:center;gap:12px!important;
+  width:max-content;min-width:100%;max-width:none;overflow:visible!important;
+  padding:22px 12px 10px!important;box-sizing:border-box;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
+  overscroll-behavior-x:contain}
+.kidsRow:before{content:"";position:absolute;top:10px;left:0;right:0;border-top:1px solid #b08d4c;pointer-events:none}
+.kidsRow>.compactCard{position:relative;flex:0 0 86px!important;width:86px!important;min-width:86px!important;
+  max-width:86px!important;min-height:0;padding:8px 5px 9px!important;margin:0!important;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;
+  border:1px solid rgba(176,141,76,.55)!important;border-radius:16px!important;
+  background:linear-gradient(160deg,#fffefa,#f5efdf)!important;box-shadow:0 4px 12px rgba(24,48,41,.09)!important}
+.kidsRow>.compactCard:before{content:"";position:absolute;top:-13px;left:50%;height:13px;border-left:1px solid #b08d4c;pointer-events:none}
+.kidsRow>.compactCard:after{display:none}
+.kidsRow>.compactCard .ring{width:48px!important;height:48px!important;min-width:48px;margin:0!important;padding:2px!important}
+.kidsRow>.compactCard .n{font-size:12px!important;line-height:1.4!important;font-weight:700;max-width:100%;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.kidsRow>.compactCard:active{transform:scale(.96);box-shadow:0 2px 8px rgba(24,48,41,.13)!important}
+/* إذا كان عدد الأبناء قليلاً، يبقى الفرع في المنتصف؛ وإذا زاد يمكن تمريره أفقياً */
+@media(max-width:600px){
+  .kidsRow{justify-content:flex-start!important;gap:10px!important;padding-inline:10px!important}
+  .kidsRow>.compactCard{flex-basis:78px!important;width:78px!important;min-width:78px!important;max-width:78px!important}
+  .kidsRow>.compactCard .ring{width:44px!important;height:44px!important;min-width:44px}
+  .kidsRow>.compactCard .n{font-size:11px!important}
+}
+.dkids{margin:14px 0 4px}
+.dkidsTitle{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:8px}
+.dkidsList{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.dkid{font:inherit;font-size:14px;color:var(--forest);background:#f7f2e6;border:1px solid rgba(197,165,104,.7);border-radius:999px;padding:6px 14px;cursor:pointer;min-height:40px}
+.dkid:hover{background:var(--forest);color:#fff}
+@media(min-width:601px){
+  .kidsRow{justify-content:center!important}
+}
+</style>
 </body>
 </html>
