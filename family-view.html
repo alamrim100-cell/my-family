@@ -1574,6 +1574,25 @@ load();
   .kidsRow>.compactCard .ring{width:44px!important;height:44px!important;min-width:44px}
   .kidsRow>.compactCard .n{font-size:11px!important}
 }
+/* عند ظهور الأبناء تصغر بطاقة الأب/الأم والزوجين لتتسع المساحة للأبناء */
+.focus:has(+ .kidsWrap) .card.big,
+.couplehead:has(+ .kidsWrap) .card.big{width:200px!important;padding:14px 10px 12px!important;border-radius:24px!important}
+.focus:has(+ .kidsWrap) .card.big .ring,
+.couplehead:has(+ .kidsWrap) .card.big .ring{width:88px!important;height:88px!important;margin-bottom:8px!important}
+.focus:has(+ .kidsWrap) .card.big .n,
+.couplehead:has(+ .kidsWrap) .card.big .n{font-size:19px!important}
+.focus:has(+ .kidsWrap) .card.big .meta,
+.couplehead:has(+ .kidsWrap) .card.big .meta,
+.focus:has(+ .kidsWrap) .card.big .cnt,
+.couplehead:has(+ .kidsWrap) .card.big .cnt{font-size:12px!important}
+@media(max-width:700px){
+  .focus:has(+ .kidsWrap) .card.big,
+  .couplehead:has(+ .kidsWrap) .card.big{width:min(100%,170px)!important;padding:11px 8px 10px!important}
+  .focus:has(+ .kidsWrap) .card.big .ring,
+  .couplehead:has(+ .kidsWrap) .card.big .ring{width:72px!important;height:72px!important}
+  .focus:has(+ .kidsWrap) .card.big .n,
+  .couplehead:has(+ .kidsWrap) .card.big .n{font-size:16px!important}
+}
 .dkids{margin:14px 0 4px}
 .dkidsTitle{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:8px}
 .dkidsList{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
