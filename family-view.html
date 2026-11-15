@@ -495,6 +495,165 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(
   .fullWrap{overflow:visible}
 }
 
+
+/* =========================================================
+   MOBILE EXPERIENCE UPGRADE — touch-first responsive layer
+   Keeps the existing data model, Supabase calls and features.
+   ========================================================= */
+:root{
+  --mobile-gutter:clamp(12px,4vw,22px);
+  --tap:48px;
+}
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body{ overscroll-behavior-x:none; }
+button,a,input,select{ touch-action:manipulation; }
+button,a{ -webkit-tap-highlight-color:transparent; }
+img{ -webkit-user-drag:none; }
+#view{min-width:0}
+.card.clickable{ -webkit-tap-highlight-color:rgba(197,165,104,.18); }
+.card.clickable:active{transform:scale(.985);box-shadow:0 5px 16px rgba(24,48,41,.13)}
+.toolbar button,.toolbar .tlink,.crumbs button,.dbtn,.lineBtn,
+.pickbar button,.pickbtn,.bar button,.wstart{
+  min-height:var(--tap);
+}
+@media(max-width:700px){
+  html{scroll-padding-top:12px}
+  body{min-width:320px}
+  header{
+    position:sticky;top:0;z-index:24;
+    padding:12px var(--mobile-gutter) 10px;
+    box-shadow:0 8px 24px rgba(19,55,47,.17);
+  }
+  header h1{font-size:clamp(24px,7vw,31px);line-height:1.25}
+  header h1:before{font-size:11px}
+  header h1:after{font-size:12px;margin:3px 0 10px}
+  .toolbar{
+    display:flex;flex-wrap:nowrap;justify-content:flex-start;
+    overflow-x:auto;overflow-y:hidden;max-width:100%;
+    padding:2px 1px 7px;gap:7px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+  }
+  .toolbar::-webkit-scrollbar{display:none}
+  .toolbar button,.toolbar .tlink{
+    flex:0 0 auto;white-space:nowrap;scroll-snap-align:start;
+    min-height:42px;padding:7px 13px;font-size:14px;
+  }
+  .crumbs{
+    justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;
+    white-space:nowrap;padding:2px 0 5px;margin:5px 0 0;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .crumbs::-webkit-scrollbar{display:none}
+  .crumbs button{flex:0 0 auto;min-height:36px;padding:4px 11px}
+  main{padding:18px var(--mobile-gutter) calc(90px + env(safe-area-inset-bottom));}
+  .roots{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    justify-items:stretch;align-items:stretch;gap:12px;
+  }
+  .roots>.card{width:100%;min-width:0}
+  .card{
+    width:min(100%,190px);min-width:0;padding:13px 9px 12px;
+    border-radius:20px;box-shadow:0 7px 20px rgba(24,48,41,.08);
+  }
+  .card.big{width:min(100%,230px);padding:15px 11px 13px}
+  .ring{width:clamp(70px,20vw,92px);height:clamp(70px,20vw,92px);margin-bottom:8px}
+  .card.big .ring{width:clamp(94px,27vw,118px);height:clamp(94px,27vw,118px)}
+  .n{font-size:clamp(16px,4.2vw,20px);overflow-wrap:anywhere}
+  .card.big .n{font-size:clamp(19px,5vw,23px)}
+  .meta{font-size:11px;line-height:1.55;overflow-wrap:anywhere}
+  .cnt{font-size:13px}
+  .dbtn{min-height:40px;padding:6px 16px;font-size:13px}
+  .focus{width:100%}
+  .couplehead{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:7px;width:100%;align-items:center}
+  .couplehead>.card{width:100%}
+  .bond{font-size:22px}
+  .choicesRow,.kidsRow{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;justify-items:stretch;gap:11px;padding:26px 0 4px;
+  }
+  .choicesRow>.card,.kidsRow>.card{width:100%;max-width:none}
+  .kidsWrap{width:100%;gap:20px;padding-top:27px}
+  .kidsWrap:before{height:27px}
+  .pgroup{width:100%;min-width:0}
+  .glabel span{display:inline-block;max-width:100%;font-size:13px;padding:5px 12px}
+  .empty{font-size:16px;padding:34px 12px}
+  .welcome{margin:0 auto;padding:25px 16px;border-radius:23px}
+  .wtitle{font-size:clamp(30px,8vw,40px)}
+  .wsub{font-size:15px;line-height:1.8}
+  .wstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .wstat{min-width:0;padding:11px 7px;border-radius:15px}
+  .wstat b{font-size:27px}
+  .wstat span{font-size:13px}
+  .wsearch input{font-size:16px;min-height:48px;padding:11px 16px}
+  .wres{max-height:150px;overflow:auto}
+  .wr{min-height:38px}
+  #drawer{
+    position:fixed;left:0;right:0;top:auto;bottom:0;
+    width:100%;max-width:none;max-height:min(88dvh,760px);
+    overflow-y:auto;overscroll-behavior:contain;
+    border-radius:24px 24px 0 0;
+    border:1px solid rgba(197,165,104,.8);border-bottom:0;
+    padding:28px 18px calc(22px + env(safe-area-inset-bottom));
+    transform:translateY(105%);opacity:0;
+    transition:transform .28s ease,opacity .25s ease;
+  }
+  #drawer.open{transform:translateY(0);opacity:1}
+  #drawer:before{
+    content:"";display:block;width:42px;height:4px;border-radius:8px;
+    background:#d7c69f;margin:-14px auto 15px;
+  }
+  #closeDrawer{position:sticky;float:left;top:0;z-index:2}
+  #dbody{clear:both;padding-top:8px}
+  #dbody .big img{max-height:30dvh;object-fit:contain}
+  #dbody h2{font-size:25px;padding-inline:28px}
+  #dbody .drow{text-align:right;font-size:13px;padding:9px 4px}
+  #dbody .bio{font-size:16px}
+  #drawerBg{z-index:28}
+  #drawer{z-index:30}
+  dialog{
+    width:calc(100% - 20px);max-width:none;max-height:88dvh;
+    overflow-y:auto;padding:22px 17px;border-radius:22px;
+  }
+  dialog label{font-size:13px}
+  dialog select,.pickbtn{min-height:48px;font-size:15px}
+  .bar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .bar button{min-height:46px}
+  .kinres{font-size:16px}
+  .lineStep{width:100%;padding:10px;gap:10px}
+  .lineImg{width:50px;height:50px;flex-basis:50px}
+  .pickbar{
+    position:sticky;top:0;z-index:23;
+    justify-content:space-between;gap:8px;padding:9px 12px;
+    font-size:13px;
+  }
+  .pickbar button{min-height:40px;white-space:nowrap}
+  .fullWrap{
+    overflow:auto;max-width:calc(100vw - 16px);
+    margin-inline:-8px;padding:8px 8px 24px;
+    -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+  }
+  /* لا نصغّر شجرة الأنساب؛ التمرير الأفقي يحافظ على وضوح الأسماء */
+  .ftree{zoom:1!important;transform:none!important}
+  .ftitle{font-size:23px;margin-bottom:14px}
+  .credit{font-size:11px;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+}
+@media(max-width:380px){
+  .roots,.kidsRow,.choicesRow{gap:8px}
+  .card{padding:11px 6px}
+  .card.big{padding:12px 7px}
+  .couplehead{gap:5px}
+  .toolbar button,.toolbar .tlink{font-size:13px;padding-inline:10px}
+}
+@media(hover:none){
+  .card.clickable:hover{transform:none}
+  .card.clickable:hover:after{transform:translateX(-120%)}
+  .card.clickable:hover .n{color:var(--forest);background:none;animation:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .card:after{animation:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -1286,5 +1445,66 @@ $('homeBtn').onclick=home;
 load();
 </script>
 <div class="credit">تم تصميم هذا الموقع من قبل محمد بن أحمد العامري</div>
+
+<script>
+/* Mobile interaction polish: safe-area, swipe-to-dismiss and focus handling. */
+(function(){
+  const drawer=document.getElementById('drawer');
+  const backdrop=document.getElementById('drawerBg');
+  const close=document.getElementById('closeDrawer');
+  if(!drawer || !backdrop) return;
+
+  let startY=0, lastY=0, dragging=false;
+  drawer.addEventListener('touchstart',function(e){
+    if(!e.touches || e.touches.length!==1) return;
+    startY=e.touches[0].clientY; lastY=startY; dragging=true;
+  },{passive:true});
+  drawer.addEventListener('touchmove',function(e){
+    if(!dragging || !e.touches || e.touches.length!==1) return;
+    lastY=e.touches[0].clientY;
+    const atTop=drawer.scrollTop<=0;
+    if(atTop && lastY>startY+12){
+      drawer.style.transition='none';
+      drawer.style.transform='translateY('+Math.min(220,lastY-startY)+'px)';
+    }
+  },{passive:true});
+  drawer.addEventListener('touchend',function(){
+    if(!dragging) return;
+    dragging=false;
+    const distance=lastY-startY;
+    drawer.style.transition='';
+    drawer.style.transform='';
+    if(distance>105 && drawer.scrollTop<=0 && close) close.click();
+  },{passive:true});
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && drawer.classList.contains('open')){
+      if(close) close.click();
+    }
+  });
+
+  const originalOpen=window.openDrawer;
+  if(typeof originalOpen==='function'){
+    window.openDrawer=function(id){
+      originalOpen(id);
+      document.body.style.overflow='hidden';
+      if(close) close.focus({preventScroll:true});
+    };
+  }
+  const originalClose=window.closeDrawer;
+  if(typeof originalClose==='function'){
+    window.closeDrawer=function(){
+      originalClose();
+      document.body.style.overflow='';
+    };
+  }
+  backdrop.addEventListener('click',function(){document.body.style.overflow='';});
+  window.addEventListener('orientationchange',function(){
+    drawer.style.transform='';
+    drawer.style.transition='';
+  });
+})();
+</script>
+
 </body>
 </html>
