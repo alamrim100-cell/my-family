@@ -1666,7 +1666,8 @@ load();
 .ibtn:hover{transform:scale(1.12);background:#2c6556}
 @keyframes ibPulse{0%,100%{box-shadow:0 0 0 0 rgba(197,165,104,.55),0 3px 8px rgba(23,61,53,.3)}50%{box-shadow:0 0 0 6px rgba(197,165,104,0),0 3px 8px rgba(23,61,53,.3)}}
 /* تمرير أفقي كامل: إن زاد عدد الأبناء يبدأ الصف من اليمين (اتجاه RTL) فتصبح الأسماء كلها قابلة للتمرير */
-.pgroup .kidsRow{align-self:center;align-self:safe center}
+.kidsRow{align-self:center;align-self:safe center}
+.kidsWrap,.pgroup{direction:ltr!important}
 /* الصف يُكتب من اليسار إلى اليمين داخلياً، فيفيض المحتوى نحو اليمين وتعمل الإزاحة في كل المتصفحات */
 .pgroup,.kidsRow{direction:ltr!important}
 .kidsRow>.compactCard{direction:rtl}
