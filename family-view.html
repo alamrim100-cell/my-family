@@ -838,6 +838,8 @@ window.addEventListener('resize',()=>{
 
 let fullMode=false;
 function render(){
+  // بعد بدء الرحلة يُصغَّر الشريط العلوي لتتسع المساحة للشجرة
+  document.body.classList.toggle('inTree', welcomed);
   if(fullMode){ renderFull(); return; }
   if(!welcomed){ renderWelcome(); return; }
   setModeButtons(false);
@@ -1686,6 +1688,16 @@ load();
   .kidsRow>.compactCard .n{font-size:14px!important}
   .kidsRow>.compactCard .ibtn{width:26px;height:26px;font-size:15px}
 }
+/* شريط علوي مصغّر بعد بدء الرحلة لإفساح المساحة للشجرة */
+body.inTree header{padding:8px 12px 6px!important;box-shadow:0 4px 14px rgba(19,55,47,.14)!important}
+body.inTree header:before,body.inTree header:after{display:none!important}
+body.inTree header h1{font-size:19px!important;margin:0 0 6px!important;line-height:1.2!important}
+body.inTree header h1:before,body.inTree header h1:after{display:none!important}
+body.inTree .toolbar{gap:6px!important}
+body.inTree .toolbar button,body.inTree .toolbar .tlink{min-height:34px!important;padding:4px 12px!important;font-size:13px!important}
+body.inTree .crumbs{margin-top:4px!important;font-size:12px!important;gap:4px!important}
+body.inTree .crumbs button{min-height:30px!important;padding:2px 9px!important}
+body.inTree main{padding-top:10px!important}
 .dkids{margin:14px 0 4px}
 .dkidsTitle{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:8px}
 .dkidsList{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
