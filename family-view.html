@@ -799,7 +799,10 @@ function drawBranches(row){
   const ns='http://www.w3.org/2000/svg';
   const svg=document.createElementNS(ns,'svg');
   svg.setAttribute('class','branches');
-  const trunkX=row.offsetWidth/2, TRUNK=30;
+  // جذع الأب في منتصف المنطقة المرئية، لا في منتصف الصف الممتد
+  const pg=row.parentElement;
+  const trunkX=pg?(pg.getBoundingClientRect().left+pg.clientWidth/2-row.getBoundingClientRect().left):row.offsetWidth/2;
+  const TRUNK=30;
   cards.forEach((c,i)=>{
     const x=c.offsetLeft+c.offsetWidth/2, y=c.offsetTop;
     const path=document.createElementNS(ns,'path');
@@ -1653,6 +1656,8 @@ load();
 .ibtn{position:absolute;top:4px;right:4px;z-index:3;width:24px;height:24px;margin:0;padding:0;border-radius:50%;border:2px solid #fffdf8;background:var(--forest);color:#f0dfb9;font:700 14px/1 Tahoma,Arial,sans-serif;display:grid;place-items:center;cursor:pointer;transition:transform .2s,background .2s;animation:ibPulse 2.6s ease-in-out infinite}
 .ibtn:hover{transform:scale(1.12);background:#2c6556}
 @keyframes ibPulse{0%,100%{box-shadow:0 0 0 0 rgba(197,165,104,.55),0 3px 8px rgba(23,61,53,.3)}50%{box-shadow:0 0 0 6px rgba(197,165,104,0),0 3px 8px rgba(23,61,53,.3)}}
+/* تمرير أفقي كامل: إن زاد عدد الأبناء يبدأ الصف من اليمين (اتجاه RTL) فتصبح الأسماء كلها قابلة للتمرير */
+.pgroup .kidsRow{align-self:center;align-self:safe center}
 /* تكبير بطاقات الأبناء عند ظهورهم */
 .kidsRow{gap:16px!important}
 .kidsRow>.compactCard{flex:0 0 128px!important;width:128px!important;min-width:128px!important;max-width:128px!important;padding:12px 8px 12px!important;gap:8px}
