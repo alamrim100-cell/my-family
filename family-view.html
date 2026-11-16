@@ -787,11 +787,11 @@ function kidsRowEl(kids){
     row.appendChild(c);
   });
   requestAnimationFrame(()=>{
-    drawBranches(row);  // رسم الأغصان بعد أن تُضاف البطاقات للصفحة
-    // ابدأ التمرير من اليمين (الابن الأول) حتى تظهر الأسماء الأولى كاملة
+    // أولاً نضع الصف في منتصف التمرير، ثم نرسم الأغصان بالإحداثيات النهائية
     let s=row.parentElement;
     while(s && !['auto','scroll'].includes(getComputedStyle(s).overflowX)) s=s.parentElement;
-    if(s) s.scrollLeft=s.scrollWidth;
+    if(s) s.scrollLeft=(s.scrollWidth-s.clientWidth)/2;   // يبدأ من المنتصف، ويمكن التمرير يميناً ويساراً
+    drawBranches(row);  // رسم الأغصان بعد أن تُضاف البطاقات للصفحة
   });
   return row;
 }
@@ -817,7 +817,9 @@ function drawBranches(row){
   cards.forEach((c,i)=>{
     const x=c.offsetLeft+c.offsetWidth/2, y=c.offsetTop;
     const path=document.createElementNS(ns,'path');
-    path.setAttribute('d',`M${trunkX} -${TRUNK} C${trunkX} ${y/2}, ${x} ${y/2}, ${x} ${y}`);
+    // غصن منحنٍ ينطلق عمودياً من الجذع ويصل عمودياً إلى الابن
+    const span=y+TRUNK, c1=-TRUNK+0.55*span, c2=y-0.55*span;
+    path.setAttribute('d',`M${trunkX} ${-TRUNK} C${trunkX} ${c1}, ${x} ${c2}, ${x} ${y}`);
     path.setAttribute('pathLength','100');
     path.style.animationDelay=(i*90)+'ms';
     svg.appendChild(path);
