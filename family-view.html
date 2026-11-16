@@ -703,7 +703,8 @@ let peopleIndex=new Map();
 const byId=id=>peopleIndex.get(id);
 const nameOf=id=>(byId(id)||{}).name||'';
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
-const dispName=p=>(p.death?'المرحوم ':'')+p.name;
+// المتوفّى ذكراً: «المرحوم»، والمتوفّاة أنثى: «المرحومة»
+const dispName=p=>(p.death?(p.gender==='female'?'المرحومة ':'المرحوم '):'')+p.name;
 const lifeText=p=>p.death?'الحياة: '+(p.birth||'؟')+' – '+p.death:(p.birth?'الميلاد: '+p.birth:'');
 
 async function load(){
