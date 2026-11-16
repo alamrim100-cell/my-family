@@ -1653,6 +1653,19 @@ load();
 .ibtn{position:absolute;top:4px;right:4px;z-index:3;width:24px;height:24px;margin:0;padding:0;border-radius:50%;border:2px solid #fffdf8;background:var(--forest);color:#f0dfb9;font:700 14px/1 Tahoma,Arial,sans-serif;display:grid;place-items:center;cursor:pointer;transition:transform .2s,background .2s;animation:ibPulse 2.6s ease-in-out infinite}
 .ibtn:hover{transform:scale(1.12);background:#2c6556}
 @keyframes ibPulse{0%,100%{box-shadow:0 0 0 0 rgba(197,165,104,.55),0 3px 8px rgba(23,61,53,.3)}50%{box-shadow:0 0 0 6px rgba(197,165,104,0),0 3px 8px rgba(23,61,53,.3)}}
+/* تكبير بطاقات الأبناء عند ظهورهم */
+.kidsRow{gap:16px!important}
+.kidsRow>.compactCard{flex:0 0 128px!important;width:128px!important;min-width:128px!important;max-width:128px!important;padding:12px 8px 12px!important;gap:8px}
+.kidsRow>.compactCard .ring{width:82px!important;height:82px!important;min-width:82px;padding:3px!important}
+.kidsRow>.compactCard .n{font-size:16px!important;line-height:1.35!important}
+.kidsRow>.compactCard .ibtn{width:28px;height:28px;font-size:16px}
+@media(max-width:600px){
+  .kidsRow{gap:12px!important}
+  .kidsRow>.compactCard{flex-basis:112px!important;width:112px!important;min-width:112px!important;max-width:112px!important;padding:10px 6px 10px!important}
+  .kidsRow>.compactCard .ring{width:64px!important;height:64px!important;min-width:64px}
+  .kidsRow>.compactCard .n{font-size:14px!important}
+  .kidsRow>.compactCard .ibtn{width:26px;height:26px;font-size:15px}
+}
 .dkids{margin:14px 0 4px}
 .dkidsTitle{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:8px}
 .dkidsList{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
