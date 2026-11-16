@@ -762,7 +762,17 @@ function nodeCard(p,o){
     d.onclick=ev=>{ev.stopPropagation();openDrawer(p.id);};
     c.appendChild(d);
   }
-  if(o.compact) c.onclick=()=>openDrawer(p.id);
+  if(o.compact){
+    // النقر على البطاقة يفتح أبناءه (أحفاد المختار)، وإن لم يكن له أبناء تفتح تفاصيله
+    c.onclick=()=>{ if(countKids(p.id)) open(p.id); else openDrawer(p.id); };
+    // علامة التعجب تفتح تفاصيل الشخص مباشرة
+    const info=el('button','ibtn','!');
+    info.type='button';
+    info.title='تفاصيل '+p.name;
+    info.setAttribute('aria-label','تفاصيل '+p.name);
+    info.onclick=ev=>{ ev.stopPropagation(); openDrawer(p.id); };
+    c.appendChild(info);
+  }
   else if(o.onClick) c.onclick=o.onClick;
   return c;
 }
@@ -771,10 +781,44 @@ function kidsSection(kids){
   if(!kids.length) return el('div','empty','لا يوجد أبناء مسجّلون');
   const wrap=el('div','kidsWrap');
   const row=el('div','kidsRow');
-  kids.forEach(k=>row.appendChild(nodeCard(k,{compact:true})));
+  kids.forEach((k,i)=>{
+    const c=nodeCard(k,{compact:true});
+    c.style.animationDelay=(i*80)+'ms';   // ظهور متتابع للأبناء
+    row.appendChild(c);
+  });
   wrap.appendChild(row);
+  requestAnimationFrame(()=>drawBranches(row));  // رسم الأغصان بعد أن تُضاف البطاقات للصفحة
   return wrap;
 }
+// أغصان منحنية تصل من جذع الأب إلى كل ابن، مع نقطة عند نهاية كل غصن
+function drawBranches(row){
+  if(!row||!row.isConnected) return;
+  row.querySelectorAll(':scope > svg.branches').forEach(s=>s.remove());
+  const cards=[...row.children].filter(c=>c.classList.contains('compactCard'));
+  if(!cards.length) return;
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('class','branches');
+  const trunkX=row.offsetWidth/2, TRUNK=30;
+  cards.forEach((c,i)=>{
+    const x=c.offsetLeft+c.offsetWidth/2, y=c.offsetTop;
+    const path=document.createElementNS(ns,'path');
+    path.setAttribute('d',`M${trunkX} -${TRUNK} C${trunkX} ${y/2}, ${x} ${y/2}, ${x} ${y}`);
+    path.setAttribute('pathLength','100');
+    path.style.animationDelay=(i*90)+'ms';
+    svg.appendChild(path);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('cx',x); dot.setAttribute('cy',y); dot.setAttribute('r','3.5');
+    dot.style.animationDelay=(300+i*90)+'ms';
+    svg.appendChild(dot);
+  });
+  row.appendChild(svg);
+}
+let branchResizeTimer=null;
+window.addEventListener('resize',()=>{
+  clearTimeout(branchResizeTimer);
+  branchResizeTimer=setTimeout(()=>document.querySelectorAll('.kidsRow').forEach(drawBranches),150);
+});
 
 let fullMode=false;
 function render(){
@@ -967,6 +1011,8 @@ function openDrawer(id){
   childrenBtn.onclick=()=>{closeDrawer();open(id);};
   b.appendChild(childrenBtn);
   albumSection(id,b,false);
+  // حركة متتابعة لعناصر التفاصيل عند فتح البطاقة
+  [...b.children].forEach((node,i)=>{ node.style.animation='up .5s both'; node.style.animationDelay=(i*60)+'ms'; });
   $('drawer').classList.add('open'); $('drawerBg').classList.add('open');
 }
 function closeDrawer(){ $('drawer').classList.remove('open'); $('drawerBg').classList.remove('open'); }
@@ -1593,6 +1639,20 @@ load();
   .focus:has(+ .kidsWrap) .card.big .n,
   .couplehead:has(+ .kidsWrap) .card.big .n{font-size:16px!important}
 }
+/* ===== الأغصان والحركات ===== */
+.kidsRow:before,.kidsRow>.compactCard:before{display:none!important}
+.kidsWrap:before{border-left:2px solid #8a5a2b!important;background:none!important}
+.branches{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
+.branches path{fill:none;stroke:#8a5a2b;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:0;animation:growBranch .9s ease both}
+.branches circle{fill:#c5a568;stroke:#fffdf8;stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:leafIn .45s both}
+@keyframes growBranch{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@keyframes leafIn{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.9)}to{opacity:1;transform:none}}
+.kidsRow>.compactCard{animation:cardIn .55s cubic-bezier(.2,.8,.2,1) backwards}
+.kidsRow>.compactCard:hover{transform:translateY(-4px);border-color:var(--gold)!important;box-shadow:0 10px 22px rgba(24,48,41,.16)!important}
+.ibtn{position:absolute;top:4px;right:4px;z-index:3;width:24px;height:24px;margin:0;padding:0;border-radius:50%;border:2px solid #fffdf8;background:var(--forest);color:#f0dfb9;font:700 14px/1 Tahoma,Arial,sans-serif;display:grid;place-items:center;cursor:pointer;transition:transform .2s,background .2s;animation:ibPulse 2.6s ease-in-out infinite}
+.ibtn:hover{transform:scale(1.12);background:#2c6556}
+@keyframes ibPulse{0%,100%{box-shadow:0 0 0 0 rgba(197,165,104,.55),0 3px 8px rgba(23,61,53,.3)}50%{box-shadow:0 0 0 6px rgba(197,165,104,0),0 3px 8px rgba(23,61,53,.3)}}
 .dkids{margin:14px 0 4px}
 .dkidsTitle{font-size:15px;font-weight:700;color:var(--forest);margin-bottom:8px}
 .dkidsList{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
